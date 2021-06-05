@@ -55,6 +55,7 @@ pickup input = runExceptT $ do
     let filtered              = filter (inputMatchesItem input) itemsInOpenContainers
     case headMay filtered of
         Nothing -> do
+            -- Can happen if attempting to pickup something in a closed container
             let out = "Something has gone terrible wrong"
             hoistEither $ Left out
         Just (item, container) -> do
