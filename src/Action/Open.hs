@@ -2,8 +2,8 @@
 
 module Action.Open where
 
-import           Control.Error                  ( fromMaybe
-                                                , hoistEither
+import           Control.Error                  ( hoistEither
+                                                , runExceptT
                                                 )
 import           Control.Lens                   ( (.=)
                                                 , Ixed(ix)

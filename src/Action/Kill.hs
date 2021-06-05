@@ -3,10 +3,8 @@
 module Action.Kill where
 
 import           Common                         ( npcIsHere )
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , fromMaybe
-                                                , hoistEither
-                                                , hoistMaybe
+import           Control.Error                  ( hoistEither
+                                                , runExceptT
                                                 )
 import           Control.Lens                   ( (.=)
                                                 , Ixed(ix)

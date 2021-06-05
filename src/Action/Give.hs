@@ -10,11 +10,9 @@ module Action.Give where
 import           Common                         ( inventory
                                                 , npcIsHere
                                                 )
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , fromMaybe
-                                                , headMay
+import           Control.Error                  ( headMay
                                                 , hoistEither
-                                                , hoistMaybe
+                                                , runExceptT
                                                 , tailMay
                                                 )
 import           Control.Lens                   ( (.=)
