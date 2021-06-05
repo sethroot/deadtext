@@ -1,0 +1,109 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d8aeaf84d509854c28b53d0b164ff9253aa4c427d194d372b80f60626c10b583
+
+name:           deadtext
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/sethroot/deadtext#readme>
+homepage:       https://github.com/sethroot/deadtext#readme
+bug-reports:    https://github.com/sethroot/deadtext/issues
+author:         Seth Root
+maintainer:     sethroot.io@gmail.com
+copyright:      (c) 2021 Seth Root
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/sethroot/deadtext
+
+library
+  exposed-modules:
+      Action
+      Action.Drop
+      Action.Give
+      Action.Help
+      Action.Inv
+      Action.Kill
+      Action.Look
+      Action.Open
+      Action.Pickup
+      Action.Talk
+      Action.Walk
+      Common
+      Data
+      DeadText
+      Msg
+      Parsing
+      Types
+      Util
+  other-modules:
+      Paths_deadtext
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , errors
+    , lens
+    , mmorph
+    , mtl
+    , safe
+    , split
+    , transformers
+  default-language: Haskell2010
+
+executable deadtext-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_deadtext
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , deadtext
+    , errors
+    , lens
+    , mmorph
+    , mtl
+    , safe
+    , split
+    , transformers
+  default-language: Haskell2010
+
+test-suite deadtext-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_deadtext
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , deadtext
+    , errors
+    , lens
+    , mmorph
+    , mtl
+    , safe
+    , split
+    , transformers
+  default-language: Haskell2010
