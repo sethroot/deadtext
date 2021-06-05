@@ -9,7 +9,9 @@ import           Control.Applicative            ( Alternative((<|>)) )
 import           Control.Error                  ( MaybeT(MaybeT, runMaybeT)
                                                 , fromMaybe
                                                 , headMay
+                                                , hoistEither
                                                 , hoistMaybe
+                                                , runExceptT
                                                 )
 import           Control.Lens                   ( (^.)
                                                 , use
@@ -18,6 +20,7 @@ import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState
                                                 )
+import           Control.Monad.Trans.Except     ( ExceptT(ExceptT) )
 import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
 import           Data                           ( conns
                                                 , lookMap
@@ -44,7 +47,8 @@ lookAction ((Input _ "at") : target : _) = do
     liftIO . putStrLn $ fromMaybe dontSeeThat out
 lookAction ((Input _ "in") : target : _) = do
     out <- lookIn target
-    liftIO . putStrLn $ fromMaybe dontSeeThat out
+    either printE printE out
+    where printE = liftIO . putStrLn
 lookAction _ = liftIO . putStrLn $ lookWhere
 
 dontSeeThat :: String
@@ -166,39 +170,41 @@ lookAtItem item = do
 
 -- lookIn
 
-lookIn :: MonadState Game m => Input -> m (Maybe String)
-lookIn input = do
+lookIn :: MonadState Game m => Input -> m (Either String String)
+lookIn input = runExceptT $ do
     loc'        <- use loc
     containers' <- use containers
     let pred      = containerPredicate input loc'
     let container = headMay . filter pred $ containers'
-    case container of
-        Nothing         -> pure . Just . dontSeeObject $ input ^. normal
-        Just container' -> do
-            if container' ^. cState == Closed
-                then pure . Just . containerIsClosed $ container' ^. name
-                else do
-                    items' <- use items
-                    let item = headMay . filter itemPred $ items'
-                          where
-                            itemPred =
-                                (\i -> i ^. loc == ItemContainer
-                                    (container' ^. uid)
-                                )
-                    case item of
-                        Nothing ->
-                            pure . Just . containerIsEmpty $ container' ^. name
-                        Just item' -> do
-                            let itemName = item' ^. name
-                            pure . Just $ seeInContainer
-                                itemName
-                                (container' ^. name)
+    container' <- case container of
+        Nothing -> do
+            let out = dontSeeObject $ input ^. normal
+            hoistEither $ Left out
+        Just c -> hoistEither $ Right c
+    if container' ^. cState == Closed
+        then do
+            let out = containerIsClosed $ container' ^. name
+            hoistEither $ Left out
+        else hoistEither $ Right ()
+    items' <- use items
+    let item = headMay . filter (itemPredicate container') $ items'
+    case item of
+        Nothing -> do
+            let out = containerIsEmpty $ container' ^. name
+            hoistEither $ Left out
+        Just item' -> do
+            let itemName = item' ^. name
+            let out      = seeInContainer itemName (container' ^. name)
+            hoistEither $ Right out
 
 containerPredicate :: Input -> Loc -> Container -> Bool
 containerPredicate input loc' container = nameMatch && locMatch
   where
     nameMatch = fmap toLower (container ^. name) == input ^. normal
     locMatch  = container ^. loc == loc'
+
+itemPredicate :: Container -> Item -> Bool
+itemPredicate container item = item ^. loc == ItemContainer (container ^. uid)
 
 dontSeeObject :: String -> String
 dontSeeObject object = "You don't see a " ++ object ++ " here."
