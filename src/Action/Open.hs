@@ -2,7 +2,9 @@
 
 module Action.Open where
 
-import           Control.Error                  ( fromMaybe )
+import           Control.Error                  ( fromMaybe
+                                                , hoistEither
+                                                )
 import           Control.Lens                   ( (.=)
                                                 , Ixed(ix)
                                                 , (^.)
@@ -12,6 +14,7 @@ import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState
                                                 )
+import           Control.Monad.Trans.Except     ( runExceptT )
 import           Data.List                      ( elemIndex )
 import           Parsing                        ( parseContainer )
 import           Types
@@ -20,31 +23,35 @@ openAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
 openAction Nothing       = liftIO . putStrLn $ "Open what?"
 openAction (Just target) = do
     out <- open target
-    liftIO . putStrLn $ fromMaybe "Cant open that" out
+    either printE printE out
+    where printE = liftIO . putStrLn
 
-open :: MonadState Game m => Input -> m (Maybe String)
-open target = do
-    container <- parseContainer $ target ^. normal
-    case container of
-        Nothing        -> pure . Just $ "You don't see a " ++ target ^. normal ++ "."
-        Just container -> do
-            if container ^. cState == Open
-                then
-                    pure
-                    .  Just
-                    $  "The "
-                    ++ container
-                    ^. name
-                    ++ " is already open."
-                else do
-                    containers' <- use containers
-                    case elemIndex container containers' of
-                        Nothing -> pure Nothing
-                        Just i  -> do
-                            containers . ix i . cState .= Open
-                            pure
-                                .  Just
-                                $  "You open the "
-                                ++ container
-                                ^. name
-                                ++ "."
+open :: MonadState Game m => Input -> m (Either String String)
+open target = runExceptT $ do
+    container  <- parseContainer $ target ^. normal
+
+    container' <- case container of
+        Nothing -> do
+            -- This feels wrong when trying to open a non-container object
+            -- Detect if target is object and provide a message that the
+            -- object is not a container before resolving to this
+            let out = "You don't see a " ++ target ^. normal ++ "."
+            hoistEither $ Left out
+        Just container -> hoistEither $ Right container
+
+    if (container' ^. cState) == Open
+        then do
+            let out = "The " ++ container' ^. name ++ " is already open."
+            hoistEither $ Left out
+        else hoistEither $ Right ()
+
+    containers' <- use containers
+    index       <- case elemIndex container' containers' of
+        Nothing -> do
+            let out = "Can't open that"
+            hoistEither $ Left out
+        Just i -> hoistEither $ Right i
+
+    containers . ix index . cState .= Open
+    let out = "You open the " ++ container' ^. name ++ "."
+    hoistEither $ Right out
