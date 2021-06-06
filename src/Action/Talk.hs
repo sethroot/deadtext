@@ -3,6 +3,9 @@
 module Action.Talk where
 
 import           Common                         ( npcIsHere )
+import           Control.Error                  ( hoistEither
+                                                , runExceptT
+                                                )
 import           Control.Lens                   ( (%=)
                                                 , Ixed(ix)
                                                 , (^.)
@@ -20,33 +23,39 @@ import           Types
 import           Util                           ( (?) )
 
 talkAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-talkAction Nothing       = pure ()
-talkAction (Just target) = do
-    npcs' <- use npcs
-    let
-        index = findIndex
-            (\x -> fmap toLower (x ^. name) == (target ^. normal))
-            npcs'
-    case index of
-        Nothing -> liftIO . putStrLn $ dontSeeTarget (target ^. raw)
-        Just i  -> do
-            talkTo i
+talkAction Nothing      = pure ()
+talkAction (Just input) = do
+    out <- talkTo input
+    either printE printE out
+    where printE = liftIO . putStrLn
 
-talkTo :: (MonadState Game m, MonadIO m) => Int -> m ()
-talkTo index = do
+talkTo :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
+talkTo input = runExceptT $ do
     npcs' <- use npcs
+    index <- case findIndex (nameMatches input) npcs' of
+        Nothing -> do
+            let out = dontSeeTarget (input ^. raw)
+            hoistEither $ Left out
+        Just i -> hoistEither $ Right i
     let npc = npcs' !! index
-    liftIO $ print npc
     npcHere' <- npcIsHere npc
-    liftIO $ print npcHere'
     if not npcHere'
-        then liftIO . putStrLn . dontSeeTarget $ npc ^. name
+        then do
+            let out = dontSeeTarget $ npc ^. name
+            hoistEither $ Left out
+        else hoistEither $ Right ()
+    if not $ npc ^. alive
+        then do
+            let out = talkCorpse npc
+            hoistEither $ Left out
         else do
-            if not $ npc ^. alive
-                then liftIO . putStrLn $ talkCorpse npc
-                else do
-                    liftIO . putStrLn $ (npc ^. dialog) !! (npc ^. dialogCursor)
-                    advanceDialog index
+            hoistEither $ Right ()
+    let out = (npc ^. dialog) !! (npc ^. dialogCursor)
+    advanceDialog index
+    hoistEither $ Right out
+
+nameMatches :: Input -> Npc -> Bool
+nameMatches input npc = fmap toLower (npc ^. name) == input ^. normal
 
 advanceDialog :: MonadState Game m => Int -> m ()
 advanceDialog index = do

@@ -2,9 +2,9 @@
 
 module Action.Walk where
 
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , fromMaybe
-                                                , hoistMaybe
+import           Control.Error                  ( fromMaybe
+                                                , hoistEither
+                                                , runExceptT
                                                 )
 import           Control.Lens                   ( (.=)
                                                 , (^.)
@@ -15,7 +15,6 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState(get, put)
                                                 , gets
                                                 )
-import           Control.Monad.Trans.Maybe      ( MaybeT(runMaybeT) )
 import           Data                           ( conns
                                                 , walkDescMap
                                                 )
@@ -30,18 +29,22 @@ walkAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
 walkAction Nothing      = pure ()
 walkAction (Just input) = do
     out <- walk input
-    liftIO . putStrLn $ fromMaybe "I don't know how to do that.." out
+    either printE printE out
+    where printE = liftIO . putStrLn
 
-walk :: (MonadState Game m, MonadIO m) => Input -> m (Maybe String)
-walk input = runMaybeT $ do
+walk :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
+walk input = runExceptT $ do
     mDir <- parseDir $ input ^. normal
-    case mDir of
-        Nothing  -> hoistMaybe Nothing
-        Just dir -> do
-            loc' <- use loc
-            let nextLoc = resolveMove $ Movement loc' dir
-            loc .= nextLoc
-            hoistMaybe . Just $ walkDesc nextLoc
+    dir  <- case mDir of
+        Nothing -> do
+            let out = "I don't know how to do that..."
+            hoistEither $ Left out
+        Just dir -> hoistEither $ Right dir
+    loc' <- use loc
+    let nextLoc = resolveMove $ Movement loc' dir
+    loc .= nextLoc
+    let out = walkDesc nextLoc
+    hoistEither $ Right out
 
 walkDesc :: Loc -> String
 walkDesc loc = fromMaybe walkDescDefault $ M.lookup loc walkDescMap

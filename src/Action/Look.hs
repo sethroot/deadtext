@@ -20,7 +20,6 @@ import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState
                                                 )
-import           Control.Monad.Trans.Except     ( ExceptT(ExceptT) )
 import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
 import           Data                           ( conns
                                                 , lookMap
