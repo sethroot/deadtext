@@ -1,7 +1,10 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module DeadText
     ( deadText
     ) where
 
+import           Action
 import           Control.Lens                   ( (.=)
                                                 , (^.)
                                                 )
@@ -9,26 +12,30 @@ import           Control.Monad                  ( forever
                                                 , void
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
-import           Data.Aeson                     ( decode
-                                                , encode
+import           Control.Monad.State.Lazy       ( MonadIO
+                                                , MonadState
                                                 )
+import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
+                                                , get
+                                                , put
+                                                )
+import           Data                           ( initState
+                                                , initWorld
+                                                )
+import           Data.Aeson                     ( decode )
+import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
+import           Parsing                        ( normalizeInput
+                                                , parseRawInput
+                                                )
 import           System.IO                      ( IOMode(ReadMode)
                                                 , hClose
                                                 , hFlush
                                                 , openFile
                                                 , stdout
                                                 )
-
-import           Action
-import           Data                           ( initState
-                                                , initWorld
-                                                )
-import           Parsing                        ( normalizeInput
-                                                , parseRawInput
-                                                )
 import           Types                          ( Ext
+                                                , Game
                                                 , GameLoop
                                                 , HasInput(input)
                                                 , HasNormal(normal)
@@ -41,9 +48,15 @@ deadText = void $ runStateT deadText' initState
 
 deadText' :: GameLoop
 deadText' = do
-  -- liftIO importGame
-  -- liftIO exportGame
-    initWorld
+    if True
+        then do
+            game <- liftIO importGame
+            maybe undefined put game
+        else do
+            initWorld
+            game <- get
+            pure ()
+            -- liftIO $ exportGame game
     lookAction []
     forever execGameLoop
     pure ()
@@ -88,14 +101,16 @@ execGameLoop = do
     liftIO $ putStrLn ""
     -- dumpGameState
 
-importGame :: IO ()
+importGame :: IO (Maybe Game)
 importGame = do
     handle   <- openFile "json/game.json" ReadMode
     contents <- BL.hGetContents handle
-    BL.putStr contents
-    let a = decode contents :: Maybe Ext
-    print a
-    hClose handle
+    -- BL.putStr contents
+    let game = decode contents :: Maybe Game
+    -- hClose handle
+    -- print game 
+    pure game
 
-exportGame :: IO ()
-exportGame = BL.writeFile "json/dump.json" $ encode initState
+exportGame :: Game -> IO ()
+exportGame state = do
+    BL.writeFile "json/dump.json" $ encodePretty state

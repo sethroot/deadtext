@@ -15,9 +15,7 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState(get, put)
                                                 , gets
                                                 )
-import           Data                           ( conns
-                                                , walkDescMap
-                                                )
+import           Data                           ( conns )
 import           Data.List                      ( find )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
@@ -43,11 +41,10 @@ walk input = runExceptT $ do
     loc' <- use loc
     let nextLoc = resolveMove $ Movement loc' dir
     loc .= nextLoc
-    let out = walkDesc nextLoc
+    locs' <- use locs
+    let loc'' = head $ filter (\l -> l ^. loc == nextLoc) locs'
+    let out   = loc'' ^. walkDesc
     hoistEither $ Right out
-
-walkDesc :: Loc -> String
-walkDesc loc = fromMaybe walkDescDefault $ M.lookup loc walkDescMap
 
 resolveMove :: Movement -> Loc
 resolveMove move = fromMaybe (move ^. start) $ maybeLocFromMove move

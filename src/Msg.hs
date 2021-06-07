@@ -22,9 +22,6 @@ dropObject object = "You drop the " ++ object ++ "."
 dontHaveObject :: String -> String
 dontHaveObject object = "You do not have a " ++ object ++ "."
 
-walkDescDefault :: String
-walkDescDefault = "You are unsure where you are.."
-
 talkCorpse :: Npc -> String
 talkCorpse npc = npc ^. name ++ "'s corpse has nothing to say to you."
 

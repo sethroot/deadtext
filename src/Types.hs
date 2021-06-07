@@ -32,17 +32,31 @@ instance Show Direction where
     show D = "down"
 
 data Loc
-  = Lobby
-  | Second
-  | Third
-  | Fourth
-  | Fifth
-  | Sixth
-  | Seventh
-  | Roof
-  | Elevator
-  | LunchRoom
+  = Start 
+  | Next 
+  | End
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+
+-- data Loc
+--   = Lobby
+--   | Second
+--   | Third
+--   | Fourth
+--   | Fifth
+--   | Sixth
+--   | Seventh
+--   | Roof
+--   | Elevator
+--   | LunchRoom
+--   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+
+data Loc2 = Loc2
+    { _loc2Uid  :: UID
+    , _loc2Loc :: Loc
+    , _loc2WalkDesc :: String
+    , _loc2LookDesc :: String
+    }
+    deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Role
   = DialogRole
@@ -133,7 +147,8 @@ data Input = Input
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Game = Game
-    { _gameLoc        :: Loc
+    { _gameLoc        :: Loc 
+    , _gameLocs       :: [Loc2]
     , _gameNpcs       :: [Npc]
     , _gameItems      :: [Item]
     , _gameContainers :: [Container]
@@ -146,6 +161,7 @@ type GameLoop = StateT Game IO ()
 
 makeFields ''Direction
 makeFields ''Loc
+makeFields ''Loc2
 makeFields ''ItemLocation
 makeFields ''Item
 makeFields ''Container

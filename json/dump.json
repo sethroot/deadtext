@@ -1,0 +1,85 @@
+{
+    "_gameNpcs": [
+        {
+            "_npcQuest": [],
+            "_npcUid": 3,
+            "_npcAlive": true,
+            "_npcRole": "DialogRole",
+            "_npcLoc": "Start",
+            "_npcDialog": [
+                "Greetings, adventurer!",
+                "It's dangerous to go alone! Take this.",
+                "What a gloomy day.."
+            ],
+            "_npcName": "Joe",
+            "_npcDialogCursor": 0,
+            "_npcDesc": "Joe is old and withered."
+        }
+    ],
+    "_gameInput": [],
+    "_gameItems": [
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": "Next"
+            },
+            "_itemName": "Trunk",
+            "_itemDesc": "A cardboard box with attractive logos decorating it."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": "End"
+            },
+            "_itemName": "Macbook",
+            "_itemDesc": "A standard Apple Macbook Pro."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": "Start"
+            },
+            "_itemName": "Snack",
+            "_itemDesc": "It looks delicious."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemContainer",
+                "contents": 4
+            },
+            "_itemName": "Spoon",
+            "_itemDesc": "A normal spoon."
+        }
+    ],
+    "_gameLocs": [
+        {
+            "_loc2Uid": 0,
+            "_loc2WalkDesc": "Walk Start",
+            "_loc2Loc": "Start",
+            "_loc2LookDesc": "Look Start"
+        },
+        {
+            "_loc2Uid": 1,
+            "_loc2WalkDesc": "Walk Next",
+            "_loc2Loc": "Next",
+            "_loc2LookDesc": "Look Next"
+        },
+        {
+            "_loc2Uid": 2,
+            "_loc2WalkDesc": "Walk End",
+            "_loc2Loc": "End",
+            "_loc2LookDesc": "Look End"
+        }
+    ],
+    "_gameLoc": "Start",
+    "_gameContainers": [
+        {
+            "_containerName": "Lunchbox",
+            "_containerLoc": "Start",
+            "_containerDesc": "A vintage lunchbox.",
+            "_containerCState": "Closed",
+            "_containerUid": 4
+        }
+    ],
+    "_gameUidGen": 5
+}

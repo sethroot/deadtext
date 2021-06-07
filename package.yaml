@@ -27,6 +27,7 @@ dependencies:
 - split
 - mmorph
 - aeson
+- aeson-pretty
 - bytestring
 - lens
 - safe

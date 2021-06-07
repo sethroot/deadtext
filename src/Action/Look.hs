@@ -21,9 +21,7 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState
                                                 )
 import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
-import           Data                           ( conns
-                                                , lookMap
-                                                )
+import           Data                           ( conns )
 import           Data.Char                      ( toLower )
 import           Data.List                      ( intersperse )
 import qualified Data.Map.Strict               as M
@@ -61,11 +59,12 @@ lookWhere = "Look where?"
 look :: MonadState Game m => m String
 look = do
     loc'             <- use loc
+    locs'            <- use locs
     npcsInLoc'       <- npcsInLoc
     containersInLoc' <- containersInLoc
     itemsInLoc'      <- itemsInLoc
-    let mDesc         = M.lookup loc' lookMap
-    let locDesc       = fromMaybe noDescriptionForLoc mDesc
+    let loc''         = head $ filter (\l -> l ^. loc == loc') locs'
+    let locDesc       = loc'' ^. lookDesc
     let pathsDesc     = pathsInLoc loc' conns
     let npcDesc       = fromMaybe "" npcsInLoc'
     let containerDesc = fromMaybe "" containersInLoc'
@@ -123,9 +122,6 @@ itemsInLoc = do
 
 itemHere :: Item -> String
 itemHere item = "There is a " ++ item ^. name ++ " here."
-
-noDescriptionForLoc :: String
-noDescriptionForLoc = "It is foggy here..."
 
 pathsInLoc :: Loc -> [Connection] -> String
 pathsInLoc loc conns =

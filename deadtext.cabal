@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d8aeaf84d509854c28b53d0b164ff9253aa4c427d194d372b80f60626c10b583
+-- hash: 605af8e06f15f7e41f4062df4f716bfd965b407000b54f189cc66e7d345a9f9e
 
 name:           deadtext
 version:        0.1.0.0
@@ -43,6 +43,7 @@ library
       DeadText
       Msg
       Parsing
+      SH2
       Types
       Util
   other-modules:
@@ -51,6 +52,7 @@ library
       src
   build-depends:
       aeson
+    , aeson-pretty
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -72,6 +74,7 @@ executable deadtext-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , aeson-pretty
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -95,6 +98,7 @@ test-suite deadtext-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , aeson-pretty
     , base >=4.7 && <5
     , bytestring
     , containers
