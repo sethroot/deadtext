@@ -32,8 +32,8 @@ instance Show Direction where
     show D = "down"
 
 data Loc = Loc
-    { _locUid  :: UID
-    , _locLoc :: String
+    { _locUid      :: UID
+    , _locLoc      :: String
     , _locWalkDesc :: String
     , _locLookDesc :: String
     }
@@ -57,7 +57,7 @@ data Npc = Npc
     , _npcName         :: String
     , _npcDesc         :: String
     , _npcRole         :: Role
-    , _npcLoc          :: UID 
+    , _npcLoc          :: UID
     , _npcAlive        :: Bool
     , _npcDialog       :: [String]
     , _npcDialogCursor :: Int
@@ -67,7 +67,7 @@ data Npc = Npc
 
 data ItemLocation
   = ItemInv
-  | ItemLoc UID 
+  | ItemLoc UID
   | ItemNpc UID
   | ItemContainer UID
   deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
@@ -86,7 +86,7 @@ data Container = Container
     { _containerUid    :: Int
     , _containerName   :: String
     , _containerDesc   :: String
-    , _containerLoc    :: UID 
+    , _containerLoc    :: UID
     , _containerCState :: ContainerState
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
@@ -105,7 +105,7 @@ data Ext = Ext
 data Connection = Connection
     { _connectionStart :: UID
     , _connectionDir   :: Direction
-    , _connectionDest  :: UID 
+    , _connectionDest  :: UID
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
@@ -116,7 +116,7 @@ data Location = Location
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Movement = Movement
-    { _movementStart     :: UID 
+    { _movementStart     :: UID
     , _movementDirection :: Direction
     }
     deriving (Show, Generic, FromJSON, ToJSON)
@@ -128,14 +128,14 @@ data Input = Input
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Game = Game
-    { _gameLoc        :: UID 
-    , _gameLocs       :: M.Map UID Loc 
-    , _gameConnections:: [Connection]
-    , _gameNpcs       :: [Npc]
-    , _gameItems      :: [Item]
-    , _gameContainers :: [Container]
-    , _gameInput      :: [Input]
-    , _gameUidGen     :: Int
+    { _gameLoc         :: UID
+    , _gameLocs        :: M.Map UID Loc
+    , _gameConnections :: [Connection]
+    , _gameNpcs        :: [Npc]
+    , _gameItems       :: [Item]
+    , _gameContainers  :: [Container]
+    , _gameInput       :: [Input]
+    , _gameUidGen      :: Int
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 

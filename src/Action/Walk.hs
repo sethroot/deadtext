@@ -38,29 +38,30 @@ walk input = runExceptT $ do
             hoistEither $ Left out
         Just dir -> hoistEither $ Right dir
     currentLoc <- use loc
-    locMap <- use locs
-    loc'' <- case M.lookup currentLoc locMap of
-      Nothing -> hoistEither $ Left "Error: Could not lookup location"
-      Just a -> hoistEither $ Right a
+    locMap     <- use locs
+    loc''      <- case M.lookup currentLoc locMap of
+        Nothing -> hoistEither $ Left "Error: Could not lookup location"
+        Just a  -> hoistEither $ Right a
     conns' <- use connections
     let resolvedNext = resolveMove (Movement currentLoc dir) conns'
     nextLoc <- case M.lookup resolvedNext locMap of
-      Nothing -> hoistEither $ Left "Error: Could not lookup resolved next location"
-      Just a -> hoistEither $ Right a
+        Nothing ->
+            hoistEither $ Left "Error: Could not lookup resolved next location"
+        Just a -> hoistEither $ Right a
     loc .= nextLoc ^. uid
-    let out   = nextLoc ^. walkDesc
+    let out = nextLoc ^. walkDesc
     hoistEither $ Right out
 
-resolveMove :: Movement -> [Connection] -> UID 
+resolveMove :: Movement -> [Connection] -> UID
 resolveMove move = fromMaybe (move ^. start) . maybeLocFromMove move
 
-maybeLocFromMove :: Movement -> [Connection] -> Maybe UID 
+maybeLocFromMove :: Movement -> [Connection] -> Maybe UID
 maybeLocFromMove move = fmap (^. dest) . maybeConnFromMove move
 
 maybeConnFromMove :: Movement -> [Connection] -> Maybe Connection
 maybeConnFromMove (Movement s d) = find pred
   where
     pred = \c ->
-        let start' = c ^. start 
+        let start' = c ^. start
             dir'   = c ^. dir
         in  s == start' && d == dir'

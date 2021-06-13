@@ -22,7 +22,7 @@ import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
 import qualified Data
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
-import qualified Data.ByteString.Lazy           as BL
+import qualified Data.ByteString.Lazy          as BL
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
@@ -54,7 +54,7 @@ deadText' = do
             Data.initWorld
             game <- get
             pure ()
-            -- liftIO $ exportGame game
+                -- liftIO $ exportGame game
     lookAction []
     forever execGameLoop
     pure ()
