@@ -61,7 +61,7 @@ pickup input = runExceptT $ do
             let out = takeItemFromContainer item container
             hoistEither $ Right out
 
-containerOpenInLoc :: Loc -> Container -> Bool
+containerOpenInLoc :: UID -> Container -> Bool
 containerOpenInLoc loc' container =
     container ^. cState == Open && container ^. loc == loc'
 

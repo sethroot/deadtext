@@ -31,30 +31,11 @@ instance Show Direction where
     show U = "up"
     show D = "down"
 
-data Loc
-  = Start 
-  | Next 
-  | End
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
-
--- data Loc
---   = Lobby
---   | Second
---   | Third
---   | Fourth
---   | Fifth
---   | Sixth
---   | Seventh
---   | Roof
---   | Elevator
---   | LunchRoom
---   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
-
-data Loc2 = Loc2
-    { _loc2Uid  :: UID
-    , _loc2Loc :: Loc
-    , _loc2WalkDesc :: String
-    , _loc2LookDesc :: String
+data Loc = Loc
+    { _locUid  :: UID
+    , _locLoc :: String
+    , _locWalkDesc :: String
+    , _locLookDesc :: String
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
@@ -76,7 +57,7 @@ data Npc = Npc
     , _npcName         :: String
     , _npcDesc         :: String
     , _npcRole         :: Role
-    , _npcLoc          :: Loc
+    , _npcLoc          :: UID 
     , _npcAlive        :: Bool
     , _npcDialog       :: [String]
     , _npcDialogCursor :: Int
@@ -86,7 +67,7 @@ data Npc = Npc
 
 data ItemLocation
   = ItemInv
-  | ItemLoc Loc
+  | ItemLoc UID 
   | ItemNpc UID
   | ItemContainer UID
   deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
@@ -105,7 +86,7 @@ data Container = Container
     { _containerUid    :: Int
     , _containerName   :: String
     , _containerDesc   :: String
-    , _containerLoc    :: Loc
+    , _containerLoc    :: UID 
     , _containerCState :: ContainerState
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
@@ -122,9 +103,9 @@ data Ext = Ext
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Connection = Connection
-    { _connectionStart :: Loc
+    { _connectionStart :: UID
     , _connectionDir   :: Direction
-    , _connectionDest  :: Loc
+    , _connectionDest  :: UID 
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
@@ -135,7 +116,7 @@ data Location = Location
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Movement = Movement
-    { _movementStart     :: Loc
+    { _movementStart     :: UID 
     , _movementDirection :: Direction
     }
     deriving (Show, Generic, FromJSON, ToJSON)
@@ -147,8 +128,9 @@ data Input = Input
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Game = Game
-    { _gameLoc        :: Loc 
-    , _gameLocs       :: [Loc2]
+    { _gameLoc        :: UID 
+    , _gameLocs       :: M.Map UID Loc 
+    , _gameConnections:: [Connection]
     , _gameNpcs       :: [Npc]
     , _gameItems      :: [Item]
     , _gameContainers :: [Container]
@@ -161,7 +143,6 @@ type GameLoop = StateT Game IO ()
 
 makeFields ''Direction
 makeFields ''Loc
-makeFields ''Loc2
 makeFields ''ItemLocation
 makeFields ''Item
 makeFields ''Container

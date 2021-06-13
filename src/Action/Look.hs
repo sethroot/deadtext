@@ -21,7 +21,6 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState
                                                 )
 import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
-import           Data                           ( conns )
 import           Data.Char                      ( toLower )
 import           Data.List                      ( intersperse )
 import qualified Data.Map.Strict               as M
@@ -58,14 +57,16 @@ lookWhere = "Look where?"
 
 look :: MonadState Game m => m String
 look = do
-    loc'             <- use loc
-    locs'            <- use locs
+    locUid           <- use loc
+    locMap           <- use locs
+    conns'           <- use connections
+    containers'      <- use containers
     npcsInLoc'       <- npcsInLoc
-    containersInLoc' <- containersInLoc
+    containersInLoc' <- containersInLoc locUid containers'
     itemsInLoc'      <- itemsInLoc
-    let loc''         = head $ filter (\l -> l ^. loc == loc') locs'
-    let locDesc       = loc'' ^. lookDesc
-    let pathsDesc     = pathsInLoc loc' conns
+    let loc''         = M.lookup locUid locMap
+    let locDesc       = maybe "" (^. lookDesc) loc'' :: String
+    let pathsDesc     = pathsInLoc locUid conns'
     let npcDesc       = fromMaybe "" npcsInLoc'
     let containerDesc = fromMaybe "" containersInLoc'
     let itemDesc      = fromMaybe "" itemsInLoc'
@@ -91,11 +92,9 @@ seeNpc npc = "You see " ++ npc ^. name ++ " here."
 seeCorpse :: Npc -> String
 seeCorpse npc = "You see " ++ npc ^. name ++ "'s corpse lying motionless."
 
-containersInLoc :: MonadState Game m => m (Maybe String)
-containersInLoc = do
-    containers' <- use containers
-    loc'        <- use loc
-    let containersHere = filter (\c -> c ^. loc == loc') containers'
+containersInLoc :: MonadState Game m => UID -> [Container] -> m (Maybe String)
+containersInLoc loc' containers = do
+    let containersHere = filter (\c -> c ^. loc == loc') containers
     if null containersHere
         then pure Nothing
         else
@@ -123,18 +122,18 @@ itemsInLoc = do
 itemHere :: Item -> String
 itemHere item = "There is a " ++ item ^. name ++ " here."
 
-pathsInLoc :: Loc -> [Connection] -> String
+pathsInLoc :: UID -> [Connection] -> String
 pathsInLoc loc conns =
     let paths = pathsInLoc' loc conns
     in  mconcat . intersperse "\n" $ map (pathGoing . fst) paths
 
-pathGoing :: Direction -> String
-pathGoing dir = "There is a path going " ++ show dir
-
-pathsInLoc' :: Loc -> [Connection] -> [(Direction, Loc)]
+pathsInLoc' :: UID -> [Connection] -> [(Direction, UID)]
 pathsInLoc' loc conns =
     let paths = filter (\c -> (c ^. start) == loc) conns
     in  zip (map (^. dir) paths) (map (^. dest) paths)
+
+pathGoing :: Direction -> String
+pathGoing dir = "There is a path going " ++ show dir
 
 formatMulti :: [String] -> String
 formatMulti = mconcat . intersperse "\n\n" . filter (not . null)
@@ -192,7 +191,7 @@ lookIn input = runExceptT $ do
             let out      = seeInContainer itemName (container' ^. name)
             hoistEither $ Right out
 
-containerPredicate :: Input -> Loc -> Container -> Bool
+containerPredicate :: Input -> UID -> Container -> Bool
 containerPredicate input loc' container = nameMatch && locMatch
   where
     nameMatch = fmap toLower (container ^. name) == input ^. normal

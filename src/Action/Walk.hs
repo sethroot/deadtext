@@ -15,7 +15,6 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 , MonadState(get, put)
                                                 , gets
                                                 )
-import           Data                           ( conns )
 import           Data.List                      ( find )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
@@ -38,24 +37,30 @@ walk input = runExceptT $ do
             let out = "I don't know how to do that..."
             hoistEither $ Left out
         Just dir -> hoistEither $ Right dir
-    loc' <- use loc
-    let nextLoc = resolveMove $ Movement loc' dir
-    loc .= nextLoc
-    locs' <- use locs
-    let loc'' = head $ filter (\l -> l ^. loc == nextLoc) locs'
-    let out   = loc'' ^. walkDesc
+    currentLoc <- use loc
+    locMap <- use locs
+    loc'' <- case M.lookup currentLoc locMap of
+      Nothing -> hoistEither $ Left "Error: Could not lookup location"
+      Just a -> hoistEither $ Right a
+    conns' <- use connections
+    let resolvedNext = resolveMove (Movement currentLoc dir) conns'
+    nextLoc <- case M.lookup resolvedNext locMap of
+      Nothing -> hoistEither $ Left "Error: Could not lookup resolved next location"
+      Just a -> hoistEither $ Right a
+    loc .= nextLoc ^. uid
+    let out   = nextLoc ^. walkDesc
     hoistEither $ Right out
 
-resolveMove :: Movement -> Loc
-resolveMove move = fromMaybe (move ^. start) $ maybeLocFromMove move
+resolveMove :: Movement -> [Connection] -> UID 
+resolveMove move = fromMaybe (move ^. start) . maybeLocFromMove move
 
-maybeLocFromMove :: Movement -> Maybe Loc
-maybeLocFromMove = fmap (^. dest) . maybeConnFromMove
+maybeLocFromMove :: Movement -> [Connection] -> Maybe UID 
+maybeLocFromMove move = fmap (^. dest) . maybeConnFromMove move
 
-maybeConnFromMove :: Movement -> Maybe Connection
-maybeConnFromMove (Movement s d) = find pred conns
+maybeConnFromMove :: Movement -> [Connection] -> Maybe Connection
+maybeConnFromMove (Movement s d) = find pred
   where
     pred = \c ->
-        let start' = c ^. start
+        let start' = c ^. start 
             dir'   = c ^. dir
         in  s == start' && d == dir'

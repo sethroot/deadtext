@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 605af8e06f15f7e41f4062df4f716bfd965b407000b54f189cc66e7d345a9f9e
+-- hash: 326c8c567735940b66db7420848c11da5ec8c032b8307145004d3b24c7c0ef4f
 
 name:           deadtext
 version:        0.1.0.0
@@ -43,8 +43,8 @@ library
       DeadText
       Msg
       Parsing
-      SH2
       Types
+      UID
       Util
   other-modules:
       Paths_deadtext

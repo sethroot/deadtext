@@ -19,12 +19,10 @@ import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
                                                 , get
                                                 , put
                                                 )
-import           Data                           ( initState
-                                                , initWorld
-                                                )
+import qualified Data
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
-import qualified Data.ByteString.Lazy          as BL
+import qualified Data.ByteString.Lazy           as BL
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
@@ -44,16 +42,16 @@ import           Types                          ( Ext
 import           Util                           ( )
 
 deadText :: IO ()
-deadText = void $ runStateT deadText' initState
+deadText = void $ runStateT deadText' Data.initState
 
 deadText' :: GameLoop
 deadText' = do
-    if True
+    if False
         then do
             game <- liftIO importGame
             maybe undefined put game
         else do
-            initWorld
+            Data.initWorld
             game <- get
             pure ()
             -- liftIO $ exportGame game
@@ -99,7 +97,7 @@ execGameLoop = do
         _           -> walkAction $ Just action
 
     liftIO $ putStrLn ""
-    -- dumpGameState
+    dumpGameState
 
 importGame :: IO (Maybe Game)
 importGame = do
@@ -114,3 +112,17 @@ importGame = do
 exportGame :: Game -> IO ()
 exportGame state = do
     BL.writeFile "json/dump.json" $ encodePretty state
+
+dumpGameState :: GameLoop
+dumpGameState = do
+    game <- get
+    liftIO $ printGame game
+
+printGame :: Game -> IO ()
+printGame g = do
+    putStrLn ""
+    print g
+    putStrLn ""
+
+dumpInputs :: [String] -> IO ()
+dumpInputs = print . zip [0 ..]
