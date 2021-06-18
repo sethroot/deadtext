@@ -1,0 +1,107 @@
+{
+    "_gameNpcs": [
+        {
+            "_npcQuest": [],
+            "_npcUid": 3,
+            "_npcAlive": true,
+            "_npcRole": "DialogRole",
+            "_npcLoc": 0,
+            "_npcDialog": [
+                "Greetings, adventurer!",
+                "It's dangerous to go alone! Take this.",
+                "What a gloomy day.."
+            ],
+            "_npcName": "Joe",
+            "_npcDialogCursor": 0,
+            "_npcDesc": "Joe is old and withered."
+        }
+    ],
+    "_gameInput": [],
+    "_gameItems": [
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": 1
+            },
+            "_itemName": "Trunk",
+            "_itemDesc": "A cardboard box with attractive logos decorating it."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": 2
+            },
+            "_itemName": "Macbook",
+            "_itemDesc": "A standard Apple Macbook Pro."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemLoc",
+                "contents": 0
+            },
+            "_itemName": "Snack",
+            "_itemDesc": "It looks delicious."
+        },
+        {
+            "_itemLoc": {
+                "tag": "ItemContainer",
+                "contents": 4
+            },
+            "_itemName": "Spoon",
+            "_itemDesc": "A normal spoon."
+        }
+    ],
+    "_gameLocs": {
+        "0": {
+            "_locUid": 0,
+            "_locWalkDesc": "Walk Start",
+            "_locLoc": "Start",
+            "_locLookDesc": "Look Start"
+        },
+        "1": {
+            "_locUid": 1,
+            "_locWalkDesc": "Walk Next",
+            "_locLoc": "Next",
+            "_locLookDesc": "Look Next"
+        },
+        "2": {
+            "_locUid": 2,
+            "_locWalkDesc": "Walk End",
+            "_locLoc": "End",
+            "_locLookDesc": "Look End"
+        }
+    },
+    "_gameLoc": 0,
+    "_gameConnections": [
+        {
+            "_connectionDir": "S",
+            "_connectionDest": 1,
+            "_connectionStart": 0
+        },
+        {
+            "_connectionDir": "N",
+            "_connectionDest": 0,
+            "_connectionStart": 1
+        },
+        {
+            "_connectionDir": "S",
+            "_connectionDest": 2,
+            "_connectionStart": 1
+        },
+        {
+            "_connectionDir": "N",
+            "_connectionDest": 1,
+            "_connectionStart": 2
+        }
+    ],
+    "_gameContainers": [
+        {
+            "_containerName": "Lunchbox",
+            "_containerLoc": 0,
+            "_containerDesc": "A vintage lunchbox.",
+            "_containerCState": "Closed",
+            "_containerUid": 4
+        }
+    ],
+    "_gameUidGen": 5
+}

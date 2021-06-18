@@ -5,6 +5,7 @@ module DeadText
     ) where
 
 import           Action
+import           Control.Error
 import           Control.Lens                   ( (.=)
                                                 , (^.)
                                                 )
@@ -15,6 +16,7 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
                                                 )
+import           Control.Monad.Trans.Maybe
 import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
                                                 , get
                                                 , put
@@ -23,6 +25,7 @@ import qualified Data
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
+import           Ext
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
@@ -38,6 +41,7 @@ import           Types                          ( Ext
                                                 , HasInput(input)
                                                 , HasNormal(normal)
                                                 , Input(Input)
+                                                , Loc
                                                 )
 import           Util                           ( )
 
@@ -53,8 +57,10 @@ deadText' = do
         else do
             Data.initWorld
             game <- get
-            pure ()
-                -- liftIO $ exportGame game
+            -- pure ()
+            liftIO $ exportGame game
+    loc <- importExt
+    liftIO $ print loc
     lookAction []
     forever execGameLoop
     pure ()
@@ -97,11 +103,11 @@ execGameLoop = do
         _           -> walkAction $ Just action
 
     liftIO $ putStrLn ""
-    dumpGameState
+    -- dumpGameState
 
 importGame :: IO (Maybe Game)
 importGame = do
-    handle   <- openFile "json/game.json" ReadMode
+    handle   <- openFile "json/in.json" ReadMode
     contents <- BL.hGetContents handle
     -- BL.putStr contents
     let game = decode contents :: Maybe Game
@@ -111,7 +117,7 @@ importGame = do
 
 exportGame :: Game -> IO ()
 exportGame state = do
-    BL.writeFile "json/dump.json" $ encodePretty state
+    BL.writeFile "json/out.json" $ encodePretty state
 
 dumpGameState :: GameLoop
 dumpGameState = do
@@ -126,3 +132,10 @@ printGame g = do
 
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
+
+importExt :: (MonadState Game m, MonadIO m) => m (Maybe Loc)
+importExt = runMaybeT $ do
+    let locExt = decode testLocExt :: Maybe LocExt
+    case locExt of
+        Nothing -> hoistMaybe Nothing
+        Just l  -> toLoc l
