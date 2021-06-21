@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d942ae25c19da42d9a6c0c6cbf83ec30c0ed96cc00ee575d8e599ab3658223af
+-- hash: 7d07ebe93788f705ee82b4fe4dadba3cc71c3d6d618a1ac33b0d7f97449c0dd5
 
 name:           deadtext
 version:        0.1.0.0
@@ -61,6 +61,7 @@ library
     , lens
     , mmorph
     , mtl
+    , pretty-simple
     , safe
     , split
     , transformers
@@ -84,6 +85,7 @@ executable deadtext-exe
     , lens
     , mmorph
     , mtl
+    , pretty-simple
     , safe
     , split
     , transformers
@@ -108,6 +110,7 @@ test-suite deadtext-test
     , lens
     , mmorph
     , mtl
+    , pretty-simple
     , safe
     , split
     , transformers

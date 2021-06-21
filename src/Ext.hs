@@ -1,8 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 
 module Ext where
 
+import           Control.Lens
 import           Control.Monad.State.Lazy
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as LB
@@ -10,37 +15,61 @@ import           Types
 import           UID
 
 data LocExt = LocExt
-    { name     :: String
-    , walkDesc :: String
-    , lookDesc :: String
+    { _locExtId       :: String
+    , _locExtName     :: String
+    , _locExtWalkDesc :: String
+    , _locExtLookDesc :: String
     }
     deriving Show
 
-newtype LocsExt
-  = LocsExt {locations :: [LocExt]}
-  deriving Show
+makeFields ''LocExt
 
 instance FromJSON LocExt where
     parseJSON = withObject "LocExt" $ \obj -> do
+        id       <- obj .: "id"
         name     <- obj .: "name"
         walkDesc <- obj .: "walkDesc"
         lookDesc <- obj .: "lookDesc"
-        return LocExt { Ext.name     = name
-                      , Ext.walkDesc = walkDesc
-                      , Ext.lookDesc = lookDesc
-                      }
+        return $ LocExt id name walkDesc lookDesc
 
-instance FromJSON LocsExt where
-    parseJSON = withObject "LocsExt" $ \obj -> do
+data ItemExt = ItemExt
+    { _itemExtId   :: String
+    , _itemExtName :: String
+    , _itemExtDesc :: String
+    , _itemExtLoc  :: String
+    } deriving Show
+
+makeFields ''ItemExt
+
+instance FromJSON ItemExt where
+  parseJSON = withObject "ItemExt" $ \obj -> do
+      id <- obj .: "id"
+      name <- obj .: "name"
+      desc <- obj .: "desc"
+      loc <- obj .: "loc"
+      return $ ItemExt id name desc loc
+
+data GameExt = GameExt
+    { _gameExtLocations :: [LocExt]
+    , _gameExtItems     :: [ItemExt]
+    }
+    deriving Show
+
+makeFields ''GameExt
+
+instance FromJSON GameExt where
+    parseJSON = withObject "GameExt" $ \obj -> do
         locations <- obj .: "locations"
-        return LocsExt { Ext.locations = locations }
+        items     <- obj .: "items"
+        return $ GameExt locations items 
+
 
 toLoc :: (MonadState Game m) => [LocExt] -> m [Loc]
 toLoc ls = do
     traverse
         (\l -> do
             uid <- genUid
-            pure $ Loc uid (Ext.name l) (Ext.walkDesc l) (Ext.lookDesc l)
+            pure $ Loc uid (l ^. name) (l ^. walkDesc) (l ^. lookDesc)
         )
         ls
 

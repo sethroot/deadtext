@@ -32,6 +32,7 @@ dependencies:
 - lens
 - safe
 - errors
+- pretty-simple
 
 library:
   source-dirs: src

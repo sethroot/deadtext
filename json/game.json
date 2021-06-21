@@ -1,14 +1,24 @@
 {
   "locations": [
     {
+      "id": "overlook_bath",
       "name": "Bathroom",
       "walkDesc": "You have entered a dingy bathroom.",
       "lookDesc": "This bathroom is filthy."
     },
     {
+      "id": "overlook_lot",
       "name": "Overlook Parking Lot",
       "walkDesc": "You enter a parking lot overlooking a lake.",
       "lookDesc": "This is a parking lot overlooking a lake."
+    }
+  ],
+  "items": [
+    {
+      "id": "car",
+      "name": "Car",
+      "desc": "Your car.",
+      "loc": "overlook_lot"
     }
   ]
 }

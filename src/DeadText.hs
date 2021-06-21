@@ -35,6 +35,7 @@ import           System.IO                      ( IOMode(ReadMode)
                                                 , openFile
                                                 , stdout
                                                 )
+import           Text.Pretty.Simple
 import           Types                          ( Ext
                                                 , Game
                                                 , GameLoop
@@ -60,7 +61,7 @@ deadText' = do
             -- pure ()
             liftIO $ exportGame game
     loc <- importExt
-    liftIO $ print loc
+    liftIO $ pPrint loc
     lookAction []
     forever execGameLoop
     pure ()
@@ -133,13 +134,13 @@ printGame g = do
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
 
-importExt :: (MonadState Game m, MonadIO m) => m (Maybe [Loc])
+importExt :: (MonadState Game m, MonadIO m) => m (Maybe GameExt)
 importExt = runMaybeT $ do
     handle   <- liftIO $ openFile "json/game.json" ReadMode
     contents <- liftIO $ BL.hGetContents handle
-    let locsExt = decode contents :: Maybe LocsExt
-    case locsExt of
-        Nothing -> hoistMaybe Nothing
-        Just exts  -> do
-            locs <- toLoc (Ext.locations exts)
-            hoistMaybe $ Just locs 
+    let gameExt = decode contents :: Maybe GameExt
+    case gameExt of
+        Nothing   -> hoistMaybe Nothing
+        Just game -> do
+            -- locs <- toLoc (Ext.locations exts)
+            hoistMaybe $ Just game
