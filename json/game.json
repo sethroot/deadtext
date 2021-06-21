@@ -1,4 +1,5 @@
 {
+  "location": "overlook_bath",
   "locations": [
     {
       "id": "overlook_bath",
@@ -10,7 +11,7 @@
       "id": "overlook_lot",
       "name": "Overlook Parking Lot",
       "walkDesc": "You enter a parking lot overlooking a lake.",
-      "lookDesc": "This is a parking lot overlooking a lake."
+      "lookDesc": "You are standing in a parking lot overlooking a lake."
     }
   ],
   "items": [
@@ -18,7 +19,10 @@
       "id": "car",
       "name": "Car",
       "desc": "Your car.",
-      "loc": "overlook_lot"
+      "loc": {
+        "type": "location",
+        "data": "overlook_lot"
+      }
     }
   ]
 }
