@@ -71,6 +71,9 @@
             "_locLookDesc": "Look End"
         }
     },
+    "_gameIngest": {
+        "_ingestLocs": {}
+    },
     "_gameLoc": 0,
     "_gameConnections": [
         {

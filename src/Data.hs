@@ -10,7 +10,7 @@ import           Types
 import           UID                            ( genUid )
 
 initState :: Game
-initState = Game 0 M.empty [] [] [] [] [] 0
+initState = Game 0 M.empty [] [] [] [] [] 0 (Ingest M.empty)
 
 initWorld :: MonadState Game m => m ()
 initWorld = do

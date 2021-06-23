@@ -7,11 +7,13 @@
 
 module Ext where
 
-import           Control.Lens
+import qualified Control.Lens                  as L
+import           Control.Monad
 import           Control.Monad.State.Lazy
 import           Data.Aeson
 import           Data.Aeson.Types               ( Parser )
 import qualified Data.ByteString.Lazy          as LB
+import           Data.Map.Strict               as M
 import           Data.Maybe
 import           Types
 import           UID
@@ -24,7 +26,7 @@ data LocExt = LocExt
     }
     deriving Show
 
-makeFields ''LocExt
+L.makeFields ''LocExt
 
 instance FromJSON LocExt where
     parseJSON = withObject "LocExt" $ \obj -> do
@@ -47,17 +49,17 @@ instance FromJSON ItemLocExt where
         locData <- obj .:? "data" :: Parser (Maybe String)
         case locType of
             "location" -> pure $ ItemLocExt $ fromJust locData
-            _          -> pure $ ItemInvExt
+            _          -> pure ItemInvExt
 
 data ItemExt = ItemExt
     { _itemExtId   :: String
     , _itemExtName :: String
     , _itemExtDesc :: String
-    , _itemExtLoc  :: ItemLocExt 
+    , _itemExtLoc  :: ItemLocExt
     }
     deriving Show
 
-makeFields ''ItemExt
+L.makeFields ''ItemExt
 
 instance FromJSON ItemExt where
     parseJSON = withObject "ItemExt" $ \obj -> do
@@ -74,7 +76,7 @@ data GameExt = GameExt
     }
     deriving Show
 
-makeFields ''GameExt
+L.makeFields ''GameExt
 
 instance FromJSON GameExt where
     parseJSON = withObject "GameExt" $ \obj -> do
@@ -83,13 +85,39 @@ instance FromJSON GameExt where
         items     <- obj .: "items"
         pure $ GameExt location locations items
 
+foldLocId :: (MonadState Game m)
+          => Map String Int
+          -> LocExt
+          -> m (Map String Int)
+foldLocId m l = do
+    let nameId = l L.^. Ext.id
+    if M.member nameId m
+        then pure m
+        else do
+            uid <- genUid
+            pure $ M.insert nameId uid m
+
+toGame :: (MonadState Game m) => GameExt -> m Game
+toGame g = do
+    locUid <- genUid
+    let locsMap = M.insert (g L.^. location) locUid M.empty
+    locsMap' <- foldM foldLocId locsMap $ g L.^. locations
+    let loc    = 0
+    let locs   = M.empty
+    let conns  = []
+    let npcs   = []
+    let items  = []
+    let conts  = []
+    let input  = []
+    let gen    = 0
+    let ingest = Ingest locsMap' 
+    pure $ Game loc locs conns npcs items conts input gen ingest
 
 toLoc :: (MonadState Game m) => [LocExt] -> m [Loc]
 toLoc ls = do
     traverse
         (\l -> do
             uid <- genUid
-            pure $ Loc uid (l ^. name) (l ^. walkDesc) (l ^. lookDesc)
+            pure $ Loc uid (l L.^. name) (l L.^. walkDesc) (l L.^. lookDesc)
         )
         ls
-

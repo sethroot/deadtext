@@ -134,13 +134,14 @@ printGame g = do
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
 
-importExt :: (MonadState Game m, MonadIO m) => m (Maybe GameExt)
+importExt :: (MonadState Game m, MonadIO m) => m (Maybe Game)
 importExt = runMaybeT $ do
     handle   <- liftIO $ openFile "json/game.json" ReadMode
     contents <- liftIO $ BL.hGetContents handle
     let gameExt = decode contents :: Maybe GameExt
     case gameExt of
         Nothing   -> hoistMaybe Nothing
-        Just game -> do
+        Just gameExt -> do
             -- locs <- toLoc (Ext.locations exts)
+            game <- toGame gameExt
             hoistMaybe $ Just game

@@ -127,6 +127,11 @@ data Input = Input
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
+data Ingest = Ingest
+    { _ingestLocs :: M.Map String UID
+    }
+    deriving (Show, Generic, FromJSON, ToJSON)
+
 data Game = Game
     { _gameLoc         :: UID
     , _gameLocs        :: M.Map UID Loc
@@ -136,6 +141,7 @@ data Game = Game
     , _gameContainers  :: [Container]
     , _gameInput       :: [Input]
     , _gameUidGen      :: Int
+    , _gameIngest      :: Ingest
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
@@ -153,6 +159,7 @@ makeFields ''Role
 makeFields ''Quest
 makeFields ''Movement
 makeFields ''Input
+makeFields ''Ingest
 makeFields ''Game
 makeFields ''Location
 makeFields ''Connection
