@@ -15,11 +15,11 @@ initState = Game 0 M.empty [] [] [] [] [] 0 (Ingest M.empty)
 initWorld :: MonadState Game m => m ()
 initWorld = do
     startUid <- genUid
-    let start = Loc startUid "Start" "Walk Start" "Look Start"
+    let start = Loc "Start" "Walk Start" "Look Start"
     nextUid <- genUid
-    let next = Loc nextUid "Next" "Walk Next" "Look Next"
+    let next = Loc "Next" "Walk Next" "Look Next"
     endUid <- genUid
-    let end = Loc endUid "End" "Walk End" "Look End"
+    let end = Loc "End" "Walk End" "Look End"
     locs .= M.fromList [(startUid, start), (nextUid, next), (endUid, end)]
     connections
         .= [ Connection startUid S nextUid

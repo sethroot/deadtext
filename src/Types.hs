@@ -32,8 +32,7 @@ instance Show Direction where
     show D = "down"
 
 data Loc = Loc
-    { _locUid      :: UID
-    , _locLoc      :: String
+    { _locLoc      :: String
     , _locWalkDesc :: String
     , _locLookDesc :: String
     }

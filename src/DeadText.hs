@@ -25,6 +25,7 @@ import qualified Data
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
+import           Data.Maybe
 import           Ext
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
@@ -60,8 +61,9 @@ deadText' = do
             game <- get
             -- pure ()
             liftIO $ exportGame game
-    loc <- importExt
-    liftIO $ pPrint loc
+    game <- importExt
+    liftIO $ pPrint game
+    put $ fromJust game
     lookAction []
     forever execGameLoop
     pure ()
@@ -140,7 +142,7 @@ importExt = runMaybeT $ do
     contents <- liftIO $ BL.hGetContents handle
     let gameExt = decode contents :: Maybe GameExt
     case gameExt of
-        Nothing   -> hoistMaybe Nothing
+        Nothing      -> hoistMaybe Nothing
         Just gameExt -> do
             -- locs <- toLoc (Ext.locations exts)
             game <- toGame gameExt

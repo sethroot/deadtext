@@ -44,11 +44,11 @@ walk input = runExceptT $ do
         Just a  -> hoistEither $ Right a
     conns' <- use connections
     let resolvedNext = resolveMove (Movement currentLoc dir) conns'
+    loc .= resolvedNext 
     nextLoc <- case M.lookup resolvedNext locMap of
         Nothing ->
             hoistEither $ Left "Error: Could not lookup resolved next location"
         Just a -> hoistEither $ Right a
-    loc .= nextLoc ^. uid
     let out = nextLoc ^. walkDesc
     hoistEither $ Right out
 

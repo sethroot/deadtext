@@ -53,19 +53,16 @@
     ],
     "_gameLocs": {
         "0": {
-            "_locUid": 0,
             "_locWalkDesc": "Walk Start",
             "_locLoc": "Start",
             "_locLookDesc": "Look Start"
         },
         "1": {
-            "_locUid": 1,
             "_locWalkDesc": "Walk Next",
             "_locLoc": "Next",
             "_locLookDesc": "Look Next"
         },
         "2": {
-            "_locUid": 2,
             "_locWalkDesc": "Walk End",
             "_locLoc": "End",
             "_locLookDesc": "Look End"

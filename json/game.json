@@ -24,5 +24,17 @@
         "data": "overlook_lot"
       }
     }
+  ],
+  "connections": [
+    {
+      "start": "overlook_bath",
+      "end": "overlook_lot",
+      "dir": "S"
+    },
+    {
+      "start": "overlook_lot",
+      "end": "overlook_bath",
+      "dir": "N"
+    }
   ]
 }
