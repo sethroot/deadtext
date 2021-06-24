@@ -158,18 +158,24 @@ toGame g = do
     locUid <- genUid
     let locations' = g L.^. locations
 
-    -- ["overlook_bath" : 0]
+    -- Construct a map of the external string IDs to generated UIDs
+    -- First insert the starting location
+    -- Then, fold the remaining locations into the map, inserting new entries
+    -- with associated UIDs
+    -- [("overlook_bath": 0]
     let locsMap    = M.insert (g L.^. location) locUid M.empty
     locsMap' <- foldM foldLocId locsMap locations'
 
+    -- Invert the map from [String: UID] to [UID: String]
     -- [0: "overlook_bath"]
     let invLocsMap = invertMap locsMap'
 
-    -- [Loc]
+    -- Create Locs from LocExts
+    -- [LocExt] -> [Loc]
     let locs       = fmap toLocation locations'
 
+    -- Construct map of [UID: Loc] for use in engine
     -- [0: "overlook_bath"] -> [0: Loc loc walk look]
-    -- find overlook_bath in g.locations and use value to find by name
     let locs'      = M.map (nameToLoc locations' locs) invLocsMap
 
     let conns      = g L.^. connections

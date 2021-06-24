@@ -4,8 +4,8 @@
     {
       "id": "overlook_bath",
       "name": "Bathroom",
-      "walkDesc": "You have entered a dingy bathroom.",
-      "lookDesc": "This bathroom is filthy."
+      "walkDesc": "You walk into a small, dimly lit bathroom attached to the overlook's parking lot. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia.",
+      "lookDesc": "You are standing in a small, dimly lit bathroom attached to the overlook's parking lot. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
     },
     {
       "id": "overlook_lot",
