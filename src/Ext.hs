@@ -189,12 +189,3 @@ toGame g = do
     let gen        = 0
     let ingest     = Ingest locsMap'
     pure $ Game locUid locs' conns' npcs items conts input gen ingest
-
--- toLoc :: (MonadState Game m) => [LocExt] -> m [Loc]
--- toLoc ls = do
---     traverse
---         (\l -> do
---             uid <- genUid
---             pure $ Loc uid (l L.^. name) (l L.^. walkDesc) (l L.^. lookDesc)
---         )
---         ls
