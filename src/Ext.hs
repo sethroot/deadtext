@@ -147,9 +147,9 @@ nameToLoc les ls extId =
     let
         locExtIdx =
             fromJust $ DL.findIndex (\le -> (le L.^. Ext.id) == extId) les
-        locExt = les !! locExtIdx
-        locIndex =
-            fromJust $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
+        locExt   = les !! locExtIdx
+        locIndex = fromJust
+            $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
     in
         ls !! locIndex
 
