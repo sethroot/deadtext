@@ -50,7 +50,7 @@ instance FromJSON ItemLocExt where
         locType <- (obj .: "type") :: Parser String
         locData <- obj .:? "data" :: Parser (Maybe String)
         case locType of
-            "location" -> pure $ ItemLocExt $ fromJust locData
+            "location" -> pure . ItemLocExt . fromJust $ locData
             _          -> pure ItemInvExt
 
 data ItemExt = ItemExt
@@ -153,6 +153,18 @@ nameToLoc les ls extId =
     in
         ls !! locIndex
 
+toItemLoc :: Map String Int -> ItemLocExt -> ItemLocation
+toItemLoc locMap ile = case ile of
+    ItemInvExt         -> ItemInv
+    ItemLocExt       s -> ItemLoc . fromJust $ M.lookup s locMap
+    ItemNpcExt       s -> ItemNpc . fromJust $ M.lookup s locMap
+    ItemContainerExt s -> undefined
+
+toItem :: Map String Int -> ItemExt -> Item
+toItem locsMap ie =
+    let loc' = toItemLoc locsMap $ ie L.^. loc
+    in  Item (ie L.^. name) (ie L.^. desc) loc'
+
 toGame :: MonadState Game m => GameExt -> m Game
 toGame g = do
     locUid <- genUid
@@ -180,12 +192,13 @@ toGame g = do
 
     let conns      = g L.^. connections
     let conns'     = fmap (toConnection locsMap') conns
-    let loc        = 0
-    let locs       = M.empty
+
+    let items'     = g L.^. items
+    let items''    = fmap (toItem locsMap') items'
+
     let npcs       = []
-    let items      = []
     let conts      = []
     let input      = []
     let gen        = 0
     let ingest     = Ingest locsMap'
-    pure $ Game locUid locs' conns' npcs items conts input gen ingest
+    pure $ Game locUid locs' conns' npcs items'' conts input gen ingest
