@@ -107,7 +107,6 @@ execGameLoop = do
         _           -> walkAction $ Just action
 
     liftIO $ putStrLn ""
-    -- dumpGameState
 
 importGame :: IO (Maybe Game)
 importGame = do
