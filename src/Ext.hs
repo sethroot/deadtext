@@ -33,6 +33,9 @@ import           Data.Types.Injective           ( Injective(..) )
 import           Types
 import           UID                            ( genUid )
 
+type LocsMap = M.Map String UID
+type ContsMap = M.Map String UID
+
 -- Location
 
 data LocExt = LocExt
@@ -73,9 +76,9 @@ instance FromJSON ItemLocExt where
         locType <- (obj .: "type") :: Parser String
         locData <- obj .:? "data" :: Parser (Maybe String)
         case locType of
-            "location" -> pure . ItemLocExt . fromJust $ locData
+            "location"  -> pure . ItemLocExt . fromJust $ locData
             "container" -> pure . ItemContainerExt . fromJust $ locData
-            _          -> pure ItemInvExt
+            _           -> pure ItemInvExt
 
 data ItemExt = ItemExt
     { _itemExtId   :: String
@@ -117,7 +120,7 @@ instance FromJSON ContainerExt where
         cState <- obj .: "state"
         pure $ ContainerExt id name desc loc cState
 
-toContainer :: M.Map String Int -> M.Map String Int -> ContainerExt -> Container
+toContainer :: ContsMap -> LocsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
     let id'     = fromJust $ M.lookup (container L.^. Ext.id) contsMap
         name'   = container L.^. name
@@ -129,7 +132,7 @@ toContainer contsMap locsMap container =
             _        -> Closed
     in  Container id' name' desc' loc' cState'
 
-newtype ContainerInj = ContainerInj (M.Map String Int, M.Map String Int, ContainerExt)
+newtype ContainerInj = ContainerInj (ContsMap, LocsMap, ContainerExt)
 
 instance Injective ContainerInj Container where
     to (ContainerInj (conts, locs, c)) = toContainer conts locs c
@@ -167,7 +170,7 @@ toDir d = case d of
 instance Injective String Direction where
     to = toDir
 
-toConnection :: M.Map String Int -> ConnectionExt -> Connection
+toConnection :: LocsMap -> ConnectionExt -> Connection
 toConnection m c =
     let lookup getter = fromJust $ M.lookup (c L.^. getter) m
         start' = lookup start
@@ -175,7 +178,7 @@ toConnection m c =
         dir'   = to $ c L.^. dir
     in  Connection start' dir' end'
 
-newtype ConnectionInj = ConnectionInj (M.Map String Int, ConnectionExt)
+newtype ConnectionInj = ConnectionInj (LocsMap, ConnectionExt)
 
 instance Injective ConnectionInj Connection where
     to (ConnectionInj (m, c)) = toConnection m c
@@ -240,8 +243,6 @@ toItem locsMap contsMap ie =
     let loc' = toItemLoc locsMap contsMap $ ie L.^. loc
     in  Item (ie L.^. name) (ie L.^. desc) loc'
 
-
-
 toGame :: MonadState Game m => GameExt -> m Game
 toGame g = do
     -- Starting location
@@ -258,15 +259,15 @@ toGame g = do
         foldM foldIdGen justStartLoc locExts
     -- Invert the map from [String: UID] to [UID: String]
     -- [0: "overlook_bath"]
-    let invLocsMap  = invertMap locsMap
+    let invLocsMap = invertMap locsMap
     -- Create Locs from LocExts
     -- [LocExt] -> [Loc]
-    let locs        = fmap to locExts
+    let locs       = fmap to locExts
     -- Construct map of [UID: Loc] for use in engine
     -- [0: "overlook_bath"] -> [0: Loc loc walk look]
-    let locs'       = M.map (nameToLoc locExts locs) invLocsMap
+    let locs'      = M.map (nameToLoc locExts locs) invLocsMap
 
-    let contExts = g L.^. containers
+    let contExts   = g L.^. containers
     -- ["car": 0]
     contsMap <- foldM foldIdGen M.empty contExts
     let invContsMap = invertMap contsMap
