@@ -33,6 +33,7 @@ dependencies:
 - safe
 - errors
 - pretty-simple
+- type-iso
 
 library:
   source-dirs: src

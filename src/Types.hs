@@ -82,7 +82,7 @@ data ContainerState = Open | Closed
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Container = Container
-    { _containerUid    :: Int
+    { _containerUid    :: UID
     , _containerName   :: String
     , _containerDesc   :: String
     , _containerLoc    :: UID

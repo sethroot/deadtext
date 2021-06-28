@@ -103,6 +103,7 @@ execGameLoop = do
         "take"      -> pickupAction arg
         "talk"      -> talkAction arg
         "walk"      -> walkAction arg
+        "debug"     -> debugGameState
         _           -> walkAction $ Just action
 
     liftIO $ putStrLn ""
@@ -122,15 +123,15 @@ exportGame :: Game -> IO ()
 exportGame state = do
     BL.writeFile "json/out.json" $ encodePretty state
 
-dumpGameState :: GameLoop
-dumpGameState = do
+debugGameState :: GameLoop
+debugGameState = do
     game <- get
     liftIO $ printGame game
 
 printGame :: Game -> IO ()
 printGame g = do
     putStrLn ""
-    print g
+    pPrint g
     putStrLn ""
 
 dumpInputs :: [String] -> IO ()

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7d07ebe93788f705ee82b4fe4dadba3cc71c3d6d618a1ac33b0d7f97449c0dd5
+-- hash: 7043ed1ba139a89cd7bf5c7835e4f6af65f3409ccf34d878c2bbcd294bd5099f
 
 name:           deadtext
 version:        0.1.0.0
@@ -65,6 +65,7 @@ library
     , safe
     , split
     , transformers
+    , type-iso
   default-language: Haskell2010
 
 executable deadtext-exe
@@ -89,6 +90,7 @@ executable deadtext-exe
     , safe
     , split
     , transformers
+    , type-iso
   default-language: Haskell2010
 
 test-suite deadtext-test
@@ -114,4 +116,5 @@ test-suite deadtext-test
     , safe
     , split
     , transformers
+    , type-iso
   default-language: Haskell2010

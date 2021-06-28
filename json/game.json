@@ -16,13 +16,22 @@
   ],
   "items": [
     {
+      "id": "map",
+      "name": "Map",
+      "desc": "A map of Silent Hill.",
+      "loc": {
+        "type": "container",
+        "data": "car"
+      }
+    }
+  ],
+  "containers": [
+    {
       "id": "car",
       "name": "Car",
-      "desc": "Your car.",
-      "loc": {
-        "type": "location",
-        "data": "overlook_lot"
-      }
+      "desc": "Your car",
+      "loc": "overlook_lot",
+      "state": "closed"
     }
   ],
   "connections": [
