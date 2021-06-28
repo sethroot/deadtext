@@ -202,18 +202,6 @@ instance FromJSON GameExt where
         connections <- obj .: "connections"
         pure $ GameExt location locations items containers connections
 
--- foldLocId :: (MonadState Game m)
---           => Map String Int
---           -> LocExt
---           -> m (Map String Int)
--- foldLocId m l = do
---     let nameId = l L.^. Ext.id
---     if M.member nameId m
---         then pure m
---         else do
---             uid <- genUid
---             pure $ M.insert nameId uid m
-
 foldIdGen :: (MonadState Game m, HasId s String)
           => Map String Int
           -> s
