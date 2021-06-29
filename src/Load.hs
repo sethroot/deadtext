@@ -365,7 +365,7 @@ toGame g = do
 
     -- Items
     let itemExts    = g L.^. items
-    let items'      = fmap (toItem locExtsMap contsExtMap) itemExts
+    let items      = fmap (toItem locExtsMap contsExtMap) itemExts
 
     -- Npcs
     let npcExts     = g L.^. npcs
@@ -378,4 +378,4 @@ toGame g = do
     let gen        = 0
 
     -- Complete, loaded Game
-    pure $ Game locUid locsMap conns npcs items' conts input gen
+    pure $ Game locUid locsMap conns npcs items conts input gen
