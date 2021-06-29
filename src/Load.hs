@@ -334,7 +334,7 @@ toGame g = do
     let locs       = fmap to locExts
 
     -- create engine Loc map
-    -- [0: Loc loc walk look]
+    -- [0: Loc]
     let transform = nameToLoc locExts locs
     let locsMap = M.map transform inverted
 
