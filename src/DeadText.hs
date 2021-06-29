@@ -32,7 +32,7 @@ import           Load                           ( GameExt
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
-import System.Environment                                              
+import           System.Environment
 import           System.IO                      ( IOMode(ReadMode)
                                                 , hClose
                                                 , hFlush
@@ -57,7 +57,7 @@ deadText' :: GameLoop
 deadText' = do
     args <- liftIO getArgs
     liftIO $ print args
-    if  "debug" `elem` args
+    if "debug" `elem` args
         then do
             Data.initWorld
             game <- get
