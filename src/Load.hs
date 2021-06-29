@@ -319,21 +319,21 @@ toGame g = do
 
     let locExts = g L.^. locations
 
-    -- map external ID to internal UID
-    -- will be used provide UIDs to other types
+    -- Map external ID to internal UID
+    -- Will be used provide UIDs to other types
     -- ["overlook_bath": 0]
     locExtsMap <- do
         let justStartLoc = M.insert (g L.^. location) locUid M.empty
         foldM foldIdGen justStartLoc locExts
 
-    -- invert map
+    -- Invert the ID map
     -- [0: "overlook_bath"]
     let inverted = invertMap locExtsMap
 
-    -- map LocExt to Loc
+    -- Inject LocExt to Loc
     let locs       = fmap to locExts
 
-    -- create engine Loc map
+    -- Transform external ID to Loc to complete engine map
     -- [0: Loc]
     let transform = nameToLoc locExts locs
     let locsMap = M.map transform inverted
