@@ -12,6 +12,12 @@
       "name": "Overlook Parking Lot",
       "walkDesc": "You enter a parking lot overlooking a lake.",
       "lookDesc": "You are standing in a parking lot overlooking a lake."
+    },
+    {
+      "id": "cemetary",
+      "name": "A cemetary",
+      "walkDesc": "You have entered a cemetary surrounded by tall fencing.",
+      "lookDesc": "You are standing in a cemetary surrounded by tall fencing. There are many graves here."
     }
   ],
   "items": [
@@ -44,6 +50,29 @@
       "start": "overlook_lot",
       "end": "overlook_bath",
       "dir": "N"
+    },
+    {
+      "start": "overlook_lot",
+      "end": "cemetary",
+      "dir": "W"
+    },
+    {
+      "start": "cemetary",
+      "end": "overlook_lot",
+      "dir": "E"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "angela",
+      "name": "Angela",
+      "desc": "Angela seems distraught.",
+      "role": "dialog",
+      "loc": "cemetary",
+      "alive": true,
+      "dialog": ["I'm looking for my Mama... I-I mean my mother. It's been so long since I've seen her. I thought my father and brother were here, but...I can't find them either. ...I'm sorry...it's not your problem."],
+      "dialogCursor": 0,
+      "quest": []
     }
   ]
 }

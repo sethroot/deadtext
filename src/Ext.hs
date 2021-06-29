@@ -4,6 +4,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Ext where
 
@@ -30,10 +32,12 @@ import           Data.Map.Strict               as M
                                                 )
 import           Data.Maybe
 import           Data.Types.Injective           ( Injective(..) )
+import           GHC.Generics            hiding ( to )
 import           Types
 import           UID                            ( genUid )
 
 type LocsMap = M.Map String UID
+type NpcMap = M.Map String UID
 type ContsMap = M.Map String UID
 
 -- Location
@@ -183,6 +187,69 @@ newtype ConnectionInj = ConnectionInj (LocsMap, ConnectionExt)
 instance Injective ConnectionInj Connection where
     to (ConnectionInj (m, c)) = toConnection m c
 
+-- NPC
+
+data NpcRoleExt =
+  DialogRole
+  | QuestRole
+  deriving (Show, Generic, FromJSON)
+
+L.makeFields  ''NpcRoleExt
+
+instance Injective NpcRoleExt Role where
+    to r = case r of
+        Ext.DialogRole -> Types.DialogRole
+        Ext.QuestRole  -> Types.QuestRole
+
+data NpcExt = NpcExt
+    { _npcExtId           :: String
+    , _npcExtName         :: String
+    , _npcExtDesc         :: String
+    , _npcExtRole         :: String
+    , _npcExtLoc          :: String
+    , _npcExtAlive        :: Bool
+    , _npcExtDialog       :: [String]
+    , _npcExtDialogCursor :: Int
+    , _npcExtQuest        :: [String]
+    }
+    deriving Show
+
+L.makeFields ''NpcExt
+
+instance FromJSON NpcExt where
+    parseJSON = withObject "NpcExt" $ \obj -> do
+        id           <- obj .: "id"
+        name         <- obj .: "name"
+        desc         <- obj .: "desc"
+        role         <- obj .: "role"
+        loc          <- obj .: "loc"
+        alive        <- obj .: "alive"
+        dialog       <- obj .: "dialog"
+        dialogCursor <- obj .: "dialogCursor"
+        quest        <- obj .: "quest"
+        pure $ NpcExt id name desc role loc alive dialog dialogCursor quest
+
+toNpc :: NpcMap -> LocsMap -> NpcExt -> Npc
+toNpc npcMap locsMap n =
+    let id'   = fromJust $ M.lookup (n L.^. Ext.id) npcMap
+        name' = n L.^. name
+        desc' = n L.^. desc
+        role' = case n L.^. role of
+            "dialog" -> Types.DialogRole
+            "quest"  -> Types.QuestRole
+            _        -> Types.DialogRole
+        loc'          = fromJust $ M.lookup (n L.^. loc) locsMap
+        alive'        = n L.^. alive
+        dialog'       = n L.^. dialog
+        dialogCursor' = n L.^. dialogCursor
+        quest'        = []
+    in  Npc id' name' desc' role' loc' alive' dialog' dialogCursor' quest'
+
+newtype NpcInj = NpcInj (NpcMap, LocsMap, NpcExt)
+
+instance Injective NpcInj Npc where
+    to (NpcInj (npcMap, locsMap, n)) = toNpc npcMap locsMap n
+
 -- Game
 
 data GameExt = GameExt
@@ -191,6 +258,7 @@ data GameExt = GameExt
     , _gameExtItems       :: [ItemExt]
     , _gameExtContainers  :: [ContainerExt]
     , _gameExtConnections :: [ConnectionExt]
+    , _gameExtNpcs        :: [NpcExt]
     }
     deriving Show
 
@@ -203,7 +271,8 @@ instance FromJSON GameExt where
         items       <- obj .: "items"
         containers  <- obj .: "containers"
         connections <- obj .: "connections"
-        pure $ GameExt location locations items containers connections
+        npcs        <- obj .: "npcs"
+        pure $ GameExt location locations items containers connections npcs
 
 foldIdGen :: (MonadState Game m, HasId s String)
           => Map String Int
@@ -270,7 +339,6 @@ toGame g = do
     let contExts   = g L.^. containers
     -- ["car": 0]
     contsMap <- foldM foldIdGen M.empty contExts
-    let invContsMap = invertMap contsMap
     let contExtInjs = fmap (\c -> ContainerInj (contsMap, locsMap, c)) contExts
     let conts       = fmap to contExtInjs
 
@@ -281,8 +349,13 @@ toGame g = do
     let itemExts    = g L.^. items
     let items'      = fmap (toItem locsMap contsMap) itemExts
 
-    let npcs        = []
-    let input       = []
-    let gen         = 0
-    let ingest      = Ingest locsMap
+    let npcExts     = g L.^. npcs
+    npcMap <- foldM foldIdGen M.empty npcExts
+    let npcExtInjs = fmap (\n -> NpcInj (npcMap, locsMap, n)) npcExts
+    let npcs       = fmap to npcExtInjs
+
+    let input      = []
+    let gen        = 0
+    let ingest     = Ingest locsMap
     pure $ Game locUid locs' conns npcs items' conts input gen ingest
+
