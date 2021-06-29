@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7043ed1ba139a89cd7bf5c7835e4f6af65f3409ccf34d878c2bbcd294bd5099f
+-- hash: 6367605f93ca5c848c2eee8ad165f21726ed735b423f70b5d669a7f21ce31709
 
 name:           deadtext
 version:        0.1.0.0
@@ -41,7 +41,7 @@ library
       Common
       Data
       DeadText
-      Ext
+      Load
       Msg
       Parsing
       Types

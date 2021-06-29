@@ -26,7 +26,9 @@ import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
 import           Data.Maybe
-import           Ext
+import           Load                           ( GameExt
+                                                , toGame
+                                                )
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
@@ -144,6 +146,5 @@ importExt = runMaybeT $ do
     case gameExt of
         Nothing      -> hoistMaybe Nothing
         Just gameExt -> do
-            -- locs <- toLoc (Ext.locations exts)
             game <- toGame gameExt
             hoistMaybe $ Just game

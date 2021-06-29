@@ -7,7 +7,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Ext where
+module Load where
 
 import qualified Control.Lens                  as L
 import           Control.Monad                  ( foldM )
@@ -126,7 +126,7 @@ instance FromJSON ContainerExt where
 
 toContainer :: ContsMap -> LocsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
-    let id'     = fromJust $ M.lookup (container L.^. Ext.id) contsMap
+    let id'     = fromJust $ M.lookup (container L.^. Load.id) contsMap
         name'   = container L.^. name
         desc'   = container L.^. desc
         loc'    = fromJust $ M.lookup (container L.^. loc) locsMap
@@ -198,8 +198,8 @@ L.makeFields  ''NpcRoleExt
 
 instance Injective NpcRoleExt Role where
     to r = case r of
-        Ext.DialogRole -> Types.DialogRole
-        Ext.QuestRole  -> Types.QuestRole
+        Load.DialogRole -> Types.DialogRole
+        Load.QuestRole  -> Types.QuestRole
 
 data NpcExt = NpcExt
     { _npcExtId           :: String
@@ -231,7 +231,7 @@ instance FromJSON NpcExt where
 
 toNpc :: NpcMap -> LocsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
-    let id'   = fromJust $ M.lookup (n L.^. Ext.id) npcMap
+    let id'   = fromJust $ M.lookup (n L.^. Load.id) npcMap
         name' = n L.^. name
         desc' = n L.^. desc
         role' = case n L.^. role of
@@ -279,7 +279,7 @@ foldIdGen :: (MonadState Game m, HasId s String)
           -> s
           -> m (Map String Int)
 foldIdGen m s = do
-    let stringId = s L.^. Ext.id
+    let stringId = s L.^. Load.id
     if M.member stringId m
         then pure m
         else do
@@ -293,7 +293,7 @@ nameToLoc :: [LocExt] -> [Loc] -> String -> Loc
 nameToLoc les ls extId =
     let
         locExtIdx =
-            fromJust $ DL.findIndex (\le -> (le L.^. Ext.id) == extId) les
+            fromJust $ DL.findIndex (\le -> (le L.^. Load.id) == extId) les
         locExt   = les !! locExtIdx
         locIndex = fromJust
             $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
