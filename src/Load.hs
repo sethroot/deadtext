@@ -322,40 +322,36 @@ toItem locsMap contsMap ie =
 toGame :: MonadState Game m => GameExt -> m Game
 toGame g = do
     -- Starting location
-
     locUid <- genUid
 
     let locExts = g L.^. locations
 
-    -- Map external ID to internal UID
-
-    -- Will be used provide UIDs to other types
-
-    -- ["overlook_bath": 0]
-
+    {-
+      Map external ID to internal UID
+      Will be used provide UIDs to other types
+      ["overlook_bath": 0]
+    -}
     locExtsMap <- do
         let justStartLoc = M.insert (g L.^. location) locUid M.empty
         foldM foldIdGen justStartLoc locExts
 
-    -- Invert the ID map
-
-    -- [0: "overlook_bath"]
-
+    {- 
+      Invert the ID map
+      [0: "overlook_bath"] 
+    -}
     let inverted  = invertMap locExtsMap
 
     -- Inject LocExt to Loc
-
     let locs      = fmap to locExts
 
-    -- Transform external ID to Loc to complete engine map
-
-    -- [0: Loc]
-
+    {-
+      Transform external ID to Loc to complete engine map
+      [0: Loc]
+    -}
     let transform = nameToLoc locExts locs
     let locsMap   = M.map transform inverted
 
     -- Containers
-
     let contExts  = g L.^. containers
     contsExtMap <- foldM foldIdGen M.empty contExts
     let contExtInjs =
@@ -363,18 +359,15 @@ toGame g = do
     let conts       = fmap to contExtInjs
 
     -- Connections
-
     let connExts    = g L.^. connections
     let connExtInjs = fmap (\c -> ConnectionInj (locExtsMap, c)) connExts
     let conns       = fmap to connExtInjs
 
     -- Items
-
     let itemExts    = g L.^. items
     let items'      = fmap (toItem locExtsMap contsExtMap) itemExts
 
     -- Npcs
-
     let npcExts     = g L.^. npcs
     npcMap <- foldM foldIdGen M.empty npcExts
     let npcExtInjs = fmap (\n -> NpcInj (npcMap, locExtsMap, n)) npcExts
