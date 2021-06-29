@@ -32,6 +32,7 @@ import           Load                           ( GameExt
 import           Parsing                        ( normalizeInput
                                                 , parseRawInput
                                                 )
+import System.Environment                                              
 import           System.IO                      ( IOMode(ReadMode)
                                                 , hClose
                                                 , hFlush
@@ -54,18 +55,18 @@ deadText = void $ runStateT deadText' Data.initState
 
 deadText' :: GameLoop
 deadText' = do
-    if False
+    args <- liftIO getArgs
+    liftIO $ print args
+    if  "debug" `elem` args
         then do
-            game <- liftIO importGame
-            maybe undefined put game
-        else do
             Data.initWorld
             game <- get
-            -- pure ()
-            liftIO $ exportGame game
-    game <- importExt
-    liftIO $ pPrint game
-    put $ fromJust game
+            -- liftIO $ exportGame game
+            pure ()
+        else do
+            game <- loadGame
+            -- liftIO $ pPrint game
+            put $ fromJust game
     lookAction []
     forever execGameLoop
     pure ()
@@ -138,8 +139,8 @@ printGame g = do
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
 
-importExt :: (MonadState Game m, MonadIO m) => m (Maybe Game)
-importExt = runMaybeT $ do
+loadGame :: (MonadState Game m, MonadIO m) => m (Maybe Game)
+loadGame = runMaybeT $ do
     handle   <- liftIO $ openFile "json/game.json" ReadMode
     contents <- liftIO $ BL.hGetContents handle
     let gameExt = decode contents :: Maybe GameExt

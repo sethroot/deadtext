@@ -10,7 +10,7 @@ import           Types
 import           UID                            ( genUid )
 
 initState :: Game
-initState = Game 0 M.empty [] [] [] [] [] 0 (Ingest M.empty)
+initState = Game 0 M.empty [] [] [] [] [] 0
 
 initWorld :: MonadState Game m => m ()
 initWorld = do
@@ -46,13 +46,14 @@ initWorld = do
     let lunchbox = Container lunchboxUid
                              "Lunchbox"
                              "A vintage lunchbox."
-                             startUid 
+                             startUid
                              Closed
     containers .= [lunchbox]
     let trunk = Item "Trunk"
                      "A cardboard box with attractive logos decorating it."
                      (ItemLoc nextUid)
-        macbook = Item "Macbook" "A standard Apple Macbook Pro." (ItemLoc endUid)
-        snack   = Item "Snack" "It looks delicious." (ItemLoc startUid)
-        spoon   = Item "Spoon" "A normal spoon." (ItemContainer lunchboxUid)
+        macbook =
+            Item "Macbook" "A standard Apple Macbook Pro." (ItemLoc endUid)
+        snack = Item "Snack" "It looks delicious." (ItemLoc startUid)
+        spoon = Item "Spoon" "A normal spoon." (ItemContainer lunchboxUid)
     items .= [trunk, macbook, snack, spoon]
