@@ -365,7 +365,7 @@ toGame g = do
 
     -- Items
     let itemExts    = g L.^. items
-    let items      = fmap (toItem locExtsMap contsExtMap) itemExts
+    let items       = fmap (toItem locExtsMap contsExtMap) itemExts
 
     -- Npcs
     let npcExts     = g L.^. npcs
