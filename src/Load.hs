@@ -318,43 +318,43 @@ toGame g = do
     locUid <- genUid
 
     let locExts = g L.^. locations
-    -- Construct a map of the external string IDs to generated UIDs
-    -- First insert the starting location
-    -- Then, fold the remaining locations into the map, inserting new entries
-    -- with associated UIDs
+
+    -- map external ID to internal UID
+    -- will be used provide UIDs to other types
     -- ["overlook_bath": 0]
-    locsMap <- do
+    locExtsMap <- do
         let justStartLoc = M.insert (g L.^. location) locUid M.empty
         foldM foldIdGen justStartLoc locExts
-    -- Invert the map from [String: UID] to [UID: String]
+
+    -- invert map
     -- [0: "overlook_bath"]
-    let invLocsMap = invertMap locsMap
-    -- Create Locs from LocExts
-    -- [LocExt] -> [Loc]
+    let inverted = invertMap locExtsMap
+
+    -- map LocExt to Loc
     let locs       = fmap to locExts
-    -- Construct map of [UID: Loc] for use in engine
-    -- [0: "overlook_bath"] -> [0: Loc loc walk look]
-    let locs'      = M.map (nameToLoc locExts locs) invLocsMap
+
+    -- create engine Loc map
+    -- [0: Loc loc walk look]
+    let transform = nameToLoc locExts locs
+    let locsMap = M.map transform inverted
 
     let contExts   = g L.^. containers
-    -- ["car": 0]
-    contsMap <- foldM foldIdGen M.empty contExts
-    let contExtInjs = fmap (\c -> ContainerInj (contsMap, locsMap, c)) contExts
+    contsExtMap <- foldM foldIdGen M.empty contExts
+    let contExtInjs = fmap (\c -> ContainerInj (contsExtMap, locExtsMap, c)) contExts
     let conts       = fmap to contExtInjs
 
     let connExts    = g L.^. connections
-    let connExtInjs = fmap (\c -> ConnectionInj (locsMap, c)) connExts
+    let connExtInjs = fmap (\c -> ConnectionInj (locExtsMap, c)) connExts
     let conns       = fmap to connExtInjs
 
     let itemExts    = g L.^. items
-    let items'      = fmap (toItem locsMap contsMap) itemExts
+    let items'      = fmap (toItem locExtsMap contsExtMap) itemExts
 
     let npcExts     = g L.^. npcs
     npcMap <- foldM foldIdGen M.empty npcExts
-    let npcExtInjs = fmap (\n -> NpcInj (npcMap, locsMap, n)) npcExts
+    let npcExtInjs = fmap (\n -> NpcInj (npcMap, locExtsMap, n)) npcExts
     let npcs       = fmap to npcExtInjs
 
     let input      = []
     let gen        = 0
-    pure $ Game locUid locs' conns npcs items' conts input gen
-
+    pure $ Game locUid locsMap conns npcs items' conts input gen
