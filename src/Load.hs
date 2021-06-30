@@ -30,18 +30,18 @@ import           Data.Map.Strict               as M
                                                 , map
                                                 , member
                                                 )
-import           Data.Maybe
+import           Data.Maybe                     ( fromJust )
 import           Data.Types.Injective           ( Injective(..) )
-import           GHC.Generics            hiding ( to )
+import           GHC.Generics                   ( Generic )
 import           Types
 import           UID                            ( genUid )
 
-type LocsMap = M.Map String UID
-type NpcMap = M.Map String UID
-type ContsMap = M.Map String UID
+type LocExtsMap = M.Map String UID
+type NpcExtMap = M.Map String UID
+type ContExtsMap = M.Map String UID
+type EngineLocMap = M.Map UID String
 
 -- Location
-
 
 data LocExt = LocExt
     { _locExtId       :: String
@@ -67,8 +67,21 @@ toLocation l = Loc (l L.^. name) (l L.^. walkDesc) (l L.^. lookDesc)
 instance Injective LocExt Loc where
     to = toLocation
 
--- Item
+invertMap :: LocExtsMap -> EngineLocMap
+invertMap = M.foldrWithKey (flip M.insert) M.empty
 
+nameToLoc :: [LocExt] -> [Loc] -> String -> Loc
+nameToLoc les ls extId =
+    let
+        locExtIdx =
+            fromJust $ DL.findIndex (\le -> (le L.^. Load.id) == extId) les
+        locExt   = les !! locExtIdx
+        locIndex = fromJust
+            $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
+    in
+        ls !! locIndex
+
+-- Item
 
 data ItemLocExt =
   ItemInvExt
@@ -104,8 +117,19 @@ instance FromJSON ItemExt where
         loc  <- obj .: "loc"
         pure $ ItemExt id name desc loc
 
--- Container
+toItem :: LocExtsMap -> ContExtsMap -> ItemExt -> Item
+toItem locsMap contsMap ie =
+    let loc' = toItemLoc locsMap contsMap $ ie L.^. loc
+    in  Item (ie L.^. name) (ie L.^. desc) loc'
 
+toItemLoc :: LocExtsMap -> ContExtsMap -> ItemLocExt -> ItemLocation
+toItemLoc locsMap contsMap itemLoc = case itemLoc of
+    ItemInvExt         -> ItemInv
+    ItemLocExt       s -> ItemLoc . fromJust $ M.lookup s locsMap
+    ItemNpcExt       s -> ItemNpc . fromJust $ M.lookup s locsMap
+    ItemContainerExt s -> ItemContainer . fromJust $ M.lookup s contsMap
+
+-- Container
 
 data ContainerExt = ContainerExt
     { _containerExtId     :: String
@@ -127,7 +151,7 @@ instance FromJSON ContainerExt where
         cState <- obj .: "state"
         pure $ ContainerExt id name desc loc cState
 
-toContainer :: ContsMap -> LocsMap -> ContainerExt -> Container
+toContainer :: ContExtsMap -> LocExtsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
     let id'     = fromJust $ M.lookup (container L.^. Load.id) contsMap
         name'   = container L.^. name
@@ -139,13 +163,12 @@ toContainer contsMap locsMap container =
             _        -> Closed
     in  Container id' name' desc' loc' cState'
 
-newtype ContainerInj = ContainerInj (ContsMap, LocsMap, ContainerExt)
+newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
 
 instance Injective ContainerInj Container where
     to (ContainerInj (conts, locs, c)) = toContainer conts locs c
 
 -- Connection
-
 
 data ConnectionExt = ConnectionExt
     { _connectionExtStart :: String
@@ -165,7 +188,6 @@ instance FromJSON ConnectionExt where
 
 -- Direction
 
-
 toDir :: String -> Direction
 toDir d = case d of
     "N" -> N
@@ -179,7 +201,7 @@ toDir d = case d of
 instance Injective String Direction where
     to = toDir
 
-toConnection :: LocsMap -> ConnectionExt -> Connection
+toConnection :: LocExtsMap -> ConnectionExt -> Connection
 toConnection m c =
     let lookup getter = fromJust $ M.lookup (c L.^. getter) m
         start' = lookup start
@@ -187,13 +209,12 @@ toConnection m c =
         dir'   = to $ c L.^. dir
     in  Connection start' dir' end'
 
-newtype ConnectionInj = ConnectionInj (LocsMap, ConnectionExt)
+newtype ConnectionInj = ConnectionInj (LocExtsMap, ConnectionExt)
 
 instance Injective ConnectionInj Connection where
     to (ConnectionInj (m, c)) = toConnection m c
 
 -- NPC
-
 
 data NpcRoleExt =
   DialogRole
@@ -235,7 +256,7 @@ instance FromJSON NpcExt where
         quest        <- obj .: "quest"
         pure $ NpcExt id name desc role loc alive dialog dialogCursor quest
 
-toNpc :: NpcMap -> LocsMap -> NpcExt -> Npc
+toNpc :: NpcExtMap -> LocExtsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
     let id'   = fromJust $ M.lookup (n L.^. Load.id) npcMap
         name' = n L.^. name
@@ -251,13 +272,12 @@ toNpc npcMap locsMap n =
         quest'        = []
     in  Npc id' name' desc' role' loc' alive' dialog' dialogCursor' quest'
 
-newtype NpcInj = NpcInj (NpcMap, LocsMap, NpcExt)
+newtype NpcInj = NpcInj (NpcExtMap, LocExtsMap, NpcExt)
 
 instance Injective NpcInj Npc where
     to (NpcInj (npcMap, locsMap, n)) = toNpc npcMap locsMap n
 
 -- Game
-
 
 data GameExt = GameExt
     { _gameExtLocation    :: String
@@ -280,44 +300,6 @@ instance FromJSON GameExt where
         connections <- obj .: "connections"
         npcs        <- obj .: "npcs"
         pure $ GameExt location locations items containers connections npcs
-
-foldIdGen :: (MonadState Game m, HasId s String)
-          => Map String Int
-          -> s
-          -> m (Map String Int)
-foldIdGen m s = do
-    let stringId = s L.^. Load.id
-    if M.member stringId m
-        then pure m
-        else do
-            uid <- genUid
-            pure $ M.insert stringId uid m
-
-invertMap :: M.Map String Int -> M.Map Int String
-invertMap = M.foldrWithKey (flip M.insert) M.empty
-
-nameToLoc :: [LocExt] -> [Loc] -> String -> Loc
-nameToLoc les ls extId =
-    let
-        locExtIdx =
-            fromJust $ DL.findIndex (\le -> (le L.^. Load.id) == extId) les
-        locExt   = les !! locExtIdx
-        locIndex = fromJust
-            $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
-    in
-        ls !! locIndex
-
-toItemLoc :: Map String Int -> Map String Int -> ItemLocExt -> ItemLocation
-toItemLoc locsMap contsMap itemLoc = case itemLoc of
-    ItemInvExt         -> ItemInv
-    ItemLocExt       s -> ItemLoc . fromJust $ M.lookup s locsMap
-    ItemNpcExt       s -> ItemNpc . fromJust $ M.lookup s locsMap
-    ItemContainerExt s -> ItemContainer . fromJust $ M.lookup s contsMap
-
-toItem :: Map String Int -> Map String Int -> ItemExt -> Item
-toItem locsMap contsMap ie =
-    let loc' = toItemLoc locsMap contsMap $ ie L.^. loc
-    in  Item (ie L.^. name) (ie L.^. desc) loc'
 
 toGame :: MonadState Game m => GameExt -> m Game
 toGame g = do
@@ -379,3 +361,17 @@ toGame g = do
 
     -- Complete, loaded Game
     pure $ Game locUid locsMap conns npcs items conts input gen
+
+-- Common
+
+foldIdGen :: (MonadState Game m, HasId s String)
+          => Map String Int
+          -> s
+          -> m (Map String Int)
+foldIdGen m s = do
+    let stringId = s L.^. Load.id
+    if M.member stringId m
+        then pure m
+        else do
+            uid <- genUid
+            pure $ M.insert stringId uid m
