@@ -2,7 +2,8 @@
 
 module Action.Look where
 
-import           Common                         ( itemIsHere
+import           Common                         ( containerIsHere
+                                                , itemIsHere
                                                 , npcIsHere
                                                 )
 import           Control.Applicative            ( Alternative((<|>)) )
@@ -22,11 +23,14 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
                                                 )
 import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
 import           Data.Char                      ( toLower )
-import           Data.List                      ( intersperse )
+import           Data.List                      ( intercalate
+                                                , intersperse
+                                                )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import           Msg                            ( indefArt )
-import           Parsing                        ( parseInvObj
+import           Parsing                        ( parseContObj
+                                                , parseInvObj
                                                 , parseItemObj
                                                 , parseNpcObj
                                                 )
@@ -146,11 +150,13 @@ lookAt input = runMaybeT $ do
     invItem <- parseInvObj target
     item    <- parseItemObj target
     npc     <- parseNpcObj target
-    obj     <- hoistMaybe $ invItem <|> item <|> npc
+    cont    <- parseContObj target
+    obj     <- hoistMaybe $ invItem <|> item <|> npc <|> cont
     case obj of
-        ObjInv  item -> pure $ item ^. desc
-        ObjNpc  npc  -> MaybeT $ lookAtNpc npc
-        ObjItem item -> MaybeT $ lookAtItem item
+        ObjInv  item      -> pure $ item ^. desc
+        ObjNpc  npc       -> MaybeT $ lookAtNpc npc
+        ObjItem item      -> MaybeT $ lookAtItem item
+        ObjCont container -> MaybeT $ lookAtContainer container
 
 lookAtNpc :: MonadState Game m => Npc -> m (Maybe String)
 lookAtNpc npc = do
@@ -161,6 +167,20 @@ lookAtItem :: MonadState Game m => Item -> m (Maybe String)
 lookAtItem item = do
     itemIsHere' <- itemIsHere item
     pure $ itemIsHere' ? Just (item ^. desc) $ Nothing
+
+lookAtContainer :: MonadState Game m => Container -> m (Maybe String)
+lookAtContainer cont = do
+    containerIsHere' <- containerIsHere cont
+    items            <- use items
+    let items'        = filter (\i -> i ^. loc == ItemContainer (cont ^. uid)) items
+    let containerDesc = Just (cont ^. desc)
+    if null items'
+        then pure $ containerIsHere' ? containerDesc $ Nothing
+        else do
+            let cName = fmap toLower $ cont ^. name
+            let inside        = "Inside the " ++ cName ++ " you can see a "
+            let itemDesc      = concatMap (\i -> inside ++ i ^. name ++ "\n") $ items'
+            pure . Just $ intercalate "\n" [cont ^. desc, itemDesc]
 
 -- lookIn
 

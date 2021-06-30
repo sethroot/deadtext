@@ -91,6 +91,7 @@ data Container = Container
     , _containerDesc   :: String
     , _containerLoc    :: UID
     , _containerCState :: ContainerState
+    , _containerTrans  :: Bool
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
@@ -98,6 +99,7 @@ data Obj
   = ObjNpc Npc
   | ObjItem Item
   | ObjInv Item
+  | ObjCont Container
 
 data Ext = Ext
     { _extNpcs  :: [Npc]

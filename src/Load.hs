@@ -137,6 +137,7 @@ data ContainerExt = ContainerExt
     , _containerExtDesc   :: String
     , _containerExtLoc    :: String
     , _containerExtCState :: String
+    , _containerExtTrans  :: Bool
     }
     deriving Show
 
@@ -149,7 +150,8 @@ instance FromJSON ContainerExt where
         desc   <- obj .: "desc"
         loc    <- obj .: "loc"
         cState <- obj .: "state"
-        pure $ ContainerExt id name desc loc cState
+        trans  <- obj .: "transparent"
+        pure $ ContainerExt id name desc loc cState trans
 
 toContainer :: ContExtsMap -> LocExtsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
@@ -161,7 +163,7 @@ toContainer contsMap locsMap container =
             "open"   -> Open
             "closed" -> Closed
             _        -> Closed
-    in  Container id' name' desc' loc' cState'
+    in  Container id' name' desc' loc' cState' True
 
 newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
 

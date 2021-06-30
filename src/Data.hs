@@ -48,6 +48,7 @@ initWorld = do
                              "A vintage lunchbox."
                              startUid
                              Closed
+                             True
     containers .= [lunchbox]
     let trunk = Item "Trunk"
                      "A cardboard box with attractive logos decorating it."

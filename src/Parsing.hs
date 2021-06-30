@@ -94,6 +94,14 @@ parseContainer input = do
     pure $ find (\x -> (toLower <$> (x ^. name)) == (toLower <$> input))
                 containers'
 
+parseContObj :: MonadState Game m => String -> m (Maybe Obj)
+parseContObj input = runMaybeT $ do
+    containers' <- use containers
+    found       <- hoistMaybe $ find
+        (\x -> (toLower <$> (x ^. name)) == (toLower <$> input))
+        containers'
+    pure $ ObjCont found
+
 parseDir :: Monad m => String -> m (Maybe Direction)
 parseDir = pure . go . map toLower
   where

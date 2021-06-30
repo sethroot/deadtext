@@ -7,13 +7,7 @@ import           Control.Lens                   ( (^.)
                                                 )
 import           Control.Monad.State.Lazy       ( MonadState )
 import qualified Data.Map                      as M
-import           Types                          ( Game
-                                                , HasItems(items)
-                                                , HasLoc(loc)
-                                                , Item
-                                                , ItemLocation(ItemInv, ItemLoc)
-                                                , Npc
-                                                )
+import           Types
 
 npcIsHere :: MonadState Game m => Npc -> m Bool
 npcIsHere npc = do
@@ -24,6 +18,11 @@ itemIsHere :: MonadState Game m => Item -> m Bool
 itemIsHere item = do
     loc' <- use loc
     pure $ item ^. loc == ItemLoc loc'
+
+containerIsHere :: MonadState Game m => Container -> m Bool
+containerIsHere cont = do
+    loc' <- use loc
+    pure $ cont ^. loc == loc'
 
 inventory :: MonadState Game m => m [Item]
 inventory = do

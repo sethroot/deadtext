@@ -37,7 +37,8 @@
       "name": "Car",
       "desc": "Your car",
       "loc": "overlook_lot",
-      "state": "closed"
+      "state": "closed",
+      "transparent": true
     }
   ],
   "connections": [
