@@ -54,12 +54,12 @@
     {
       "start": "overlook_lot",
       "end": "cemetary",
-      "dir": "W"
+      "dir": "NW"
     },
     {
       "start": "cemetary",
       "end": "overlook_lot",
-      "dir": "E"
+      "dir": "SE"
     }
   ],
   "npcs": [

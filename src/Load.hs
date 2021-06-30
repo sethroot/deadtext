@@ -190,13 +190,17 @@ instance FromJSON ConnectionExt where
 
 toDir :: String -> Direction
 toDir d = case d of
-    "N" -> N
-    "S" -> S
-    "E" -> E
-    "W" -> W
-    "U" -> U
-    "D" -> D
-    _   -> N
+    "N"  -> N
+    "S"  -> S
+    "E"  -> E
+    "W"  -> W
+    "NW" -> NW
+    "NE" -> NE
+    "SW" -> SW
+    "SE" -> SE
+    "U"  -> U
+    "D"  -> D
+    _    -> N
 
 instance Injective String Direction where
     to = toDir

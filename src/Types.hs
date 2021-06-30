@@ -20,16 +20,20 @@ import           GHC.Generics                   ( Generic )
 
 type UID = Int
 
-data Direction = N | S | E | W | U | D
+data Direction = N | S | E | W | NW | NE | SW | SE | U | D
   deriving (Eq, Generic, FromJSON, ToJSON)
 
 instance Show Direction where
-    show N = "north"
-    show S = "south"
-    show E = "east"
-    show W = "west"
-    show U = "up"
-    show D = "down"
+    show N  = "north"
+    show S  = "south"
+    show E  = "east"
+    show W  = "west"
+    show NW = "northwest"
+    show NE = "northeast"
+    show SW = "southwest"
+    show SE = "southeast"
+    show U  = "up"
+    show D  = "down"
 
 data Loc = Loc
     { _locLoc      :: String
