@@ -174,13 +174,13 @@ lookAtContainer cont = do
     items            <- use items
     let items'        = filter (\i -> i ^. loc == ItemContainer (cont ^. uid)) items
     let containerDesc = Just (cont ^. desc)
-    if null items'
-        then pure $ containerIsHere' ? containerDesc $ Nothing
-        else do
+    if not (null items') && cont ^. trans
+        then do
             let cName = fmap toLower $ cont ^. name
             let inside        = "Inside the " ++ cName ++ " you can see a "
             let itemDesc      = concatMap (\i -> inside ++ i ^. name ++ "\n") $ items'
             pure . Just $ intercalate "\n" [cont ^. desc, itemDesc]
+        else pure $ containerIsHere' ? containerDesc $ Nothing
 
 -- lookIn
 

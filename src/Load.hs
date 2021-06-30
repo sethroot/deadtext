@@ -163,7 +163,8 @@ toContainer contsMap locsMap container =
             "open"   -> Open
             "closed" -> Closed
             _        -> Closed
-    in  Container id' name' desc' loc' cState' True
+        trans' = container L.^. trans
+    in  Container id' name' desc' loc' cState' trans' 
 
 newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
 
