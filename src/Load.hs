@@ -134,6 +134,7 @@ toItemLoc locsMap contsMap itemLoc = case itemLoc of
 data ContainerExt = ContainerExt
     { _containerExtId     :: String
     , _containerExtName   :: String
+    , _containerExtLook   :: String
     , _containerExtDesc   :: String
     , _containerExtLoc    :: String
     , _containerExtCState :: String
@@ -147,16 +148,18 @@ instance FromJSON ContainerExt where
     parseJSON = withObject "ContainerExt" $ \obj -> do
         id     <- obj .: "id"
         name   <- obj .: "name"
+        look   <- obj .: "look"
         desc   <- obj .: "desc"
         loc    <- obj .: "loc"
         cState <- obj .: "state"
         trans  <- obj .: "transparent"
-        pure $ ContainerExt id name desc loc cState trans
+        pure $ ContainerExt id name look desc loc cState trans
 
 toContainer :: ContExtsMap -> LocExtsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
     let id'     = fromJust $ M.lookup (container L.^. Load.id) contsMap
         name'   = container L.^. name
+        look'   = container L.^. look
         desc'   = container L.^. desc
         loc'    = fromJust $ M.lookup (container L.^. loc) locsMap
         cState' = case container L.^. cState of
@@ -164,7 +167,7 @@ toContainer contsMap locsMap container =
             "closed" -> Closed
             _        -> Closed
         trans' = container L.^. trans
-    in  Container id' name' desc' loc' cState' trans' 
+    in  Container id' name' look' desc' loc' cState' trans'
 
 newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
 

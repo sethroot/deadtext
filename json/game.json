@@ -24,7 +24,7 @@
     {
       "id": "map",
       "name": "Map",
-      "desc": "A map of Silent Hill.",
+      "desc": "It's a well-worn map of Silent Hill.",
       "loc": {
         "type": "container",
         "data": "car"
@@ -35,7 +35,8 @@
     {
       "id": "car",
       "name": "Car",
-      "desc": "Your car",
+      "look": "Your car is parked here.",
+      "desc": "A baby blue 1976 Chevy Nova.",
       "loc": "overlook_lot",
       "state": "closed",
       "transparent": true 

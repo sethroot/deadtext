@@ -40,7 +40,7 @@ import           Util                           ( (?) )
 
 lookAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
 lookAction [] = do
-    out <- look
+    out <- Action.Look.look
     liftIO . putStrLn $ out
 lookAction ((Input _ "at") : target : _) = do
     out <- lookAt target
@@ -108,7 +108,8 @@ containersInLoc loc' containers = do
     desc c = (c ^. cState == Closed) ? containerHere c $ openContainerHere c
 
 containerHere :: Container -> String
-containerHere container = "There is a " ++ container ^. name ++ " here."
+containerHere container = container ^. Types.look 
+-- containerHere container = "There is a " ++ container ^. name ++ " here."
 
 openContainerHere :: Container -> String
 openContainerHere container =
@@ -178,8 +179,8 @@ lookAtContainer cont = do
         then do
             let cName = fmap toLower $ cont ^. name
             let inside        = "Inside the " ++ cName ++ " you can see a "
-            let itemDesc      = concatMap (\i -> inside ++ i ^. name ++ "\n") $ items'
-            pure . Just $ intercalate "\n" [cont ^. desc, itemDesc]
+            let itemDesc      = concatMap (\i -> inside ++ i ^. name) $ items'
+            pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
         else pure $ containerIsHere' ? containerDesc $ Nothing
 
 -- lookIn

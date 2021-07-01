@@ -88,6 +88,7 @@ data ContainerState = Open | Closed
 data Container = Container
     { _containerUid    :: UID
     , _containerName   :: String
+    , _containerLook   :: String
     , _containerDesc   :: String
     , _containerLoc    :: UID
     , _containerCState :: ContainerState

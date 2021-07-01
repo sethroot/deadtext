@@ -45,7 +45,8 @@ initWorld = do
     lunchboxUid <- genUid
     let lunchbox = Container lunchboxUid
                              "Lunchbox"
-                             "A vintage lunchbox."
+                             "You see a lunchbox with bright lettering on the ground."
+                             "It's a vintage lunchbox."
                              startUid
                              Closed
                              True
