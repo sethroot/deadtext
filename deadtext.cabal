@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6367605f93ca5c848c2eee8ad165f21726ed735b423f70b5d669a7f21ce31709
+-- hash: 9c7f861bf1bc855623ab3bf63d251f70bcb54fe7fca5fcbd495e8b7aef5e374e
 
 name:           deadtext
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Action
+      Action.Close
       Action.Drop
       Action.Give
       Action.Help

@@ -102,6 +102,7 @@ execGameLoop = do
         "leave"     -> dropAction arg
         "look"      -> lookAction args
         "open"      -> openAction arg
+        "close"     -> closeAction arg
         "pickup"    -> pickupAction arg
         "take"      -> pickupAction arg
         "talk"      -> talkAction arg

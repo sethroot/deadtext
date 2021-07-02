@@ -108,7 +108,7 @@ containersInLoc loc' containers = do
     desc c = (c ^. cState == Closed) ? containerHere c $ openContainerHere c
 
 containerHere :: Container -> String
-containerHere container = container ^. Types.look 
+containerHere container = container ^. Types.look
 -- containerHere container = "There is a " ++ container ^. name ++ " here."
 
 openContainerHere :: Container -> String
@@ -179,12 +179,13 @@ lookAtContainer cont = do
         then do
             let cName = fmap toLower $ cont ^. name
             let inside        = "Inside the " ++ cName ++ " you can see a "
-            let itemDesc      = concatMap (\i -> inside ++ i ^. name) $ items'
+            let itemDesc      = concatMap (\i -> inside ++ i ^. name) items'
             pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
         else pure $ containerIsHere' ? containerDesc $ Nothing
 
 -- lookIn
 
+-- TODO: Support looking in transparent containers
 lookIn :: MonadState Game m => Input -> m (Either String String)
 lookIn input = runExceptT $ do
     loc'        <- use loc

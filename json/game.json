@@ -35,8 +35,8 @@
     {
       "id": "car",
       "name": "Car",
-      "look": "Your car is parked here.",
-      "desc": "A baby blue 1976 Chevy Nova.",
+      "look": "You parked your car here.",
+      "desc": "It's a baby blue 1976 Chevy Nova.",
       "loc": "overlook_lot",
       "state": "closed",
       "transparent": true 

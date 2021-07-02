@@ -8,11 +8,13 @@ module Action
     , Action.Kill.killAction
     , Action.Look.lookAction
     , Action.Open.openAction
+    , Action.Close.closeAction
     , Action.Pickup.pickupAction
     , Action.Talk.talkAction
     , Action.Walk.walkAction
     ) where
 
+import qualified Action.Close
 import qualified Action.Drop
 import qualified Action.Give
 import qualified Action.Help
