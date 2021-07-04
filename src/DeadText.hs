@@ -55,7 +55,6 @@ deadText = void $ runStateT deadText' Data.initState
 deadText' :: GameLoop
 deadText' = do
     args <- liftIO getArgs
-    liftIO $ print args
     if "debug" `elem` args
         then do
             Data.initWorld
