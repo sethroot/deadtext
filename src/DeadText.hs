@@ -48,7 +48,6 @@ import           Types                          ( Ext
                                                 , Input(Input)
                                                 , Loc
                                                 )
-import           Util                           ( )
 
 deadText :: IO ()
 deadText = void $ runStateT deadText' Data.initState
