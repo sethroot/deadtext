@@ -16,6 +16,7 @@ import           Control.Error                  ( MaybeT(MaybeT, runMaybeT)
                                                 )
 import           Control.Lens                   ( (^.)
                                                 , use
+                                                , view
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadIO(..)
@@ -177,15 +178,13 @@ lookAtContainer cont = do
     let containerDesc = Just (cont ^. desc)
     if not (null items') && cont ^. trans
         then do
-            let cName = fmap toLower $ cont ^. name
-            let inside        = "Inside the " ++ cName ++ " you can see a "
-            let itemDesc      = concatMap (\i -> inside ++ i ^. name) items'
+            let contName = fmap toLower $ cont ^. name
+            let itemDesc      = concatMap (\i -> seeInTransparentContainer (i ^. name) contName) items'
             pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
         else pure $ containerIsHere' ? containerDesc $ Nothing
 
 -- lookIn
 
--- TODO: Support looking in transparent containers
 lookIn :: MonadState Game m => Input -> m (Either String String)
 lookIn input = runExceptT $ do
     loc'        <- use loc
@@ -197,21 +196,30 @@ lookIn input = runExceptT $ do
             let out = dontSeeObject $ input ^. normal
             hoistEither $ Left out
         Just c -> hoistEither $ Right c
-    if container' ^. cState == Closed
-        then do
-            let out = containerIsClosed $ container' ^. name
-            hoistEither $ Left out
-        else hoistEither $ Right ()
+    let cState' = container' ^. cState
+    let trans' = container' ^. trans
+    out <- lookInContainer container' cState' trans'
+    hoistEither $ Right out
+
+lookInContainer :: MonadState Game m => Container -> ContainerState -> Bool -> m String
+lookInContainer cont Closed False = do
+    pure . containerIsClosed $ cont ^. name
+lookInContainer cont Closed True = do
     items' <- use items
-    let item = headMay . filter (itemPredicate container') $ items'
+    let item = headMay . filter (itemPredicate cont) $ items'
+    let itemName = maybe "object" (view name) item
+    let contName = cont ^. name
+    pure $ seeInTransparentContainer itemName contName
+lookInContainer cont Open _ = do
+    items' <- use items
+    let item = headMay . filter (itemPredicate cont) $ items'
     case item of
         Nothing -> do
-            let out = containerIsEmpty $ container' ^. name
-            hoistEither $ Left out
+            pure . containerIsEmpty $ cont ^. name
         Just item' -> do
             let itemName = item' ^. name
-            let out      = seeInContainer itemName (container' ^. name)
-            hoistEither $ Right out
+            pure $ seeInContainer itemName (cont ^. name)
+
 
 containerPredicate :: Input -> UID -> Container -> Bool
 containerPredicate input loc' container = nameMatch && locMatch
@@ -234,3 +242,7 @@ containerIsEmpty container = "The " ++ container ++ " is empty."
 seeInContainer :: String -> String -> String
 seeInContainer item container =
     "You see " ++ indefArt item ++ " " ++ item ++ " in the " ++ container ++ "."
+
+seeInTransparentContainer :: String -> String -> String
+seeInTransparentContainer item container =
+    "Inside the " ++ container ++ " you can see " ++ indefArt item ++ " " ++ item ++ "."
