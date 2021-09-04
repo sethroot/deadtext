@@ -241,6 +241,7 @@ instance Injective NpcRoleExt Role where
 data NpcExt = NpcExt
     { _npcExtId           :: String
     , _npcExtName         :: String
+    , _npcExtGender       :: String
     , _npcExtDesc         :: String
     , _npcExtRole         :: String
     , _npcExtLoc          :: String
@@ -257,6 +258,7 @@ instance FromJSON NpcExt where
     parseJSON = withObject "NpcExt" $ \obj -> do
         id           <- obj .: "id"
         name         <- obj .: "name"
+        gender       <- obj .: "gender"
         desc         <- obj .: "desc"
         role         <- obj .: "role"
         loc          <- obj .: "loc"
@@ -264,12 +266,26 @@ instance FromJSON NpcExt where
         dialog       <- obj .: "dialog"
         dialogCursor <- obj .: "dialogCursor"
         quest        <- obj .: "quest"
-        pure $ NpcExt id name desc role loc alive dialog dialogCursor quest
+        pure $ NpcExt id
+                      name
+                      gender
+                      desc
+                      role
+                      loc
+                      alive
+                      dialog
+                      dialogCursor
+                      quest
 
 toNpc :: NpcExtMap -> LocExtsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
-    let id'   = fromJust $ M.lookup (n L.^. Load.id) npcMap
-        name' = n L.^. name
+    let id'     = fromJust $ M.lookup (n L.^. Load.id) npcMap
+        name'   = n L.^. name
+        gender' = case n L.^. gender of
+            "male"      -> Male
+            "female"    -> Female
+            "nonbinary" -> NonBinary
+            _           -> Unknown
         desc' = n L.^. desc
         role' = case n L.^. role of
             "dialog" -> Types.DialogRole
@@ -280,7 +296,16 @@ toNpc npcMap locsMap n =
         dialog'       = n L.^. dialog
         dialogCursor' = n L.^. dialogCursor
         quest'        = []
-    in  Npc id' name' desc' role' loc' alive' dialog' dialogCursor' quest'
+    in  Npc id'
+            name'
+            gender'
+            desc'
+            role'
+            loc'
+            alive'
+            dialog'
+            dialogCursor'
+            quest'
 
 newtype NpcInj = NpcInj (NpcExtMap, LocExtsMap, NpcExt)
 

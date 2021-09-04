@@ -42,10 +42,9 @@ data Loc = Loc
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
-data Role
-  = DialogRole
-  | QuestRole
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+data Role = DialogRole
+    | QuestRole
+    deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Quest = Quest
     { _questStartText      :: String
@@ -58,7 +57,9 @@ data Quest = Quest
 data Npc = Npc
     { _npcUid          :: UID
     , _npcName         :: String
+    , _npcGender       :: Gender
     , _npcDesc         :: String
+    -- , _npcRel          :: NpcRel
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool
@@ -68,12 +69,25 @@ data Npc = Npc
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
-data ItemLocation
-  = ItemInv
-  | ItemLoc UID
-  | ItemNpc UID
-  | ItemContainer UID
-  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+data Gender = Male | Female | NonBinary | Unknown
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data NpcRel = NpcRel
+    { _npcRelLevel       :: Int
+    , _npcRelKnown       :: Bool
+    , _npcRelDialog      :: [DialogGroup]
+    , _npcRelDescription :: [String]
+    }
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data DialogGroup = DialogGroup [String]
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data ItemLocation = ItemInv
+    | ItemLoc UID
+    | ItemNpc UID
+    | ItemContainer UID
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data Item = Item
     { _itemName :: String
@@ -97,10 +111,10 @@ data Container = Container
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Obj
-  = ObjNpc Npc
-  | ObjItem Item
-  | ObjInv Item
-  | ObjCont Container
+    = ObjNpc Npc
+    | ObjItem Item
+    | ObjInv Item
+    | ObjCont Container
 
 data Ext = Ext
     { _extNpcs  :: [Npc]

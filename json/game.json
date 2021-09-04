@@ -68,6 +68,7 @@
     {
       "id": "angela",
       "name": "Angela",
+      "gender": "female",
       "desc": "Angela seems distraught.",
       "role": "dialog",
       "loc": "cemetary",

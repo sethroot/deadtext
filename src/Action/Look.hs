@@ -179,7 +179,9 @@ lookAtContainer cont = do
     if not (null items') && cont ^. trans
         then do
             let contName = fmap toLower $ cont ^. name
-            let itemDesc      = concatMap (\i -> seeInTransparentContainer (i ^. name) contName) items'
+            let itemDesc = concatMap
+                    (\i -> seeInTransparentContainer (i ^. name) contName)
+                    items'
             pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
         else pure $ containerIsHere' ? containerDesc $ Nothing
 
@@ -197,16 +199,20 @@ lookIn input = runExceptT $ do
             hoistEither $ Left out
         Just c -> hoistEither $ Right c
     let cState' = container' ^. cState
-    let trans' = container' ^. trans
+    let trans'  = container' ^. trans
     out <- lookInContainer container' cState' trans'
     hoistEither $ Right out
 
-lookInContainer :: MonadState Game m => Container -> ContainerState -> Bool -> m String
+lookInContainer :: MonadState Game m
+                => Container
+                -> ContainerState
+                -> Bool
+                -> m String
 lookInContainer cont Closed False = do
     pure . containerIsClosed $ cont ^. name
 lookInContainer cont Closed True = do
     items' <- use items
-    let item = headMay . filter (itemPredicate cont) $ items'
+    let item     = headMay . filter (itemPredicate cont) $ items'
     let itemName = maybe "object" (view name) item
     let contName = cont ^. name
     pure $ seeInTransparentContainer itemName contName
@@ -231,7 +237,8 @@ itemPredicate :: Container -> Item -> Bool
 itemPredicate container item = item ^. loc == ItemContainer (container ^. uid)
 
 dontSeeObject :: String -> String
-dontSeeObject object = "You don't see a " ++ object ++ " here."
+dontSeeObject object =
+    "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
 
 containerIsClosed :: String -> String
 containerIsClosed container = "The " ++ container ++ " is closed."
@@ -245,4 +252,10 @@ seeInContainer item container =
 
 seeInTransparentContainer :: String -> String -> String
 seeInTransparentContainer item container =
-    "Inside the " ++ container ++ " you can see " ++ indefArt item ++ " " ++ item ++ "."
+    "Inside the "
+        ++ container
+        ++ " you can see "
+        ++ indefArt item
+        ++ " "
+        ++ item
+        ++ "."

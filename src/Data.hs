@@ -31,6 +31,7 @@ initWorld = do
     let joe = Npc
             joeUid
             "Joe"
+            Male
             "Joe is old and withered."
             DialogRole
             startUid
