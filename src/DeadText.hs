@@ -63,7 +63,6 @@ deadText' = do
             liftIO . putStrLn $ ""
             liftIO . putStrLn $ "Launching in debug mode"
             liftIO . putStrLn $ ""
-            pure ()
         else do
             game <- loadGame
             -- liftIO $ pPrint game
