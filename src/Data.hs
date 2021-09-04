@@ -68,5 +68,8 @@ initWorld = do
                         Closed
                         True
     containers .= [car]
-    let map = Item "Map" "It's a well-worn map of Silent Hill." (ItemContainer carUid)
+    let
+        map = Item "Map"
+                   "It's a well-worn map of Silent Hill."
+                   (ItemContainer carUid)
     items .= [map]
