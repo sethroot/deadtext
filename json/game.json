@@ -4,8 +4,8 @@
     {
       "id": "overlook_bath",
       "name": "Bathroom",
-      "walkDesc": "You walk into a small, dimly lit bathroom attached to the overlook's parking lot. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia.",
-      "lookDesc": "You are standing in a small, dimly lit bathroom attached to the overlook's parking lot. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
+      "walkDesc": "You walk into a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia.",
+      "lookDesc": "You are standing in a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
     },
     {
       "id": "overlook_lot",
@@ -39,7 +39,7 @@
       "desc": "It's a baby blue 1976 Chevy Nova.",
       "loc": "overlook_lot",
       "state": "closed",
-      "transparent": true 
+      "transparent": true
     }
   ],
   "connections": [
@@ -69,11 +69,15 @@
       "id": "angela",
       "name": "Angela",
       "gender": "female",
-      "desc": "Angela seems distraught.",
+      "desc": "Angela is frantically searching the cemetary for something.",
       "role": "dialog",
       "loc": "cemetary",
       "alive": true,
-      "dialog": ["I'm looking for my Mama... I-I mean my mother. It's been so long since I've seen her. I thought my father and brother were here, but...I can't find them either. ...I'm sorry...it's not your problem."],
+      "dialog": [
+        "I'm looking for my Mama... I-I mean my mother. It's been so long since I've seen her. I thought my father and brother were here, but...I can't find them either. ...I'm sorry...it's not your problem.",
+        "Sorry, I didn't mean to bother you",
+        "Where is she..."
+      ],
       "dialogCursor": 0,
       "quest": []
     }

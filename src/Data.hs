@@ -14,49 +14,59 @@ initState = Game 0 M.empty [] [] [] [] [] 0
 
 initWorld :: MonadState Game m => m ()
 initWorld = do
-    startUid <- genUid
-    let start = Loc "Start" "Walk Start" "Look Start"
-    nextUid <- genUid
-    let next = Loc "Next" "Walk Next" "Look Next"
-    endUid <- genUid
-    let end = Loc "End" "Walk End" "Look End"
-    locs .= M.fromList [(startUid, start), (nextUid, next), (endUid, end)]
+    bathroomUid <- genUid
+    let
+        bathroom = Loc
+            "Bathroom"
+            "You walk into a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
+            "You are standing in a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
+    overlookLotUid <- genUid
+    let overlookLot = Loc
+            "Overlook Parking Lot"
+            "You enter a parking lot overlooking a lake."
+            "You are standing in a parking lot overlooking a lake."
+    cemetaryUid <- genUid
+    let
+        cemetary = Loc
+            "A cemetary"
+            "You have entered a cemetary surrounded by tall fencing"
+            "You are standing in a cemetary surrounded by tall fencing. There are many graves here."
+    locs .= M.fromList
+        [ (bathroomUid   , bathroom)
+        , (overlookLotUid, overlookLot)
+        , (cemetaryUid   , cemetary)
+        ]
     connections
-        .= [ Connection startUid S nextUid
-           , Connection nextUid  N startUid
-           , Connection nextUid  S endUid
-           , Connection endUid   N nextUid
+        .= [ Connection bathroomUid    S  overlookLotUid
+           , Connection overlookLotUid N  bathroomUid
+           , Connection overlookLotUid NW cemetaryUid
+           , Connection cemetaryUid    SE overlookLotUid
            ]
-    joeUid <- genUid
-    let joe = Npc
-            joeUid
-            "Joe"
-            Male
-            "Joe is old and withered."
+    angelaUid <- genUid
+    let
+        angela = Npc
+            angelaUid
+            "Angela"
+            Female
+            "Angela is frantically searching the cemetary for something."
             DialogRole
-            startUid
+            cemetaryUid
             True
-            [ "Greetings, adventurer!"
-            , "It's dangerous to go alone! Take this."
-            , "What a gloomy day.."
+            [ "I'm looking for my Mama... I-I mean my mother. It's been so long since I've seen her. I thought my father and brother were here, but...I can't find them either. ...I'm sorry...it's not your problem."
+            , "Sorry, I didn't mean to bother you"
+            , "Where is she..."
             ]
             0
             []
-    npcs .= [joe]
-    lunchboxUid <- genUid
-    let lunchbox = Container lunchboxUid
-                             "Lunchbox"
-                             "You see a lunchbox with bright lettering on the ground."
-                             "It's a vintage lunchbox."
-                             startUid
-                             Closed
-                             True
-    containers .= [lunchbox]
-    let trunk = Item "Trunk"
-                     "A cardboard box with attractive logos decorating it."
-                     (ItemLoc nextUid)
-        macbook =
-            Item "Macbook" "A standard Apple Macbook Pro." (ItemLoc endUid)
-        snack = Item "Snack" "It looks delicious." (ItemLoc startUid)
-        spoon = Item "Spoon" "A normal spoon." (ItemContainer lunchboxUid)
-    items .= [trunk, macbook, snack, spoon]
+    npcs .= [angela]
+    carUid <- genUid
+    let car = Container carUid
+                        "Car"
+                        "You parked your car here."
+                        "It's a baby blue 1976 Chevy Nova."
+                        overlookLotUid
+                        Closed
+                        True
+    containers .= [car]
+    let map = Item "Map" "It's a well-worn map of Silent Hill." (ItemContainer carUid)
+    items .= [map]
