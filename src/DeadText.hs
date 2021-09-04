@@ -59,7 +59,7 @@ deadText' = do
         then do
             Data.initWorld
             game <- get
-            liftIO $ exportGame game
+            -- liftIO $ exportGame game
             liftIO . putStrLn $ ""
             liftIO . putStrLn $ "Launching in debug mode"
             liftIO . putStrLn $ ""
