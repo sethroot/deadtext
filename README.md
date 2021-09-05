@@ -20,7 +20,7 @@ stack run
 ```
 
 ## Usage
-By default, deadtext will load the file in `json/game.json` into the engine at runtime. To create a custom game, modify the example [game.json](https://github.com/sethroot/deadtext/blob/main/json/game.json) and then run normally.
+By default, deadtext will load the file `json/example.json` into the engine at runtime. To create a custom game, modify the example [example.json](https://github.com/sethroot/deadtext/blob/main/json/example.json) and then run without arguments.
 ```bash
 stack run
 ```
