@@ -56,7 +56,7 @@ deadText = void $ runStateT deadText' Data.initState
 deadText' :: GameLoop
 deadText' = do
     args <- liftIO getArgs
-    liftIO . print $ args
+    -- liftIO . print $ args
     processArgs args
     lookAction []
     forever execGameLoop
