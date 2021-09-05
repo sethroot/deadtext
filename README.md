@@ -25,7 +25,8 @@ By default, deadtext will load the file in `json/game.json` into the engine at r
 stack run
 ```
 
-To create a game defined by the internal Haskell types, modify the [Data.initWorld](https://github.com/sethroot/deadtext/blob/main/src/Data.hs#L15) implementation and run with the debug argument
+To create a game defined by the internal Haskell types, modify the [Data.setState](https://github.com/sethroot/deadtext/blob/main/src/Data.hs#L15) implementation and run with the `noload` or `-n` argument
 ```bash
-stack run debug
+stack run noload
+stack run -- -n
 ```
