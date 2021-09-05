@@ -2,7 +2,8 @@
 
 module DeadText
     ( deadText
-    ) where
+    )
+where
 
 import           Action
 import           Control.Error
@@ -55,22 +56,34 @@ deadText = void $ runStateT deadText' Data.initState
 deadText' :: GameLoop
 deadText' = do
     args <- liftIO getArgs
-    if "noload" `elem` args || "-n" `elem` args 
-        then do
-            Data.setState
-            game <- get
-            -- liftIO $ exportGame game
-            liftIO . putStrLn $ ""
-            liftIO . putStrLn $ "Running against internal config"
-            liftIO . putStrLn $ ""
-        else do
-            game <- loadGame "example"
-            liftIO . putStrLn $ ""
-            -- liftIO $ pPrint game
-            put $ fromJust game
+    liftIO . print $ args
+    processArgs args
     lookAction []
     forever execGameLoop
     pure ()
+
+processArgs :: [String] -> GameLoop
+processArgs ("noload" : _) = loadInternal
+processArgs ("-n"     : _) = loadInternal
+processArgs (file     : _) = loadExternal file
+processArgs _              = loadExternal "example"
+
+loadInternal :: GameLoop
+loadInternal = do
+    Data.setState
+    game <- get
+    -- liftIO $ exportGame game
+    liftIO . putStrLn $ ""
+    liftIO . putStrLn $ "Running against internal config"
+    liftIO . putStrLn $ ""
+
+loadExternal :: String -> GameLoop
+loadExternal file = do
+    -- if "load" `elem` args 
+    game <- loadGame file
+    liftIO . putStrLn $ ""
+    -- liftIO $ pPrint game
+    put $ fromJust game
 
 execGameLoop :: GameLoop
 execGameLoop = do
