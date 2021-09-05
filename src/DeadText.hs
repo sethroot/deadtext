@@ -64,7 +64,8 @@ deadText' = do
             liftIO . putStrLn $ "Running against internal config"
             liftIO . putStrLn $ ""
         else do
-            game <- loadGame
+            game <- loadGame "example"
+            liftIO . putStrLn $ ""
             -- liftIO $ pPrint game
             put $ fromJust game
     lookAction []
@@ -140,9 +141,10 @@ printGame g = do
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
 
-loadGame :: (MonadState Game m, MonadIO m) => m (Maybe Game)
-loadGame = runMaybeT $ do
-    handle   <- liftIO $ openFile "json/game.json" ReadMode
+loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
+loadGame file = runMaybeT $ do
+    let path = "json/" ++ file ++ ".json"
+    handle   <- liftIO $ openFile path ReadMode
     contents <- liftIO $ BL.hGetContents handle
     let gameExt = decode contents :: Maybe GameExt
     case gameExt of
