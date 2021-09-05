@@ -55,13 +55,13 @@ deadText = void $ runStateT deadText' Data.initState
 deadText' :: GameLoop
 deadText' = do
     args <- liftIO getArgs
-    if "debug" `elem` args
+    if "noload" `elem` args || "-n" `elem` args 
         then do
-            Data.initWorld
+            Data.setState
             game <- get
             -- liftIO $ exportGame game
             liftIO . putStrLn $ ""
-            liftIO . putStrLn $ "Launching in debug mode"
+            liftIO . putStrLn $ "Running against internal config"
             liftIO . putStrLn $ ""
         else do
             game <- loadGame

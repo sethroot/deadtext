@@ -12,8 +12,8 @@ import           UID                            ( genUid )
 initState :: Game
 initState = Game 0 M.empty [] [] [] [] [] 0
 
-initWorld :: MonadState Game m => m ()
-initWorld = do
+setState :: MonadState Game m => m ()
+setState = do
     bathroomUid <- genUid
     let
         bathroom = Loc
