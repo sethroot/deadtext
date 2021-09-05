@@ -27,7 +27,7 @@ stack run
 
 To load an arbitrary JSON file, provide the name of the file as argument
 ```bash
-// Will attempt to load json/my-game.json
+# Will attempt to load json/my-game.json
 stack run my-game
 ```
 
