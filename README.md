@@ -1,6 +1,6 @@
 ![deadtext-logo](https://user-images.githubusercontent.com/307254/132119589-82edb919-a87a-4815-88be-546c353d7147.png)
 
-deadtext is a Haskell game engine designed to build and run games in the style of classic text adventures.
+deadtext is a text adventure game engine written in Haskell.
 
 Games may be defined internally with native Haskell types or externally in JSON files that are then loaded into the engine at runtime.
 
