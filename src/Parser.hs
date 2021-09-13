@@ -28,20 +28,20 @@ normalizeInput = fmap $ fmap toLower
 parseTarget :: (HasName a String) => [a] -> String -> Maybe a
 parseTarget xs input = find pred xs where pred x = lowEq (x ^. name) input
 
-parseTargetM :: (MonadState s m, HasName a String)
-             => Getting [a] s [a]
+parseTargetM :: (MonadState Game m, HasName a String)
+             => Getting [a] Game [a]
              -> String
              -> m (Maybe a)
 parseTargetM get input = do
     xs <- use get
     pure $ parseTarget xs input
 
-parseTargetObj :: (MonadState s m, HasName a String)
-               => Getting [a] s [a]
+parseTargetObj :: (MonadState Game m, HasName a String)
+               => Getting [a] Game [a]
                -> (a -> Obj)
                -> String
                -> m (Maybe Obj)
-parseTargetObj get f input= runMaybeT $ do
+parseTargetObj get f input = runMaybeT $ do
     xs    <- use get
     found <- hoistMaybe $ find pred xs
     pure $ f found
@@ -86,7 +86,7 @@ parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
 
 parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
-parseNpcObj = parseTargetObj npcs ObjNpc 
+parseNpcObj = parseTargetObj npcs ObjNpc
 
 -- Container
 
