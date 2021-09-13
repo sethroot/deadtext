@@ -24,7 +24,10 @@ containerIsHere cont = do
     loc' <- use loc
     pure $ cont ^. loc == loc'
 
+inInventory :: HasLoc s ItemLocation => s -> Bool
+inInventory item = item ^. loc == ItemInv
+
 inventory :: MonadState Game m => m [Item]
 inventory = do
     items' <- use items
-    pure $ filter (\x -> x ^. loc == ItemInv) items'
+    pure $ filter inInventory items'

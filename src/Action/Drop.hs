@@ -13,11 +13,7 @@ import           Control.Lens                   ( (.=)
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
-import           Control.Monad.Trans.Maybe      ( MaybeT(runMaybeT) )
 import           Data.List                      ( elemIndex )
-import qualified Data.Map.Strict               as M
-import           Data.Maybe                     ( fromMaybe )
-import qualified Data.Set                      as S
 import           Parser                         ( parseInvItem )
 import           Types
 

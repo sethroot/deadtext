@@ -2,6 +2,7 @@
 
 module Util where
 
+import Data.Char ( toLower )
 import qualified Data.Map.Strict               as M
 
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
@@ -19,3 +20,6 @@ fromBool True  = Just
 maybeToEither :: Maybe a -> Either () a
 maybeToEither Nothing  = Left ()
 maybeToEither (Just a) = Right a
+
+lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
+lowEq a b = (toLower <$> a) == (toLower <$> b)

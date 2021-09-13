@@ -22,10 +22,7 @@ import           Control.Lens                   ( (.=)
                                                 , use
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState
-                                                )
-import           Control.Monad.Trans.Maybe      ( MaybeT(runMaybeT) )
+import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe

@@ -12,7 +12,6 @@ import           Control.Lens                   ( (.=)
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
-import           Control.Monad.Trans.Except     ( runExceptT )
 import           Data.List                      ( elemIndex )
 import           Parser                         ( parseContainer )
 import           Types

@@ -12,9 +12,7 @@ import           Control.Lens                   ( (.=)
                                                 , use
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState
-                                                )
+import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
 import           Data.Maybe                     ( fromJust
                                                 , fromMaybe
@@ -22,7 +20,6 @@ import           Data.Maybe                     ( fromJust
 import           Parser                         ( parseNpc )
 import           System.Exit                    ( exitSuccess )
 import           Types
-import           Util                           ( (?) )
 
 killAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
 killAction Nothing = liftIO . putStrLn $ "Kill what?"
