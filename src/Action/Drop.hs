@@ -18,9 +18,6 @@ import           Data.List                      ( elemIndex )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as S
-import           Msg                            ( dontHaveObject
-                                                , dropObject
-                                                )
 import           Parser                         ( parseInvItem )
 import           Types
 
@@ -48,3 +45,9 @@ dropMutation item = runMaybeT $ do
         Just index -> pure index
     loc' <- use loc
     items . ix index . loc .= ItemLoc loc'
+
+dontHaveObject :: String -> String
+dontHaveObject object = "You do not have a " ++ object ++ "."
+
+dropObject :: String -> String
+dropObject object = "You drop the " ++ object ++ "."

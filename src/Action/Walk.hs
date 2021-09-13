@@ -18,7 +18,6 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
 import           Data.List                      ( find )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
-import           Msg
 import           Parser                         ( parseDir )
 import           Types
 

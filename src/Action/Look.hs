@@ -29,7 +29,6 @@ import           Data.List                      ( intercalate
                                                 )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
-import           Msg                            ( indefArt )
 import           Parser                         ( parseContObj
                                                 , parseInvObj
                                                 , parseItemObj
@@ -259,3 +258,7 @@ seeInTransparentContainer item container =
         ++ " "
         ++ item
         ++ "."
+
+indefArt :: String -> String
+indefArt s = isVowel ? "an" $ "a"
+    where isVowel = toLower (head s) `elem` ['a', 'e', 'i', 'o', 'u']

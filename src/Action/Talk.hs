@@ -18,7 +18,6 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
 import           Data.Char                      ( toLower )
 import           Data.List                      ( findIndex )
 import qualified Data.Map.Strict               as M
-import           Msg
 import           Types
 import           Util                           ( (?) )
 
@@ -56,6 +55,12 @@ talkTo input = runExceptT $ do
 
 nameMatches :: Input -> Npc -> Bool
 nameMatches input npc = fmap toLower (npc ^. name) == input ^. normal
+
+dontSeeTarget :: String -> String
+dontSeeTarget target = "You don't see " ++ target ++ " here."
+
+talkCorpse :: Npc -> String
+talkCorpse npc = npc ^. name ++ "'s corpse has nothing to say to you."
 
 advanceDialog :: MonadState Game m => Int -> m ()
 advanceDialog index = do

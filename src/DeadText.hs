@@ -16,7 +16,6 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
                                                 )
-import           Control.Monad.Trans.Maybe
 import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
                                                 , get
                                                 , put
@@ -34,19 +33,16 @@ import           Parser                         ( normalizeInput
                                                 )
 import           System.Environment
 import           System.IO                      ( IOMode(ReadMode)
-                                                , hClose
                                                 , hFlush
                                                 , openFile
                                                 , stdout
                                                 )
 import           Text.Pretty.Simple
-import           Types                          ( Ext
-                                                , Game
+import           Types                          ( Game
                                                 , GameLoop
                                                 , HasInput(input)
                                                 , HasNormal(normal)
                                                 , Input(Input)
-                                                , Loc
                                                 )
 
 deadText :: IO ()
@@ -131,7 +127,6 @@ importGame = do
     contents <- BL.hGetContents handle
     -- BL.putStr contents
     let game = decode contents :: Maybe Game
-    -- hClose handle
     -- print game 
     pure game
 
