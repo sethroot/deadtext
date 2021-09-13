@@ -36,7 +36,6 @@ parseTargetM get input = do
     xs <- use get
     pure $ parseTarget xs input
 
-
 parseTargetObj :: (MonadState s m, HasName a String)
                => Getting [a] s [a]
                -> (a -> Obj)
