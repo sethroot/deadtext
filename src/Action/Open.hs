@@ -13,7 +13,7 @@ import           Control.Lens                   ( (.=)
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
-import           Parser                         ( parseContainer )
+import           Parser                         ( parseContainerM )
 import           Types
 
 openAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
@@ -25,7 +25,7 @@ openAction (Just target) = do
 
 open :: MonadState Game m => Input -> m (Either String String)
 open target = runExceptT $ do
-    container  <- parseContainer $ target ^. normal
+    container  <- parseContainerM $ target ^. normal
 
     container' <- case container of
         Nothing -> do

@@ -6,7 +6,8 @@ import           Common                         ( inInventory )
 import           Control.Error                  ( MaybeT(runMaybeT)
                                                 , hoistMaybe
                                                 )
-import           Control.Lens                   ( (^.)
+import           Control.Lens.Getter            ( Getting
+                                                , (^.)
                                                 , use
                                                 )
 import           Control.Monad.State.Lazy       ( MonadState )
@@ -22,66 +23,84 @@ parseRawInput = filter (/= "") . splitOn " "
 normalizeInput :: [String] -> [String]
 normalizeInput = fmap $ fmap toLower
 
--- Attempt to parse input to an Item held in Inventory
+-- Generic
 
-parseInvObj :: MonadState Game m => String -> m (Maybe Obj)
-parseInvObj input = runMaybeT $ do
-    items' <- use items
-    found  <- hoistMaybe $ find go items'
-    pure $ ObjInv found
-    where go item = inInventory item && lowEq (item ^. name) input
+parseTarget :: (HasName a String) => [a] -> String -> Maybe a
+parseTarget xs input = find pred xs where pred x = lowEq (x ^. name) input
 
--- Attempt to parse input to an Item not held in Inventory
+parseTargetM :: (MonadState s m, HasName a String)
+             => Getting [a] s [a]
+             -> String
+             -> m (Maybe a)
+parseTargetM get input = do
+    xs <- use get
+    pure $ parseTarget xs input
+
+
+parseTargetObj :: (MonadState s m, HasName a String)
+               => Getting [a] s [a]
+               -> (a -> Obj)
+               -> String
+               -> m (Maybe Obj)
+parseTargetObj get f input= runMaybeT $ do
+    xs    <- use get
+    found <- hoistMaybe $ find pred xs
+    pure $ f found
+    where pred x = lowEq (x ^. name) input
+
+-- Item
+
+parseItem :: [Item] -> String -> Maybe Item
+parseItem = parseTarget
+
+parseItemM :: MonadState Game m => String -> m (Maybe Item)
+parseItemM = parseTargetM items
 
 parseItemObj :: MonadState Game m => String -> m (Maybe Obj)
 parseItemObj input = runMaybeT $ do
     items' <- use items
-    found  <- hoistMaybe $ find go items'
+    found  <- hoistMaybe $ find pred items'
     pure $ ObjItem found
-    where go item = not (inInventory item) && lowEq (item ^. name) input
+    where pred item = not (inInventory item) && lowEq (item ^. name) input
 
-parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
-parseNpcObj input = runMaybeT $ do
-    npcs' <- use npcs
-    found <- hoistMaybe $ find go npcs'
-    pure $ ObjNpc found
-    where go npc = lowEq (npc ^. name) input
-
-parseItemM :: MonadState Game m => String -> m (Maybe Item)
-parseItemM input = do
-    items' <- use items
-    pure $ find go items'
-    where go item = lowEq (item ^. name) input
+-- Inventory Items 
 
 parseInvItem :: MonadState Game m => String -> m (Maybe Item)
 parseInvItem input = do
     items' <- use items
-    pure $ find go items'
-    where go item = inInventory item && lowEq (item ^. name) input
+    pure $ find pred items'
+    where pred item = inInventory item && lowEq (item ^. name) input
+
+parseInvObj :: MonadState Game m => String -> m (Maybe Obj)
+parseInvObj input = runMaybeT $ do
+    items' <- use items
+    found  <- hoistMaybe $ find pred items'
+    pure $ ObjInv found
+    where pred item = inInventory item && lowEq (item ^. name) input
+
+-- NPC
 
 parseNpc :: [Npc] -> String -> Maybe Npc
-parseNpc npcs input = do
-    find go npcs
-    where go npc = lowEq (npc ^. name) input
+parseNpc = parseTarget
 
 parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
-parseNpcM input = do
-    npcs' <- use npcs
-    pure $ parseNpc npcs' input
+parseNpcM = parseTargetM npcs
 
-parseContainer :: MonadState Game m => String -> m (Maybe Container)
-parseContainer input = do
-    containers' <- use containers
-    pure $ find go containers'
-    where go cont = lowEq (cont ^. name) input
+parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
+parseNpcObj = parseTargetObj npcs ObjNpc 
+
+-- Container
+
+parseContainer :: [Container] -> String -> Maybe Container
+parseContainer = parseTarget
+
+parseContainerM :: MonadState Game m => String -> m (Maybe Container)
+parseContainerM = parseTargetM containers
 
 parseContObj :: MonadState Game m => String -> m (Maybe Obj)
-parseContObj input = runMaybeT $ do
-    containers' <- use containers
-    found       <- hoistMaybe $ find
-        (\x -> (toLower <$> (x ^. name)) == (toLower <$> input))
-        containers'
-    pure $ ObjCont found
+parseContObj = parseTargetObj containers ObjCont
+
+-- Direction
 
 parseDir :: Monad m => String -> m (Maybe Direction)
 parseDir = pure . go . map toLower
