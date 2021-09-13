@@ -19,22 +19,17 @@ import           Control.Lens                   ( (^.)
                                                 , view
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState
-                                                )
-import           Control.Monad.Trans.Maybe      ( MaybeT(MaybeT, runMaybeT) )
+import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.Char                      ( toLower )
 import           Data.List                      ( intercalate
                                                 , intersperse
                                                 )
 import qualified Data.Map.Strict               as M
-import           Data.Maybe                     ( fromMaybe )
 import           Parser                         ( parseContObj
                                                 , parseInvObj
                                                 , parseItemObj
                                                 , parseNpcObj
                                                 )
-import           Safe                           ( headMay )
 import           Types
 import           Util                           ( (?) )
 

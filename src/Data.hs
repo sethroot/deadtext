@@ -5,7 +5,6 @@ module Data where
 import           Control.Lens                   ( (.=) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import qualified Data.Map.Strict               as M
-import qualified Data.Set                      as S
 import           Types
 import           UID                            ( genUid )
 

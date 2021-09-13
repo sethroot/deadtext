@@ -2,9 +2,7 @@
 
 module Action.Help where
 
-import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.State.Lazy       ( MonadIO(..) )
-import           Safe
 
 helpAction :: MonadIO m => m ()
 helpAction = do

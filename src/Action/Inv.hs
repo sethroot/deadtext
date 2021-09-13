@@ -5,9 +5,7 @@ module Action.Inv where
 import           Common                         ( inventory )
 import           Control.Lens                   ( (^.) )
 import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState
-                                                )
+import           Control.Monad.State.Lazy       ( MonadState )
 import           Types
 
 invAction :: (MonadState Game m, MonadIO m) => m ()

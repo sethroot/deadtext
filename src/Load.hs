@@ -18,7 +18,6 @@ import           Data.Aeson                     ( (.:)
                                                 , withObject
                                                 )
 import           Data.Aeson.Types               ( Parser )
-import qualified Data.ByteString.Lazy          as LB
 import qualified Data.List                     as DL
                                                 ( findIndex )
 import           Data.Map.Strict               as M

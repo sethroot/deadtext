@@ -10,14 +10,11 @@ import           Control.Lens                   ( (.=)
                                                 , (^.)
                                                 , use
                                                 )
-import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState(get, put)
-                                                , gets
+                                                , MonadState
                                                 )
 import           Data.List                      ( find )
 import qualified Data.Map.Strict               as M
-import           Data.Maybe                     ( fromMaybe )
 import           Parser                         ( parseDir )
 import           Types
 

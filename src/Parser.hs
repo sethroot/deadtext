@@ -10,7 +10,6 @@ import           Control.Lens                   ( (^.)
                                                 , use
                                                 )
 import           Control.Monad.State.Lazy       ( MonadState )
-import           Control.Monad.Trans.Maybe      ( MaybeT(runMaybeT) )
 import           Data.Char                      ( toLower )
 import           Data.List                      ( find )
 import           Data.List.Split                ( splitOn )

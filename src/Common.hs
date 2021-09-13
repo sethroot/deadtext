@@ -6,7 +6,6 @@ import           Control.Lens                   ( (^.)
                                                 , use
                                                 )
 import           Control.Monad.State.Lazy       ( MonadState )
-import qualified Data.Map                      as M
 import           Types
 
 npcIsHere :: MonadState Game m => Npc -> m Bool

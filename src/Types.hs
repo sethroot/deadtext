@@ -15,7 +15,6 @@ import           Data.Aeson                     ( FromJSON
                                                 , ToJSONKey
                                                 )
 import qualified Data.Map.Strict               as M
-import qualified Data.Set                      as S
 import           GHC.Generics                   ( Generic )
 
 type UID = Int
@@ -80,7 +79,7 @@ data NpcRel = NpcRel
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
-data DialogGroup = DialogGroup [String]
+newtype DialogGroup = DialogGroup [String]
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data ItemLocation = ItemInv

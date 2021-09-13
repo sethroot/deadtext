@@ -14,9 +14,7 @@ import           Control.Lens                   ( (.=)
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
-import           Data.Maybe                     ( fromJust
-                                                , fromMaybe
-                                                )
+import           Data.Maybe                     ( fromJust )
 import           Parser                         ( parseNpc )
 import           System.Exit                    ( exitSuccess )
 import           Types
