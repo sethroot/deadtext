@@ -18,7 +18,7 @@ import           Control.Monad.State.Lazy       ( MonadIO(..)
 import           Data.Char                      ( toLower )
 import           Data.List                      ( elemIndex )
 import           Data.Maybe                     ( fromMaybe )
-import           Parsing                        ( parseItemM )
+import           Parser                         ( parseItemM )
 import           Types
 
 pickupAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Parsing where
+module Parser where
 
 import           Control.Error                  ( MaybeT(runMaybeT)
                                                 , hoistMaybe

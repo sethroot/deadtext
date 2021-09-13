@@ -30,7 +30,7 @@ import           Data.List                      ( intercalate
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import           Msg                            ( indefArt )
-import           Parsing                        ( parseContObj
+import           Parser                         ( parseContObj
                                                 , parseInvObj
                                                 , parseItemObj
                                                 , parseNpcObj

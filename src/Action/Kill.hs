@@ -19,7 +19,7 @@ import           Data.List                      ( elemIndex )
 import           Data.Maybe                     ( fromJust
                                                 , fromMaybe
                                                 )
-import           Parsing                        ( parseNpc )
+import           Parser                         ( parseNpc )
 import           System.Exit                    ( exitSuccess )
 import           Types
 import           Util                           ( (?) )

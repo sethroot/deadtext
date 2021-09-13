@@ -19,7 +19,7 @@ import           Data.List                      ( find )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import           Msg
-import           Parsing                        ( parseDir )
+import           Parser                         ( parseDir )
 import           Types
 
 walkAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
@@ -44,7 +44,7 @@ walk input = runExceptT $ do
         Just a  -> hoistEither $ Right a
     conns' <- use connections
     let resolvedNext = resolveMove (Movement currentLoc dir) conns'
-    loc .= resolvedNext 
+    loc .= resolvedNext
     nextLoc <- case M.lookup resolvedNext locMap of
         Nothing ->
             hoistEither $ Left "Error: Could not lookup resolved next location"

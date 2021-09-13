@@ -30,7 +30,7 @@ import           Data.List                      ( elemIndex )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe
 import qualified Data.Set                      as S
-import           Parsing                        ( parseItemM
+import           Parser                         ( parseItemM
                                                 , parseNpcM
                                                 )
 import           Safe                           ( headMay

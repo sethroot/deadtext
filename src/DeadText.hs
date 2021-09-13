@@ -2,8 +2,7 @@
 
 module DeadText
     ( deadText
-    )
-where
+    ) where
 
 import           Action
 import           Control.Error
@@ -30,7 +29,7 @@ import           Data.Maybe
 import           Load                           ( GameExt
                                                 , toGame
                                                 )
-import           Parsing                        ( normalizeInput
+import           Parser                         ( normalizeInput
                                                 , parseRawInput
                                                 )
 import           System.Environment

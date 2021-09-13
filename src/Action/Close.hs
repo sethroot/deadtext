@@ -14,7 +14,7 @@ import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import           Control.Monad.Trans.Except     ( runExceptT )
 import           Data.List                      ( elemIndex )
-import           Parsing                        ( parseContainer )
+import           Parser                         ( parseContainer )
 import           Types
 
 closeAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()

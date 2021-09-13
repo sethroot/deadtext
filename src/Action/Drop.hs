@@ -21,7 +21,7 @@ import qualified Data.Set                      as S
 import           Msg                            ( dontHaveObject
                                                 , dropObject
                                                 )
-import           Parsing                        ( parseInvItem )
+import           Parser                         ( parseInvItem )
 import           Types
 
 dropAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
