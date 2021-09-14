@@ -46,12 +46,11 @@ import           Types                          ( Game
                                                 )
 
 deadText :: IO ()
-deadText = void $ runStateT deadText' Data.initState
+deadText = void $ runStateT game Data.initState
 
-deadText' :: GameLoop
-deadText' = do
+game :: GameLoop
+game = do
     args <- liftIO getArgs
-    -- liftIO . print $ args
     processArgs args
     lookAction []
     forever execGameLoop
