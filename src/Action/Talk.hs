@@ -33,6 +33,7 @@ processTalkTo target = do
 talkTo :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
 talkTo input = runExceptT $ do
     npcs' <- use npcs
+    -- todo: add support for talking to unknown npcs by gender, description
     index <- case findIndex (nameMatches input) npcs' of
         Nothing -> do
             let out = dontSeeTarget (input ^. raw)

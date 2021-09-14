@@ -2,8 +2,10 @@
 
 module Util where
 
-import Data.Char ( toLower )
+import           Data.Char                      ( toLower )
 import qualified Data.Map.Strict               as M
+import           Text.Pretty.Simple             ( pPrint )
+import           Types                          ( Game )
 
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs
@@ -23,3 +25,9 @@ maybeToEither (Just a) = Right a
 
 lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
 lowEq a b = (toLower <$> a) == (toLower <$> b)
+
+printGame :: Game -> IO ()
+printGame g = do
+    putStrLn ""
+    pPrint g
+    putStrLn ""

@@ -4,11 +4,13 @@ module DeadText
     ( deadText
     ) where
 
-import           Action
-import           Control.Error
-import           Control.Lens                   ( (.=)
-                                                , (^.)
+import           Action                         ( lookAction
+                                                , processAction
                                                 )
+import           Control.Error                  ( MaybeT(runMaybeT)
+                                                , hoistMaybe
+                                                )
+import           Control.Lens                   ( (.=) )
 import           Control.Monad                  ( forever
                                                 , void
                                                 )
@@ -24,24 +26,22 @@ import qualified Data
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
-import           Data.Maybe
+import           Data.Maybe                     ( fromJust )
 import           Load                           ( GameExt
                                                 , toGame
                                                 )
 import           Parser                         ( normalizeInput
                                                 , parseRawInput
                                                 )
-import           System.Environment
+import           System.Environment             ( getArgs )
 import           System.IO                      ( IOMode(ReadMode)
                                                 , hFlush
                                                 , openFile
                                                 , stdout
                                                 )
-import           Text.Pretty.Simple
 import           Types                          ( Game
                                                 , GameLoop
                                                 , HasInput(input)
-                                                , HasNormal(normal)
                                                 , Input(Input)
                                                 )
 
@@ -100,25 +100,7 @@ execGameLoop = do
     let args = tail input'
 
     liftIO $ putStrLn ""
-
-    case action ^. normal of
-        "drop"      -> dropAction arg
-        "give"      -> giveAction args
-        "help"      -> helpAction
-        "inv"       -> invAction
-        "inventory" -> invAction
-        "kill"      -> killAction arg
-        "leave"     -> dropAction arg
-        "look"      -> lookAction args
-        "open"      -> openAction arg
-        "close"     -> closeAction arg
-        "pickup"    -> pickupAction arg
-        "take"      -> pickupAction arg
-        "talk"      -> talkAction args
-        "walk"      -> walkAction arg
-        "debug"     -> debugGameState
-        _           -> walkAction $ Just action
-
+    processAction action arg args
     liftIO $ putStrLn ""
 
 importGame :: IO (Maybe Game)
@@ -133,17 +115,6 @@ importGame = do
 exportGame :: Game -> IO ()
 exportGame state = do
     BL.writeFile "json/out.json" $ encodePretty state
-
-debugGameState :: GameLoop
-debugGameState = do
-    game <- get
-    liftIO $ printGame game
-
-printGame :: Game -> IO ()
-printGame g = do
-    putStrLn ""
-    pPrint g
-    putStrLn ""
 
 dumpInputs :: [String] -> IO ()
 dumpInputs = print . zip [0 ..]
