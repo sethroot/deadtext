@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module DeadText
     ( deadText
@@ -46,6 +47,7 @@ import           Types                          ( Game
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
+import           Util                           ( printGame )
 
 deadText :: IO ()
 deadText = void $ runStateT game initState
@@ -98,10 +100,9 @@ loadInternal = do
 
 loadExternal :: String -> GameLoop
 loadExternal file = do
-    -- if "load" `elem` args 
     game <- loadGame file
     liftIO . putStrLn $ ""
-    -- liftIO $ pPrint game
+    -- liftIO $ printGame $ fromJust game
     put $ fromJust game
 
 importGame :: IO (Maybe Game)
@@ -110,7 +111,7 @@ importGame = do
     contents <- BL.hGetContents handle
     -- BL.putStr contents
     let game = decode contents :: Maybe Game
-    -- print game 
+    -- liftIO $ printGame $ fromJust game
     pure game
 
 exportGame :: Game -> IO ()
