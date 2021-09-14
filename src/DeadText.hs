@@ -114,7 +114,7 @@ execGameLoop = do
         "close"     -> closeAction arg
         "pickup"    -> pickupAction arg
         "take"      -> pickupAction arg
-        "talk"      -> talkAction arg
+        "talk"      -> talkAction args
         "walk"      -> walkAction arg
         "debug"     -> debugGameState
         _           -> walkAction $ Just action

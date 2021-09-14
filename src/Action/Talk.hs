@@ -19,10 +19,14 @@ import qualified Data.Map.Strict               as M
 import           Types
 import           Util                           ( (?) )
 
-talkAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-talkAction Nothing      = pure ()
-talkAction (Just input) = do
-    out <- talkTo input
+talkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+talkAction []                          = liftIO . putStrLn $ noTalkTarget
+talkAction (Input _ "to" : target : _) = processTalkTo target
+talkAction (target                : _) = processTalkTo target
+
+processTalkTo :: (MonadState Game m, MonadIO m) => Input -> m ()
+processTalkTo target = do
+    out <- talkTo target
     either printE printE out
     where printE = liftIO . putStrLn
 
@@ -50,6 +54,9 @@ talkTo input = runExceptT $ do
     let out = (npc ^. dialog) !! (npc ^. dialogCursor)
     advanceDialog index
     hoistEither $ Right out
+
+noTalkTarget :: String
+noTalkTarget = "You shout 'Hellllooooo?'"
 
 nameMatches :: Input -> Npc -> Bool
 nameMatches input npc = fmap toLower (npc ^. name) == input ^. normal
