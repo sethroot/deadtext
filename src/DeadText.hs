@@ -63,23 +63,6 @@ processArgs ("-n"     : _) = loadInternal
 processArgs (file     : _) = loadExternal file
 processArgs _              = loadExternal "example"
 
-loadInternal :: GameLoop
-loadInternal = do
-    Data.setState
-    game <- get
-    -- liftIO $ exportGame game
-    liftIO . putStrLn $ ""
-    liftIO . putStrLn $ "Running against internal config"
-    liftIO . putStrLn $ ""
-
-loadExternal :: String -> GameLoop
-loadExternal file = do
-    -- if "load" `elem` args 
-    game <- loadGame file
-    liftIO . putStrLn $ ""
-    -- liftIO $ pPrint game
-    put $ fromJust game
-
 execGameLoop :: GameLoop
 execGameLoop = do
     liftIO $ putStr ":> "
@@ -102,6 +85,23 @@ execGameLoop = do
     liftIO $ putStrLn ""
     processAction action arg args
     liftIO $ putStrLn ""
+
+loadInternal :: GameLoop
+loadInternal = do
+    Data.setState
+    game <- get
+    -- liftIO $ exportGame game
+    liftIO . putStrLn $ ""
+    liftIO . putStrLn $ "Running against internal config"
+    liftIO . putStrLn $ ""
+
+loadExternal :: String -> GameLoop
+loadExternal file = do
+    -- if "load" `elem` args 
+    game <- loadGame file
+    liftIO . putStrLn $ ""
+    -- liftIO $ pPrint game
+    put $ fromJust game
 
 importGame :: IO (Maybe Game)
 importGame = do
