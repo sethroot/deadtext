@@ -22,7 +22,9 @@ import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
                                                 , get
                                                 , put
                                                 )
-import qualified Data
+import           Data                           ( initState
+                                                , setState
+                                                )
 import           Data.Aeson                     ( decode )
 import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import qualified Data.ByteString.Lazy          as BL
@@ -46,7 +48,7 @@ import           Types                          ( Game
                                                 )
 
 deadText :: IO ()
-deadText = void $ runStateT game Data.initState
+deadText = void $ runStateT game initState
 
 game :: GameLoop
 game = do
