@@ -2,13 +2,15 @@
 
 module Util where
 
+import           Control.Monad.IO.Class         ( liftIO )
+import           Control.Monad.State.Lazy       ( get )
 import           Data.Char                      ( toLower )
 import qualified Data.Map.Strict               as M
 import           Text.Pretty.Simple             ( pPrint )
-import           Types                          ( Game, GameLoop )
+import           Types                          ( Game
+                                                , GameLoop
+                                                )
 
-import           Control.Monad.State.Lazy       ( get )
-import           Control.Monad.IO.Class         ( liftIO )
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs
     where pairs = [ (v, [k]) | (k, vs) <- M.toList m, v <- vs ]

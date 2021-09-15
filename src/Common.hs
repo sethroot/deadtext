@@ -6,7 +6,9 @@ import           Control.Lens                   ( (^.)
                                                 , use
                                                 )
 import           Control.Monad.State.Lazy       ( MonadState )
+import           Data.Char                      ( toLower )
 import           Types
+import           Util                           ( (?) )
 
 npcIsHere :: MonadState Game m => Npc -> m Bool
 npcIsHere npc = do
@@ -30,3 +32,7 @@ inventory :: MonadState Game m => m [Item]
 inventory = do
     items' <- use items
     pure $ filter inInventory items'
+
+indefArt :: String -> String
+indefArt s = isVowel ? "an" $ "a"
+    where isVowel = toLower (head s) `elem` ['a', 'e', 'i', 'o', 'u']

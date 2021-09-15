@@ -3,6 +3,7 @@
 module Action.Look where
 
 import           Common                         ( containerIsHere
+                                                , indefArt
                                                 , itemIsHere
                                                 , npcIsHere
                                                 )
@@ -253,7 +254,3 @@ seeInTransparentContainer item container =
         ++ " "
         ++ item
         ++ "."
-
-indefArt :: String -> String
-indefArt s = isVowel ? "an" $ "a"
-    where isVowel = toLower (head s) `elem` ['a', 'e', 'i', 'o', 'u']

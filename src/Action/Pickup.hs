@@ -2,6 +2,7 @@
 
 module Action.Pickup where
 
+import           Common                         ( indefArt )
 import           Control.Error                  ( headMay
                                                 , hoistEither
                                                 , runExceptT
@@ -26,7 +27,8 @@ pickupAction (Just input) = do
     where printE = liftIO . putStrLn
 
 dontSeeObject :: String -> String
-dontSeeObject object = "You don't see a " ++ object ++ " here."
+dontSeeObject object =
+    "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
 
 pickup :: (MonadState Game m) => Input -> m (Either String String)
 pickup input = runExceptT $ do
@@ -45,22 +47,43 @@ pickup input = runExceptT $ do
             let out = (item ^. name) ++ " taken."
             hoistEither $ Left out
         else hoistEither $ Right ()
-    let openContainersHere    = filter (containerOpenInLoc loc') containers'
+
+    let closedTransContainersHere = filter (hereTransClosed loc') containers'
+    let itemsInClosedTransContainersHere =
+            itemsInContainers items' closedTransContainersHere
+    let inputInTransContainer =
+            filter (inputMatchesItem input) itemsInClosedTransContainersHere
+    case headMay inputInTransContainer of
+        Nothing                -> hoistEither $ Right ()
+        Just (item, container) -> do
+            let out =
+                    "You can see "
+                        ++ indefArt (item ^. name)
+                        ++ " "
+                        ++ (item ^. name)
+                        ++ " in the "
+                        ++ (container ^. name)
+                        ++ ", but the "
+                        ++ (container ^. name)
+                        ++ " is closed."
+            hoistEither $ Left out
+
+    let openContainers        = filter (\c -> c ^. cState == Open) containers'
+    let openContainersHere    = filter (\c -> c ^. loc == loc') openContainers
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
     let filtered              = filter (inputMatchesItem input) itemsInOpenContainers
     case headMay filtered of
         Nothing -> do
-            -- Can happen if attempting to pickup something in a closed container
-            let out = "Something has gone terrible wrong"
+            let out = dontSeeObject $ input ^. normal
             hoistEither $ Left out
         Just (item, container) -> do
             pickupItemMutation item
             let out = takeItemFromContainer item container
             hoistEither $ Right out
 
-containerOpenInLoc :: UID -> Container -> Bool
-containerOpenInLoc loc' container =
-    container ^. cState == Open && container ^. loc == loc'
+hereTransClosed :: UID -> Container -> Bool
+hereTransClosed loc' cont =
+    (cont ^. loc == loc') && (cont ^. trans) && (cont ^. cState == Closed)
 
 itemsInContainers :: [Item] -> [Container] -> [(Item, Container)]
 itemsInContainers is cs =
