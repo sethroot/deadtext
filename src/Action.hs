@@ -17,13 +17,11 @@ import qualified Action.Pickup                 as Pickup
 import qualified Action.Talk                   as Talk
 import qualified Action.Walk                   as Walk
 import           Control.Lens                   ( (^.) )
-import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.State.Lazy       ( get )
 import           Types                          ( GameLoop
                                                 , HasNormal(normal)
                                                 , Input
                                                 )
-import           Util                           ( printGame )
+import           Util                           ( debugGameState )
 
 processAction :: Input -> Maybe Input -> [Input] -> GameLoop
 processAction action arg args = case action ^. normal of
@@ -45,8 +43,3 @@ processAction action arg args = case action ^. normal of
     "walk"      -> Walk.walkAction arg
     "debug"     -> debugGameState
     _           -> Walk.walkAction $ Just action
-
-debugGameState :: GameLoop
-debugGameState = do
-    game <- get
-    liftIO $ printGame game
