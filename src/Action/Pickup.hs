@@ -48,7 +48,7 @@ pickup input = runExceptT $ do
             hoistEither $ Left out
         else hoistEither $ Right ()
 
-    let closedTransContainersHere = filter (hereTransClosed loc') containers'
+    let closedTransContainersHere = filter (closedTransHere loc') containers'
     let itemsInClosedTransContainersHere =
             itemsInContainers items' closedTransContainersHere
     let inputInTransContainer =
@@ -83,8 +83,8 @@ pickup input = runExceptT $ do
 openHere :: UID -> Container -> Bool
 openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)
 
-hereTransClosed :: UID -> Container -> Bool
-hereTransClosed loc' cont =
+closedTransHere :: UID -> Container -> Bool
+closedTransHere loc' cont =
     (cont ^. loc == loc') && (cont ^. trans) && (cont ^. cState == Closed)
 
 itemsInContainers :: [Item] -> [Container] -> [(Item, Container)]
