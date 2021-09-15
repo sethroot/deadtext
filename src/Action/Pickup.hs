@@ -68,8 +68,7 @@ pickup input = runExceptT $ do
                         ++ " is closed."
             hoistEither $ Left out
 
-    let openContainers        = filter (\c -> c ^. cState == Open) containers'
-    let openContainersHere    = filter (\c -> c ^. loc == loc') openContainers
+    let openContainersHere    = filter (openHere loc') containers'
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
     let filtered              = filter (inputMatchesItem input) itemsInOpenContainers
     case headMay filtered of
@@ -80,6 +79,9 @@ pickup input = runExceptT $ do
             pickupItemMutation item
             let out = takeItemFromContainer item container
             hoistEither $ Right out
+
+openHere :: UID -> Container -> Bool
+openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)
 
 hereTransClosed :: UID -> Container -> Bool
 hereTransClosed loc' cont =
