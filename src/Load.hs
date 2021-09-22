@@ -9,15 +9,24 @@
 
 module Load where
 
+import           Control.Error                  ( MaybeT(runMaybeT)
+                                                , hoistMaybe
+                                                )
 import qualified Control.Lens                  as L
-import           Control.Monad                  ( foldM )
-import           Control.Monad.State.Lazy       ( MonadState )
+import           Control.Monad.State            ( MonadIO(..)
+                                                , MonadState(get, put)
+                                                , foldM
+                                                )
+import           Data                           ( setState )
 import           Data.Aeson                     ( (.:)
                                                 , (.:?)
                                                 , FromJSON(parseJSON)
+                                                , decode
                                                 , withObject
                                                 )
+import           Data.Aeson.Encode.Pretty       ( encodePretty )
 import           Data.Aeson.Types               ( Parser )
+import qualified Data.ByteString.Lazy          as BL
 import qualified Data.List                     as DL
                                                 ( findIndex )
 import           Data.Map.Strict               as M
@@ -32,6 +41,9 @@ import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromJust )
 import           Data.Types.Injective           ( Injective(..) )
 import           GHC.Generics                   ( Generic )
+import           System.IO                      ( IOMode(ReadMode)
+                                                , openFile
+                                                )
 import           Types
 import           UID                            ( genUid )
 
@@ -395,6 +407,47 @@ toGame g = do
 
     -- Complete, loaded Game
     pure $ Game locUid locsMap conns npcs items conts input gen
+
+loadInternal :: GameLoop
+loadInternal = do
+    Data.setState
+    game <- get
+    -- liftIO $ exportGame game
+    liftIO . putStrLn $ ""
+    liftIO . putStrLn $ "Running against internal config"
+    liftIO . putStrLn $ ""
+
+loadExternal :: String -> GameLoop
+loadExternal file = do
+    game <- loadGame file
+    liftIO . putStrLn $ ""
+    -- liftIO $ printGame $ fromJust game
+    put $ fromJust game
+
+importRaw :: IO (Maybe Game)
+importRaw = do
+    handle   <- openFile "json/in.json" ReadMode
+    contents <- BL.hGetContents handle
+    -- BL.putStr contents
+    let game = decode contents :: Maybe Game
+    -- liftIO $ printGame $ fromJust game
+    pure game
+
+exportRaw :: Game -> IO ()
+exportRaw state = do
+    BL.writeFile "json/out.json" $ encodePretty state
+
+loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
+loadGame file = runMaybeT $ do
+    let path = "json/" ++ file ++ ".json"
+    handle   <- liftIO $ openFile path ReadMode
+    contents <- liftIO $ BL.hGetContents handle
+    let gameExt = decode contents :: Maybe GameExt
+    case gameExt of
+        Nothing      -> hoistMaybe Nothing
+        Just gameExt -> do
+            game <- toGame gameExt
+            hoistMaybe $ Just game
 
 -- Common
 

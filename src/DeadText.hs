@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# OPTIONS_GHC -Wno-unused-imports #-}
+-- {-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module DeadText
     ( deadText
@@ -7,9 +7,6 @@ module DeadText
 
 import           Action                         ( lookAction
                                                 , processAction
-                                                )
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , hoistMaybe
                                                 )
 import           Control.Lens                   ( (.=) )
 import           Control.Monad                  ( forever
@@ -19,27 +16,16 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
                                                 )
-import           Control.Monad.Trans.State.Lazy ( StateT(runStateT)
-                                                , get
-                                                , put
-                                                )
-import           Data                           ( initState
-                                                , setState
-                                                )
-import           Data.Aeson                     ( decode )
-import           Data.Aeson.Encode.Pretty       ( encodePretty )
-import qualified Data.ByteString.Lazy          as BL
-import           Data.Maybe                     ( fromJust )
-import           Load                           ( GameExt
-                                                , toGame
+import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
+import           Data                           ( initState )
+import           Load                           ( loadExternal
+                                                , loadInternal
                                                 )
 import           Parser                         ( normalizeInput
                                                 , parseRawInput
                                                 )
 import           System.Environment             ( getArgs )
-import           System.IO                      ( IOMode(ReadMode)
-                                                , hFlush
-                                                , openFile
+import           System.IO                      ( hFlush
                                                 , stdout
                                                 )
 import           Types                          ( Game
@@ -47,7 +33,6 @@ import           Types                          ( Game
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
-import           Util                           ( printGame )
 
 deadText :: IO ()
 deadText = void $ runStateT game initState
@@ -57,7 +42,12 @@ game = do
     args <- liftIO getArgs
     processArgs args
     lookAction []
-    forever execGameLoop
+    forever $ do
+        printPrompt
+        input'              <- liftIO getLine
+        parsed              <- parseInput input'
+        (action, arg, args) <- tokenize parsed
+        exec action arg args
     pure ()
 
 processArgs :: [String] -> GameLoop
@@ -66,69 +56,34 @@ processArgs ("-n"     : _) = loadInternal
 processArgs (file     : _) = loadExternal file
 processArgs _              = loadExternal "example"
 
-execGameLoop :: GameLoop
-execGameLoop = do
+printPrompt :: MonadIO m => m ()
+printPrompt = do
     liftIO $ putStr ":> "
     liftIO $ hFlush stdout
 
-    input' <- liftIO getLine
-
+parseInput :: (MonadState Game m) => String -> m [Input]
+parseInput input' = do
     let raw        = parseRawInput input'
     let normalized = normalizeInput raw
     let input'     = zipWith Input raw normalized
     input .= input'
-    -- liftIO $ dumpInputs raw 
+    pure input'
+    -- liftIO $ dumpInputs raw
 
+tokenize :: (Monad m) => [Input] -> m (Input, Maybe Input, [Input])
+tokenize input' = do
     let action = head input'
-    let arg = if length input' > 1
-            then Just . head . tail $ input'
-            else Nothing
+    let arg =
+            if length input' > 1 then Just . head . tail $ input' else Nothing
     let args = tail input'
+    pure (action, arg, args)
 
+exec :: (MonadState Game m, MonadIO m)
+     => Input
+     -> Maybe Input
+     -> [Input]
+     -> m ()
+exec action arg args = do
     liftIO $ putStrLn ""
     processAction action arg args
     liftIO $ putStrLn ""
-
-loadInternal :: GameLoop
-loadInternal = do
-    Data.setState
-    game <- get
-    -- liftIO $ exportGame game
-    liftIO . putStrLn $ ""
-    liftIO . putStrLn $ "Running against internal config"
-    liftIO . putStrLn $ ""
-
-loadExternal :: String -> GameLoop
-loadExternal file = do
-    game <- loadGame file
-    liftIO . putStrLn $ ""
-    -- liftIO $ printGame $ fromJust game
-    put $ fromJust game
-
-importGame :: IO (Maybe Game)
-importGame = do
-    handle   <- openFile "json/in.json" ReadMode
-    contents <- BL.hGetContents handle
-    -- BL.putStr contents
-    let game = decode contents :: Maybe Game
-    -- liftIO $ printGame $ fromJust game
-    pure game
-
-exportGame :: Game -> IO ()
-exportGame state = do
-    BL.writeFile "json/out.json" $ encodePretty state
-
-dumpInputs :: [String] -> IO ()
-dumpInputs = print . zip [0 ..]
-
-loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
-loadGame file = runMaybeT $ do
-    let path = "json/" ++ file ++ ".json"
-    handle   <- liftIO $ openFile path ReadMode
-    contents <- liftIO $ BL.hGetContents handle
-    let gameExt = decode contents :: Maybe GameExt
-    case gameExt of
-        Nothing      -> hoistMaybe Nothing
-        Just gameExt -> do
-            game <- toGame gameExt
-            hoistMaybe $ Just game

@@ -17,13 +17,20 @@ import qualified Action.Pickup                 as Pickup
 import qualified Action.Talk                   as Talk
 import qualified Action.Walk                   as Walk
 import           Control.Lens                   ( (^.) )
-import           Types                          ( GameLoop
+import           Control.Monad.State            ( MonadIO
+                                                , MonadState
+                                                )
+import           Types                          ( Game
                                                 , HasNormal(normal)
                                                 , Input
                                                 )
 import           Util                           ( debugGameState )
 
-processAction :: Input -> Maybe Input -> [Input] -> GameLoop
+processAction :: (MonadState Game m, MonadIO m)
+              => Input
+              -> Maybe Input
+              -> [Input]
+              -> m ()
 processAction action arg args = case action ^. normal of
     "close"     -> Close.closeAction arg
     "shut"      -> Close.closeAction arg

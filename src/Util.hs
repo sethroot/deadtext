@@ -2,14 +2,13 @@
 
 module Util where
 
-import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.State.Lazy       ( get )
+import           Control.Monad.State            ( MonadIO(..)
+                                                , MonadState(get)
+                                                )
 import           Data.Char                      ( toLower )
 import qualified Data.Map.Strict               as M
 import           Text.Pretty.Simple             ( pPrint )
-import           Types                          ( Game
-                                                , GameLoop
-                                                )
+import           Types                          ( Game )
 
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs
@@ -30,7 +29,10 @@ maybeToEither (Just a) = Right a
 lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
 lowEq a b = (toLower <$> a) == (toLower <$> b)
 
-debugGameState :: GameLoop
+dumpInputs :: [String] -> IO ()
+dumpInputs = print . zip [0 ..]
+
+debugGameState :: (MonadState Game m, MonadIO m) => m ()
 debugGameState = do
     game <- get
     liftIO $ printGame game
