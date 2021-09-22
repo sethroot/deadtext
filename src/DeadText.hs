@@ -42,12 +42,7 @@ game = do
     args <- liftIO getArgs
     processArgs args
     lookAction []
-    forever $ do
-        printPrompt
-        input'              <- liftIO getLine
-        parsed              <- parseInput input'
-        (action, arg, args) <- tokenize parsed
-        exec action arg args
+    forever $ printPrompt >> liftIO getLine >>= parseInput >>= tokenize >>= exec
     pure ()
 
 processArgs :: [String] -> GameLoop
@@ -70,20 +65,18 @@ parseInput input' = do
     pure input'
     -- liftIO $ dumpInputs raw
 
-tokenize :: Monad m => [Input] -> m (Input, Maybe Input, [Input])
+data Action = Action Input (Maybe Input) [Input]
+
+tokenize :: Monad m => [Input] -> m (Action)
 tokenize input' = do
     let action = head input'
     let arg =
             if length input' > 1 then Just . head . tail $ input' else Nothing
     let args = tail input'
-    pure (action, arg, args)
+    pure $ Action action arg args
 
-exec :: (MonadState Game m, MonadIO m)
-     => Input
-     -> Maybe Input
-     -> [Input]
-     -> m ()
-exec action arg args = do
+exec :: (MonadState Game m, MonadIO m) => Action -> m ()
+exec (Action action arg args) = do
     liftIO $ putStrLn ""
     processAction action arg args
     liftIO $ putStrLn ""
