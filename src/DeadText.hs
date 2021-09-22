@@ -61,7 +61,7 @@ printPrompt = do
     liftIO $ putStr ":> "
     liftIO $ hFlush stdout
 
-parseInput :: (MonadState Game m) => String -> m [Input]
+parseInput :: MonadState Game m => String -> m [Input]
 parseInput input' = do
     let raw        = parseRawInput input'
     let normalized = normalizeInput raw
@@ -70,7 +70,7 @@ parseInput input' = do
     pure input'
     -- liftIO $ dumpInputs raw
 
-tokenize :: (Monad m) => [Input] -> m (Input, Maybe Input, [Input])
+tokenize :: Monad m => [Input] -> m (Input, Maybe Input, [Input])
 tokenize input' = do
     let action = head input'
     let arg =
