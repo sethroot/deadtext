@@ -67,7 +67,7 @@ parseInput input' = do
 
 data Action = Action Input (Maybe Input) [Input]
 
-tokenize :: Monad m => [Input] -> m (Action)
+tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do
     let action = head input'
     let arg =
