@@ -33,6 +33,7 @@ import           Types                          ( Game
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
+import Data.Functor ((<&>))
 
 deadText :: IO ()
 deadText = void $ runStateT game initState
@@ -42,7 +43,11 @@ game = do
     args <- liftIO getArgs
     processArgs args
     lookAction []
-    forever $ printPrompt >> liftIO getLine >>= parseInput >>= tokenize >>= exec
+    forever $ do
+        printPrompt
+        parsed <- liftIO getLine <&> parseInput
+        input .= parsed
+        tokenize parsed >>= exec
     pure ()
 
 processArgs :: [String] -> GameLoop
@@ -56,13 +61,11 @@ printPrompt = do
     liftIO $ putStr ":> "
     liftIO $ hFlush stdout
 
-parseInput :: MonadState Game m => String -> m [Input]
-parseInput input' = do
+parseInput :: String -> [Input]
+parseInput input' =
     let raw        = parseRawInput input'
-    let normalized = normalizeInput raw
-    let input'     = zipWith Input raw normalized
-    input .= input'
-    pure input'
+        normalized = normalizeInput raw
+    in zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
 
 data Action = Action Input (Maybe Input) [Input]
