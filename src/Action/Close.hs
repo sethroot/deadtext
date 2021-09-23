@@ -39,7 +39,7 @@ close inputs = runExceptT $ do
 
     if (container' ^. cState) == Closed
         then do
-            let out = "The " ++ container' ^. name ++ " is already open"
+            let out = "The " ++ container' ^. name ++ " is already closed."
             hoistEither $ Left out
         else hoistEither $ Right ()
 
