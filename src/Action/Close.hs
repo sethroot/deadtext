@@ -28,7 +28,7 @@ close inputs = runExceptT $ do
     let head = headMay inputs
     target <- case head of
         Nothing       -> hoistEither $ Left "Close what?"
-        (Just target) -> hoistEither $ Right target
+        Just target -> hoistEither $ Right target
 
     container  <- parseContainerM $ target ^. normal
     container' <- case container of

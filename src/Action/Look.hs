@@ -134,7 +134,7 @@ pathsInLoc' loc conns =
     in  zip (map (^. dir) paths) (map (^. dest) paths)
 
 pathGoing :: Direction -> String
-pathGoing dir = "There is a path going " ++ show dir
+pathGoing dir = "There is a path going " ++ show dir ++ "."
 
 formatMulti :: [String] -> String
 formatMulti = mconcat . intersperse "\n\n" . filter (not . null)
