@@ -3,7 +3,12 @@
 module Action.Drop where
 
 import           Common                         ( indefArt )
-import           Control.Error
+import           Control.Error                  ( MaybeT(runMaybeT)
+                                                , headMay
+                                                , hoistEither
+                                                , hoistMaybe
+                                                , runExceptT
+                                                )
 import           Control.Lens                   ( (.=)
                                                 , Ixed(ix)
                                                 , (^.)
