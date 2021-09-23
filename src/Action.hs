@@ -43,8 +43,8 @@ processAction action arg args = case action ^. normal of
     "kill"      -> Kill.killAction args
     "look"      -> Look.lookAction args
     "open"      -> Open.openAction args
-    "pickup"    -> Pickup.pickupAction arg
-    "take"      -> Pickup.pickupAction arg
+    "pickup"    -> Pickup.pickupAction args
+    "take"      -> Pickup.pickupAction args
     "talk"      -> Talk.talkAction args
     "go"        -> Walk.walkAction arg
     "walk"      -> Walk.walkAction arg

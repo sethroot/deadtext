@@ -19,26 +19,27 @@ import           Data.List                      ( elemIndex )
 import           Parser                         ( parseItemM )
 import           Types
 
-pickupAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-pickupAction Nothing      = liftIO . putStrLn $ "What do you want to pickup?"
-pickupAction (Just input) = do
-    out <- pickup input
+pickupAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+pickupAction inputs = do
+    out <- pickup inputs
     either printE printE out
     where printE = liftIO . putStrLn
 
-dontSeeObject :: String -> String
-dontSeeObject object =
-    "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
 
-pickup :: (MonadState Game m) => Input -> m (Either String String)
-pickup input = runExceptT $ do
+pickup :: (MonadState Game m) => [Input] -> m (Either String String)
+pickup inputs = runExceptT $ do
+    let input' = headMay inputs
+    target <- case input' of
+      Nothing -> hoistEither $ Left "Pickup what?"
+      Just target -> hoistEither $ Right target
+
     loc'        <- use loc
     containers' <- use containers
     items'      <- use items
-    mItem       <- parseItemM $ input ^. normal
+    mItem       <- parseItemM $ target ^. normal
     item        <- case mItem of
         Nothing -> do
-            let out = dontSeeObject $ input ^. raw
+            let out = dontSeeObject $ target ^. raw
             hoistEither $ Left out
         Just item -> hoistEither $ Right item
     if item ^. loc == ItemLoc loc'
@@ -52,7 +53,7 @@ pickup input = runExceptT $ do
     let itemsInClosedTransContainersHere =
             itemsInContainers items' closedTransContainersHere
     let inputInTransContainer =
-            filter (inputMatchesItem input) itemsInClosedTransContainersHere
+            filter (inputMatchesItem target) itemsInClosedTransContainersHere
     case headMay inputInTransContainer of
         Nothing                -> hoistEither $ Right ()
         Just (item, container) -> do
@@ -70,10 +71,10 @@ pickup input = runExceptT $ do
 
     let openContainersHere    = filter (openHere loc') containers'
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
-    let filtered              = filter (inputMatchesItem input) itemsInOpenContainers
+    let filtered              = filter (inputMatchesItem target) itemsInOpenContainers
     case headMay filtered of
         Nothing -> do
-            let out = dontSeeObject $ input ^. normal
+            let out = dontSeeObject $ target ^. normal
             hoistEither $ Left out
         Just (item, container) -> do
             pickupItemMutation item
@@ -106,3 +107,7 @@ takeItemFromContainer item container =
     let i = item ^. name
         c = container ^. name
     in  "You take the " ++ i ++ " from the " ++ c ++ "."
+
+dontSeeObject :: String -> String
+dontSeeObject object =
+    "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
