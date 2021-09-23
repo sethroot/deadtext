@@ -3,7 +3,8 @@
 module Action.Kill where
 
 import           Common                         ( npcIsHere )
-import           Control.Error                  ( hoistEither
+import           Control.Error                  ( headMay
+                                                , hoistEither
                                                 , runExceptT
                                                 )
 import           Control.Lens                   ( (.=)
@@ -14,24 +15,29 @@ import           Control.Lens                   ( (.=)
 import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
-import           Data.Maybe                     ( fromJust )
 import           Parser                         ( parseNpc )
 import           System.Exit                    ( exitSuccess )
 import           Types
 
-killAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-killAction Nothing = liftIO . putStrLn $ "Kill what?"
-killAction input
-    | fromJust input ^. normal == "self" = do
-        liftIO $ putStrLn "You are dead. Congrats"
-        liftIO exitSuccess
-    | otherwise = do
-        out <- killTarget $ fromJust input
-        either printE printE out
+killAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+killAction inputs = do
+    out <- killTarget inputs
+    either printE printE out
     where printE = liftIO . putStrLn
 
-killTarget :: MonadState Game m => Input -> m (Either String String)
-killTarget target = runExceptT $ do
+killTarget :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
+killTarget inputs = runExceptT $ do
+    let input' = headMay inputs
+    target <- case input' of
+        Nothing     -> hoistEither $ Left "Kill who?"
+        Just target -> hoistEither $ Right target
+
+    if target ^. normal == "self"
+        then do
+            liftIO $ putStrLn "You are dead. Congrats."
+            liftIO exitSuccess
+        else hoistEither $ Right ()
+
     npcs' <- use npcs
     npc   <- case parseNpc npcs' $ target ^. normal of
         Nothing  -> hoistEither $ Left $ dontSee target
