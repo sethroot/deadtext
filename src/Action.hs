@@ -32,8 +32,8 @@ processAction :: (MonadState Game m, MonadIO m)
               -> [Input]
               -> m ()
 processAction action arg args = case action ^. normal of
-    "close"     -> Close.closeAction arg
-    "shut"      -> Close.closeAction arg
+    "close"     -> Close.closeAction args
+    "shut"      -> Close.closeAction args
     "drop"      -> Drop.dropAction arg
     "leave"     -> Drop.dropAction arg
     "give"      -> Give.giveAction args

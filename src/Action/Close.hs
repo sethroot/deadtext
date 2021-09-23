@@ -14,19 +14,23 @@ import           Control.Monad.IO.Class         ( MonadIO(..) )
 import           Control.Monad.State.Lazy       ( MonadState )
 import           Data.List                      ( elemIndex )
 import           Parser                         ( parseContainerM )
+import           Safe                           ( headMay )
 import           Types
 
-closeAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-closeAction Nothing       = liftIO . putStrLn $ "Close what?"
-closeAction (Just target) = do
-    out <- close target
+closeAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+closeAction inputs = do
+    out <- close inputs
     either printE printE out
     where printE = liftIO . putStrLn
 
-close :: MonadState Game m => Input -> m (Either String String)
-close target = runExceptT $ do
-    container  <- parseContainerM $ target ^. normal
+close :: MonadState Game m => [Input] -> m (Either String String)
+close inputs = runExceptT $ do
+    let head = headMay inputs
+    target <- case head of
+        Nothing       -> hoistEither $ Left "Close what?"
+        (Just target) -> hoistEither $ Right target
 
+    container  <- parseContainerM $ target ^. normal
     container' <- case container of
         Nothing -> do
             let out = "You don't see a " ++ target ^. normal ++ "."

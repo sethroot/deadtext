@@ -18,6 +18,7 @@ import           Control.Monad.State.Lazy       ( MonadIO
                                                 )
 import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
 import           Data                           ( initState )
+import           Data.Functor                   ( (<&>) )
 import           Load                           ( loadExternal
                                                 , loadInternal
                                                 )
@@ -33,7 +34,6 @@ import           Types                          ( Game
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
-import Data.Functor ((<&>))
 
 deadText :: IO ()
 deadText = void $ runStateT game initState
@@ -65,7 +65,7 @@ parseInput :: String -> [Input]
 parseInput input' =
     let raw        = parseRawInput input'
         normalized = normalizeInput raw
-    in zipWith Input raw normalized
+    in  zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
 
 data Action = Action Input (Maybe Input) [Input]
