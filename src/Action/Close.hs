@@ -27,7 +27,7 @@ close :: MonadState Game m => [Input] -> m (Either String String)
 close inputs = runExceptT $ do
     let head = headMay inputs
     target <- case head of
-        Nothing       -> hoistEither $ Left "Close what?"
+        Nothing     -> hoistEither $ Left "Close what?"
         Just target -> hoistEither $ Right target
 
     container  <- parseContainerM $ target ^. normal
