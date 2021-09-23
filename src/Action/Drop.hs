@@ -2,10 +2,8 @@
 
 module Action.Drop where
 
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , fromMaybe
-                                                , hoistMaybe
-                                                )
+import           Common                         ( indefArt )
+import           Control.Error
 import           Control.Lens                   ( (.=)
                                                 , Ixed(ix)
                                                 , (^.)
@@ -17,20 +15,34 @@ import           Data.List                      ( elemIndex )
 import           Parser                         ( parseInvItem )
 import           Types
 
-dropAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-dropAction Nothing      = pure ()
-dropAction (Just input) = do
-    let target = input ^. normal
-    message <- dropItem target
-    liftIO . putStrLn $ fromMaybe (dontHaveObject (input ^. raw)) message
+dropAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+dropAction inputs = do
+    out <- dropItem inputs
+    either printE printE out
+    where printE = liftIO . putStrLn
 
-dropItem :: MonadState Game m => String -> m (Maybe String)
-dropItem input = runMaybeT $ do
-    parsed <- parseInvItem input
-    item   <- case parsed of
-        Nothing   -> hoistMaybe Nothing
+dropItem :: MonadState Game m => [Input] -> m (Either String String)
+dropItem inputs = runExceptT $ do
+    let input' = headMay inputs
+    target <- case input' of
+        Nothing     -> hoistEither $ Left "Drop what?"
+        Just target -> hoistEither $ Right target
+    itemM <- parseInvItem $ target ^. normal
+
+    item  <- case itemM of
+        Nothing -> do
+            let out = dontHaveObject $ target ^. normal
+            hoistEither $ Left out
         Just item -> pure item
-    dropMutation item
+
+    result <- dropMutation item
+    case result of
+        Nothing -> do
+            let out =
+                    "Inexplicably, you are unable to drop your " ++ item ^. name
+            hoistEither $ Left out
+        Just item -> hoistEither $ Right ()
+
     pure . dropObject $ item ^. name
 
 dropMutation :: MonadState Game m => Item -> m (Maybe ())
@@ -43,7 +55,8 @@ dropMutation item = runMaybeT $ do
     items . ix index . loc .= ItemLoc loc'
 
 dontHaveObject :: String -> String
-dontHaveObject object = "You do not have a " ++ object ++ "."
+dontHaveObject object =
+    "You do not have " ++ indefArt object ++ " " ++ object ++ "."
 
 dropObject :: String -> String
 dropObject object = "You drop the " ++ object ++ "."
