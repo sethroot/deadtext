@@ -3,6 +3,7 @@
 module Action
     ( processAction
     , Look.lookAction
+    , Action(Action)
     ) where
 
 import qualified Action.Close                  as Close
@@ -26,11 +27,10 @@ import           Types                          ( Game
                                                 )
 import           Util                           ( debugGameState )
 
-processAction :: (MonadState Game m, MonadIO m)
-              => Input
-              -> [Input]
-              -> m ()
-processAction action args = case action ^. normal of
+data Action = Action Input [Input]
+
+processAction :: (MonadState Game m, MonadIO m) => Action -> m ()
+processAction (Action action args) = case action ^. normal of
     "close"     -> Close.closeAction args
     "shut"      -> Close.closeAction args
     "drop"      -> Drop.dropAction args
@@ -48,4 +48,4 @@ processAction action args = case action ^. normal of
     "go"        -> Walk.walkAction args
     "walk"      -> Walk.walkAction args
     "debug"     -> debugGameState
-    _           -> Walk.walkAction $ [action] 
+    _           -> Walk.walkAction [action]

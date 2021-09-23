@@ -5,7 +5,8 @@ module DeadText
     ( deadText
     ) where
 
-import           Action                         ( lookAction
+import           Action                         ( Action(..)
+                                                , lookAction
                                                 , processAction
                                                 )
 import           Control.Lens                   ( (.=) )
@@ -68,16 +69,14 @@ parseInput input' =
     in  zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
 
-data Action = Action Input [Input]
-
 tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do
     let action = head input'
-    let args = tail input'
+    let args   = tail input'
     pure $ Action action args
 
 exec :: (MonadState Game m, MonadIO m) => Action -> m ()
-exec (Action action args) = do
+exec action = do
     liftIO $ putStrLn ""
-    processAction action args
+    processAction action
     liftIO $ putStrLn ""
