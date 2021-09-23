@@ -30,8 +30,8 @@ pickup :: (MonadState Game m) => [Input] -> m (Either String String)
 pickup inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
-      Nothing -> hoistEither $ Left "Pickup what?"
-      Just target -> hoistEither $ Right target
+        Nothing     -> hoistEither $ Left "Pickup what?"
+        Just target -> hoistEither $ Right target
 
     loc'        <- use loc
     containers' <- use containers
