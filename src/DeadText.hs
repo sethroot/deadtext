@@ -68,7 +68,7 @@ parseInput input' =
     in  zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
 
-data Action = Action Input (Maybe Input) [Input]
+data Action = Action Input [Input]
 
 tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do
@@ -76,10 +76,10 @@ tokenize input' = do
     let arg =
             if length input' > 1 then Just . head . tail $ input' else Nothing
     let args = tail input'
-    pure $ Action action arg args
+    pure $ Action action args
 
 exec :: (MonadState Game m, MonadIO m) => Action -> m ()
-exec (Action action arg args) = do
+exec (Action action args) = do
     liftIO $ putStrLn ""
-    processAction action arg args
+    processAction action args
     liftIO $ putStrLn ""
