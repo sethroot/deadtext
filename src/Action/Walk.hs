@@ -3,6 +3,7 @@
 module Action.Walk where
 
 import           Control.Error                  ( fromMaybe
+                                                , headMay
                                                 , hoistEither
                                                 , runExceptT
                                                 )
@@ -18,16 +19,20 @@ import qualified Data.Map.Strict               as M
 import           Parser                         ( parseDir )
 import           Types
 
-walkAction :: (MonadState Game m, MonadIO m) => Maybe Input -> m ()
-walkAction Nothing      = pure ()
-walkAction (Just input) = do
-    out <- walk input
+walkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+walkAction inputs = do
+    out <- walk inputs
     either printE printE out
     where printE = liftIO . putStrLn
 
-walk :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
-walk input = runExceptT $ do
-    mDir <- parseDir $ input ^. normal
+walk :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
+walk inputs = runExceptT $ do
+    let input' = headMay inputs
+    target <- case input' of
+        Nothing     -> hoistEither $ Left "Go where?"
+        Just target -> hoistEither $ Right target
+
+    mDir <- parseDir $ target ^. normal
     dir  <- case mDir of
         Nothing -> do
             let out = "I don't know how to do that..."

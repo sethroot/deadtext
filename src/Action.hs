@@ -28,10 +28,9 @@ import           Util                           ( debugGameState )
 
 processAction :: (MonadState Game m, MonadIO m)
               => Input
-              -> Maybe Input
               -> [Input]
               -> m ()
-processAction action arg args = case action ^. normal of
+processAction action args = case action ^. normal of
     "close"     -> Close.closeAction args
     "shut"      -> Close.closeAction args
     "drop"      -> Drop.dropAction args
@@ -46,7 +45,7 @@ processAction action arg args = case action ^. normal of
     "pickup"    -> Pickup.pickupAction args
     "take"      -> Pickup.pickupAction args
     "talk"      -> Talk.talkAction args
-    "go"        -> Walk.walkAction arg
-    "walk"      -> Walk.walkAction arg
+    "go"        -> Walk.walkAction args
+    "walk"      -> Walk.walkAction args
     "debug"     -> debugGameState
-    _           -> Walk.walkAction $ Just action
+    _           -> Walk.walkAction $ [action] 
