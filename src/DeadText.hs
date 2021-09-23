@@ -73,8 +73,6 @@ data Action = Action Input [Input]
 tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do
     let action = head input'
-    let arg =
-            if length input' > 1 then Just . head . tail $ input' else Nothing
     let args = tail input'
     pure $ Action action args
 
