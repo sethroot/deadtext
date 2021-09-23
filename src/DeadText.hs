@@ -49,7 +49,6 @@ game = do
         parsed <- liftIO getLine <&> parseInput
         input .= parsed
         tokenize parsed >>= exec
-    pure ()
 
 processArgs :: [String] -> GameLoop
 processArgs ("noload" : _) = loadInternal
