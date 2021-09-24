@@ -39,6 +39,18 @@ loadExternal file = do
     -- liftIO $ printGame $ fromJust game
     put $ fromJust game
 
+loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
+loadGame file = runMaybeT $ do
+    let path = "json/" ++ file ++ ".json"
+    handle   <- liftIO $ openFile path ReadMode
+    contents <- liftIO $ BL.hGetContents handle
+    let gameExt = decode contents :: Maybe GameExt
+    case gameExt of
+        Nothing      -> hoistMaybe Nothing
+        Just gameExt -> do
+            game <- toGame gameExt
+            hoistMaybe $ Just game
+
 importRaw :: IO (Maybe Game)
 importRaw = do
     handle   <- openFile "json/in.json" ReadMode
@@ -51,15 +63,3 @@ importRaw = do
 exportRaw :: Game -> IO ()
 exportRaw state = do
     BL.writeFile "json/out.json" $ encodePretty state
-
-loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
-loadGame file = runMaybeT $ do
-    let path = "json/" ++ file ++ ".json"
-    handle   <- liftIO $ openFile path ReadMode
-    contents <- liftIO $ BL.hGetContents handle
-    let gameExt = decode contents :: Maybe GameExt
-    case gameExt of
-        Nothing      -> hoistMaybe Nothing
-        Just gameExt -> do
-            game <- toGame gameExt
-            hoistMaybe $ Just game
