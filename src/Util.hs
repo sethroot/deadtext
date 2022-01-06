@@ -2,13 +2,11 @@
 
 module Util where
 
-import           Control.Monad.State            ( MonadIO(..)
-                                                , MonadState(get)
-                                                )
-import           Data.Char                      ( toLower )
-import qualified Data.Map.Strict               as M
-import           Text.Pretty.Simple             ( pPrint )
-import           Types                          ( Game )
+import Control.Monad.State (MonadIO(..), MonadState(get))
+import Data.Char (toLower)
+import qualified Data.Map.Strict as M
+import Text.Pretty.Simple (pPrint)
+import Types (Game)
 
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs

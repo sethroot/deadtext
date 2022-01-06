@@ -7,27 +7,14 @@
 
 module Action.Give where
 
-import           Common                         ( inventory
-                                                , npcIsHere
-                                                )
-import           Control.Error                  ( headMay
-                                                , hoistEither
-                                                , runExceptT
-                                                , tailMay
-                                                )
-import           Control.Lens                   ( (.=)
-                                                , Ixed(ix)
-                                                , (^.)
-                                                , makeFields
-                                                , use
-                                                )
-import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadState )
-import           Data.List                      ( elemIndex )
-import           Parser                         ( parseItemM
-                                                , parseNpcM
-                                                )
-import           Types
+import Common (inventory, npcIsHere)
+import Control.Error (headMay, hoistEither, runExceptT, tailMay)
+import Control.Lens ((.=), Ixed(ix), (^.), makeFields, use)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State.Lazy (MonadState)
+import Data.List (elemIndex)
+import Parser (parseItemM, parseNpcM)
+import Types
 
 data GiveArgsInput = GiveArgsInput
     { _giveArgsInputItem   :: Input
@@ -50,7 +37,7 @@ giveAction args = do
 
 doGive :: MonadState Game m => [Input] -> m (Either String String)
 doGive args = runExceptT $ do
-    input <- case parseGiveArgsRaw args of
+    input  <- case parseGiveArgsRaw args of
         Nothing    -> hoistEither . Left $ "Give what to who now?"
         Just input -> hoistEither $ Right input
     parsed <- parseGiveArgsInput input
@@ -91,9 +78,9 @@ attemptExecGive input item npc = runExceptT $ do
 
 giveTo :: Item -> Npc -> String
 giveTo item npc = "You give the " ++ item' ++ "to" ++ npc' ++ "."
-  where
-    item' = item ^. name
-    npc'  = npc ^. name
+    where
+        item' = item ^. name
+        npc'  = npc ^. name
 
 parseGiveArgsRaw :: [Input] -> Maybe GiveArgsInput
 parseGiveArgsRaw raw = do

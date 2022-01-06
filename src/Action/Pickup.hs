@@ -2,22 +2,15 @@
 
 module Action.Pickup where
 
-import           Common                         ( indefArt )
-import           Control.Error                  ( headMay
-                                                , hoistEither
-                                                , runExceptT
-                                                )
-import           Control.Lens                   ( (.=)
-                                                , Ixed(ix)
-                                                , (^.)
-                                                , use
-                                                )
-import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadState )
-import           Data.Char                      ( toLower )
-import           Data.List                      ( elemIndex )
-import           Parser                         ( parseItemM )
-import           Types
+import Common (indefArt)
+import Control.Error (headMay, hoistEither, runExceptT)
+import Control.Lens ((.=), Ixed(ix), (^.), use)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State.Lazy (MonadState)
+import Data.Char (toLower)
+import Data.List (elemIndex)
+import Parser (parseItemM)
+import Types
 
 pickupAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
 pickupAction inputs = do
@@ -29,7 +22,7 @@ pickupAction inputs = do
 pickup :: (MonadState Game m) => [Input] -> m (Either String String)
 pickup inputs = runExceptT $ do
     let input' = headMay inputs
-    target <- case input' of
+    target      <- case input' of
         Nothing     -> hoistEither $ Left "Pickup what?"
         Just target -> hoistEither $ Right target
 
@@ -38,7 +31,7 @@ pickup inputs = runExceptT $ do
     items'      <- use items
     mItem       <- parseItemM $ target ^. normal
     item        <- case mItem of
-        Nothing -> do
+        Nothing   -> do
             let out = dontSeeObject $ target ^. raw
             hoistEither $ Left out
         Just item -> hoistEither $ Right item
@@ -50,14 +43,17 @@ pickup inputs = runExceptT $ do
         else hoistEither $ Right ()
 
     let closedTransContainersHere = filter (closedTransHere loc') containers'
-    let itemsInClosedTransContainersHere =
+    let
+        itemsInClosedTransContainersHere =
             itemsInContainers items' closedTransContainersHere
-    let inputInTransContainer =
+    let
+        inputInTransContainer =
             filter (inputMatchesItem target) itemsInClosedTransContainersHere
     case headMay inputInTransContainer of
         Nothing                -> hoistEither $ Right ()
         Just (item, container) -> do
-            let out =
+            let
+                out =
                     "You can see "
                         ++ indefArt (item ^. name)
                         ++ " "
@@ -73,7 +69,7 @@ pickup inputs = runExceptT $ do
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
     let filtered              = filter (inputMatchesItem target) itemsInOpenContainers
     case headMay filtered of
-        Nothing -> do
+        Nothing                -> do
             let out = dontSeeObject $ target ^. normal
             hoistEither $ Left out
         Just (item, container) -> do
@@ -104,9 +100,10 @@ pickupItemMutation item = do
 
 takeItemFromContainer :: Item -> Container -> String
 takeItemFromContainer item container =
-    let i = item ^. name
+    let
+        i = item ^. name
         c = container ^. name
-    in  "You take the " ++ i ++ " from the " ++ c ++ "."
+    in "You take the " ++ i ++ " from the " ++ c ++ "."
 
 dontSeeObject :: String -> String
 dontSeeObject object =

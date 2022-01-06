@@ -2,11 +2,11 @@
 
 module Data where
 
-import           Control.Lens                   ( (.=) )
-import           Control.Monad.State.Lazy       ( MonadState )
-import qualified Data.Map.Strict               as M
-import           Types
-import           UID                            ( genUid )
+import Control.Lens ((.=))
+import Control.Monad.State.Lazy (MonadState)
+import qualified Data.Map.Strict as M
+import Types
+import UID (genUid)
 
 initState :: Game
 initState = Game 0 M.empty [] [] [] [] [] 0
@@ -20,7 +20,8 @@ setState = do
             "You walk into a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
             "You are standing in a small, dimly lit bathroom. Along the wall are sinks with mirrors above them. In the air you smell mildew and ammonia."
     overlookLotUid <- genUid
-    let overlookLot = Loc
+    let
+        overlookLot = Loc
             "Overlook Parking Lot"
             "You enter a parking lot overlooking a lake."
             "You are standing in a parking lot overlooking a lake."
@@ -59,16 +60,19 @@ setState = do
             []
     npcs .= [angela]
     carUid <- genUid
-    let car = Container carUid
-                        "Car"
-                        "You parked your car here."
-                        "It's a baby blue 1976 Chevy Nova."
-                        overlookLotUid
-                        Closed
-                        True
+    let
+        car = Container
+            carUid
+            "Car"
+            "You parked your car here."
+            "It's a baby blue 1976 Chevy Nova."
+            overlookLotUid
+            Closed
+            True
     containers .= [car]
     let
-        map = Item "Map"
-                   "It's a well-worn map of Silent Hill."
-                   (ItemContainer carUid)
+        map = Item
+            "Map"
+            "It's a well-worn map of Silent Hill."
+            (ItemContainer carUid)
     items .= [map]

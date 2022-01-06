@@ -1,31 +1,22 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action
-    ( processAction
-    , Look.lookAction
-    , Action(Action)
-    ) where
+module Action (processAction, Look.lookAction, Action(Action)) where
 
-import qualified Action.Close                  as Close
-import qualified Action.Drop                   as Drop
-import qualified Action.Give                   as Give
-import qualified Action.Help                   as Help
-import qualified Action.Inv                    as Inv
-import qualified Action.Kill                   as Kill
-import qualified Action.Look                   as Look
-import qualified Action.Open                   as Open
-import qualified Action.Pickup                 as Pickup
-import qualified Action.Talk                   as Talk
-import qualified Action.Walk                   as Walk
-import           Control.Lens                   ( (^.) )
-import           Control.Monad.State            ( MonadIO
-                                                , MonadState
-                                                )
-import           Types                          ( Game
-                                                , HasNormal(normal)
-                                                , Input
-                                                )
-import           Util                           ( debugGameState )
+import qualified Action.Close as Close
+import qualified Action.Drop as Drop
+import qualified Action.Give as Give
+import qualified Action.Help as Help
+import qualified Action.Inv as Inv
+import qualified Action.Kill as Kill
+import qualified Action.Look as Look
+import qualified Action.Open as Open
+import qualified Action.Pickup as Pickup
+import qualified Action.Talk as Talk
+import qualified Action.Walk as Walk
+import Control.Lens ((^.))
+import Control.Monad.State (MonadIO, MonadState)
+import Types (Game, HasNormal(normal), Input)
+import Util (debugGameState)
 
 data Action = Action Input [Input]
 

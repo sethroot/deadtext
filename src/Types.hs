@@ -7,15 +7,11 @@
 
 module Types where
 
-import           Control.Lens                   ( makeFields )
-import           Control.Monad.State.Lazy       ( StateT )
-import           Data.Aeson                     ( FromJSON
-                                                , FromJSONKey
-                                                , ToJSON
-                                                , ToJSONKey
-                                                )
-import qualified Data.Map.Strict               as M
-import           GHC.Generics                   ( Generic )
+import Control.Lens (makeFields)
+import Control.Monad.State.Lazy (StateT)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import qualified Data.Map.Strict as M
+import GHC.Generics (Generic)
 
 type UID = Int
 
@@ -59,6 +55,7 @@ data Npc = Npc
     , _npcGender       :: Gender
     , _npcDesc         :: String
     -- , _npcRel          :: NpcRel
+
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool

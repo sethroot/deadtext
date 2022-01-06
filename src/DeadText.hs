@@ -1,40 +1,22 @@
 {-# LANGUAGE FlexibleContexts #-}
 -- {-# OPTIONS_GHC -Wno-unused-imports #-}
 
-module DeadText
-    ( deadText
-    ) where
 
-import           Action                         ( Action(..)
-                                                , lookAction
-                                                , processAction
-                                                )
-import           Control.Lens                   ( (.=) )
-import           Control.Monad                  ( forever
-                                                , void
-                                                )
-import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.State.Lazy       ( MonadIO
-                                                , MonadState
-                                                )
-import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
-import           Data                           ( initState )
-import           Data.Functor                   ( (<&>) )
-import           Load                           ( loadExternal
-                                                , loadInternal
-                                                )
-import           Parser                         ( normalizeInput
-                                                , parseRawInput
-                                                )
-import           System.Environment             ( getArgs )
-import           System.IO                      ( hFlush
-                                                , stdout
-                                                )
-import           Types                          ( Game
-                                                , GameLoop
-                                                , HasInput(input)
-                                                , Input(Input)
-                                                )
+module DeadText (deadText) where
+
+import Action (Action(..), lookAction, processAction)
+import Control.Lens ((.=))
+import Control.Monad (forever, void)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.State.Lazy (MonadIO, MonadState)
+import Control.Monad.Trans.State.Lazy (StateT(runStateT))
+import Data (initState)
+import Data.Functor ((<&>))
+import Load (loadExternal, loadInternal)
+import Parser (normalizeInput, parseRawInput)
+import System.Environment (getArgs)
+import System.IO (hFlush, stdout)
+import Types (Game, GameLoop, HasInput(input), Input(Input))
 
 deadText :: IO ()
 deadText = void $ runStateT game initState
@@ -63,10 +45,12 @@ printPrompt = do
 
 parseInput :: String -> [Input]
 parseInput input' =
-    let raw        = parseRawInput input'
+    let
+        raw        = parseRawInput input'
         normalized = normalizeInput raw
-    in  zipWith Input raw normalized
+    in zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
+
 
 tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do

@@ -2,7 +2,7 @@
 
 module Action.Help where
 
-import           Control.Monad.State.Lazy       ( MonadIO(..) )
+import Control.Monad.State.Lazy (MonadIO(..))
 
 helpAction :: MonadIO m => m ()
 helpAction = do

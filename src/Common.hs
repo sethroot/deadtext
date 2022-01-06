@@ -2,13 +2,11 @@
 
 module Common where
 
-import           Control.Lens                   ( (^.)
-                                                , use
-                                                )
-import           Control.Monad.State.Lazy       ( MonadState )
-import           Data.Char                      ( toLower )
-import           Types
-import           Util                           ( (?) )
+import Control.Lens ((^.), use)
+import Control.Monad.State.Lazy (MonadState)
+import Data.Char (toLower)
+import Types
+import Util ((?))
 
 npcIsHere :: MonadState Game m => Npc -> m Bool
 npcIsHere npc = do

@@ -2,22 +2,16 @@
 
 module Action.Talk where
 
-import           Common                         ( npcIsHere )
-import           Control.Error                  ( hoistEither
-                                                , runExceptT
-                                                )
-import           Control.Lens                   ( (%=)
-                                                , Ixed(ix)
-                                                , (^.)
-                                                , use
-                                                )
-import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadState )
-import           Data.Char                      ( toLower )
-import           Data.List                      ( findIndex )
-import qualified Data.Map.Strict               as M
-import           Types
-import           Util                           ( (?) )
+import Common (npcIsHere)
+import Control.Error (hoistEither, runExceptT)
+import Control.Lens ((%=), Ixed(ix), (^.), use)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State.Lazy (MonadState)
+import Data.Char (toLower)
+import Data.List (findIndex)
+import qualified Data.Map.Strict as M
+import Types
+import Util ((?))
 
 talkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
 talkAction []                          = liftIO . putStrLn $ noTalkTarget
@@ -34,11 +28,12 @@ talkTo :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
 talkTo input = runExceptT $ do
     npcs' <- use npcs
     -- todo: add support for talking to unknown npcs by gender, description
+
     index <- case findIndex (nameMatches input) npcs' of
         Nothing -> do
             let out = dontSeeTarget (input ^. raw)
             hoistEither $ Left out
-        Just i -> hoistEither $ Right i
+        Just i  -> hoistEither $ Right i
     let npc = npcs' !! index
     npcHere' <- npcIsHere npc
     if not npcHere'

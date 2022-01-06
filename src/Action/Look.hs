@@ -2,40 +2,28 @@
 
 module Action.Look where
 
-import           Common                         ( containerIsHere
-                                                , indefArt
-                                                , itemIsHere
-                                                , npcIsHere
-                                                )
-import           Control.Applicative            ( Alternative((<|>)) )
-import           Control.Error                  ( MaybeT(MaybeT, runMaybeT)
-                                                , fromMaybe
-                                                , headMay
-                                                , hoistEither
-                                                , hoistMaybe
-                                                , runExceptT
-                                                )
-import           Control.Lens                   ( (^.)
-                                                , use
-                                                , view
-                                                )
-import           Control.Monad.IO.Class         ( MonadIO(..) )
-import           Control.Monad.State.Lazy       ( MonadState )
-import           Data.Char                      ( toLower )
-import           Data.List                      ( intercalate
-                                                , intersperse
-                                                )
-import qualified Data.Map.Strict               as M
-import           Parser                         ( parseContObj
-                                                , parseInvObj
-                                                , parseItemObj
-                                                , parseNpcObj
-                                                )
-import           Types
-import           Util                           ( (?) )
+import Common (containerIsHere, indefArt, itemIsHere, npcIsHere)
+import Control.Applicative (Alternative((<|>)))
+import Control.Error
+    ( MaybeT(MaybeT, runMaybeT)
+    , fromMaybe
+    , headMay
+    , hoistEither
+    , hoistMaybe
+    , runExceptT
+    )
+import Control.Lens ((^.), use, view)
+import Control.Monad.IO.Class (MonadIO(..))
+import Control.Monad.State.Lazy (MonadState)
+import Data.Char (toLower)
+import Data.List (intercalate, intersperse)
+import qualified Data.Map.Strict as M
+import Parser (parseContObj, parseInvObj, parseItemObj, parseNpcObj)
+import Types
+import Util ((?))
 
 lookAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-lookAction [] = do
+lookAction []                            = do
     out <- Action.Look.look
     liftIO . putStrLn $ out
 lookAction ((Input _ "at") : target : _) = do
@@ -99,9 +87,10 @@ containersInLoc loc' containers = do
         then pure Nothing
         else
             let out = mconcat . intersperse "\n" . map desc $ containersHere
-            in  pure $ Just out
-  where
-    desc c = (c ^. cState == Closed) ? containerHere c $ openContainerHere c
+            in pure $ Just out
+    where
+        desc c =
+            (c ^. cState == Closed) ? containerHere c $ openContainerHere c
 
 containerHere :: Container -> String
 containerHere container = container ^. Types.look
@@ -126,12 +115,12 @@ itemHere item = "There is a " ++ item ^. name ++ " here."
 pathsInLoc :: UID -> [Connection] -> String
 pathsInLoc loc conns =
     let paths = pathsInLoc' loc conns
-    in  mconcat . intersperse "\n" $ map (pathGoing . fst) paths
+    in mconcat . intersperse "\n" $ map (pathGoing . fst) paths
 
 pathsInLoc' :: UID -> [Connection] -> [(Direction, UID)]
 pathsInLoc' loc conns =
     let paths = filter (\c -> (c ^. start) == loc) conns
-    in  zip (map (^. dir) paths) (map (^. dest) paths)
+    in zip (map (^. dir) paths) (map (^. dest) paths)
 
 pathGoing :: Direction -> String
 pathGoing dir = "There is a path going " ++ show dir ++ "."
@@ -174,7 +163,8 @@ lookAtContainer cont = do
     if not (null items') && cont ^. trans
         then do
             let contName = fmap toLower $ cont ^. name
-            let itemDesc = concatMap
+            let
+                itemDesc = concatMap
                     (\i -> seeInTransparentContainer (i ^. name) contName)
                     items'
             pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
@@ -192,7 +182,7 @@ lookIn input = runExceptT $ do
         Nothing -> do
             let out = dontSeeObject $ input ^. normal
             hoistEither $ Left out
-        Just c -> hoistEither $ Right c
+        Just c  -> hoistEither $ Right c
     let cState' = container' ^. cState
     let trans'  = container' ^. trans
     out <- lookInContainer container' cState' trans'
@@ -205,17 +195,17 @@ lookInContainer :: MonadState Game m
                 -> m String
 lookInContainer cont Closed False = do
     pure . containerIsClosed $ cont ^. name
-lookInContainer cont Closed True = do
+lookInContainer cont Closed True  = do
     items' <- use items
     let item     = headMay . filter (itemPredicate cont) $ items'
     let itemName = maybe "object" (view name) item
     let contName = cont ^. name
     pure $ seeInTransparentContainer itemName contName
-lookInContainer cont Open _ = do
+lookInContainer cont Open   _     = do
     items' <- use items
     let item = headMay . filter (itemPredicate cont) $ items'
     case item of
-        Nothing -> do
+        Nothing    -> do
             pure . containerIsEmpty $ cont ^. name
         Just item' -> do
             let itemName = item' ^. name
@@ -224,9 +214,9 @@ lookInContainer cont Open _ = do
 
 containerPredicate :: Input -> UID -> Container -> Bool
 containerPredicate input loc' container = nameMatch && locMatch
-  where
-    nameMatch = fmap toLower (container ^. name) == input ^. normal
-    locMatch  = container ^. loc == loc'
+    where
+        nameMatch = fmap toLower (container ^. name) == input ^. normal
+        locMatch  = container ^. loc == loc'
 
 itemPredicate :: Container -> Item -> Bool
 itemPredicate container item = item ^. loc == ItemContainer (container ^. uid)

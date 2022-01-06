@@ -41,14 +41,14 @@ conf_layout:
   lconfig_altChooser:
     tag: AltChooserBoundedSearch  
     contents: 3
-  lconfig_allowSingleLineExportList: false
+  lconfig_allowSingleLineExportList: true 
   lconfig_importColumn: 50
   lconfig_hangingTypeSignature: true
   lconfig_importAsColumn: 50
   lconfig_alignmentLimit: 30
   lconfig_indentListSpecial: true
   lconfig_indentAmount: 4
-  lconfig_alignmentBreakOnMultiline: true
+  lconfig_alignmentBreakOnMultiline: false 
   lconfig_cols: 80
   lconfig_indentPolicy: IndentPolicyLeft
   lconfig_indentWhereSpecial: false

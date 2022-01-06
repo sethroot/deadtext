@@ -9,32 +9,18 @@
 
 module Ext where
 
-import qualified Control.Lens                  as L
-import           Control.Monad.State            ( MonadState
-                                                , foldM
-                                                )
-import           Data.Aeson                     ( (.:)
-                                                , (.:?)
-                                                , FromJSON(parseJSON)
-                                                , withObject
-                                                )
-import           Data.Aeson.Types               ( Parser )
-import qualified Data.List                     as DL
-                                                ( findIndex )
-import           Data.Map.Strict               as M
-                                                ( Map
-                                                , empty
-                                                , foldrWithKey
-                                                , insert
-                                                , lookup
-                                                , map
-                                                , member
-                                                )
-import           Data.Maybe                     ( fromJust )
-import           Data.Types.Injective           ( Injective(..) )
-import           GHC.Generics                   ( Generic )
-import           Types
-import           UID                            ( genUid )
+import qualified Control.Lens as L
+import Control.Monad.State (MonadState, foldM)
+import Data.Aeson ((.:), (.:?), FromJSON(parseJSON), withObject)
+import Data.Aeson.Types (Parser)
+import qualified Data.List as DL (findIndex)
+import Data.Map.Strict as M
+    (Map, empty, foldrWithKey, insert, lookup, map, member)
+import Data.Maybe (fromJust)
+import Data.Types.Injective (Injective(..))
+import GHC.Generics (Generic)
+import Types
+import UID (genUid)
 
 type LocExtsMap = M.Map String UID
 type NpcExtMap = M.Map String UID
@@ -78,8 +64,7 @@ nameToLoc les ls extId =
         locExt   = les !! locExtIdx
         locIndex = fromJust
             $ DL.findIndex (\l -> (l L.^. loc) == (locExt L.^. name)) ls
-    in
-        ls !! locIndex
+    in ls !! locIndex
 
 -- Item
 
@@ -120,7 +105,7 @@ instance FromJSON ItemExt where
 toItem :: LocExtsMap -> ContExtsMap -> ItemExt -> Item
 toItem locsMap contsMap ie =
     let loc' = toItemLoc locsMap contsMap $ ie L.^. loc
-    in  Item (ie L.^. name) (ie L.^. desc) loc'
+    in Item (ie L.^. name) (ie L.^. desc) loc'
 
 toItemLoc :: LocExtsMap -> ContExtsMap -> ItemLocExt -> ItemLocation
 toItemLoc locsMap contsMap itemLoc = case itemLoc of
@@ -157,7 +142,8 @@ instance FromJSON ContainerExt where
 
 toContainer :: ContExtsMap -> LocExtsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
-    let id'     = fromJust $ M.lookup (container L.^. Ext.id) contsMap
+    let
+        id'     = fromJust $ M.lookup (container L.^. Ext.id) contsMap
         name'   = container L.^. name
         look'   = container L.^. look
         desc'   = container L.^. desc
@@ -166,8 +152,8 @@ toContainer contsMap locsMap container =
             "open"   -> Open
             "closed" -> Closed
             _        -> Closed
-        trans' = container L.^. trans
-    in  Container id' name' look' desc' loc' cState' trans'
+        trans'  = container L.^. trans
+    in Container id' name' look' desc' loc' cState' trans'
 
 newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
 
@@ -213,11 +199,12 @@ instance Injective String Direction where
 
 toConnection :: LocExtsMap -> ConnectionExt -> Connection
 toConnection m c =
-    let lookup getter = fromJust $ M.lookup (c L.^. getter) m
+    let
+        lookup getter = fromJust $ M.lookup (c L.^. getter) m
         start' = lookup start
         end'   = lookup end
         dir'   = to $ c L.^. dir
-    in  Connection start' dir' end'
+    in Connection start' dir' end'
 
 newtype ConnectionInj = ConnectionInj (LocExtsMap, ConnectionExt)
 
@@ -266,28 +253,30 @@ instance FromJSON NpcExt where
         dialog       <- obj .: "dialog"
         dialogCursor <- obj .: "dialogCursor"
         quest        <- obj .: "quest"
-        pure $ NpcExt id
-                      name
-                      gender
-                      desc
-                      role
-                      loc
-                      alive
-                      dialog
-                      dialogCursor
-                      quest
+        pure $ NpcExt
+            id
+            name
+            gender
+            desc
+            role
+            loc
+            alive
+            dialog
+            dialogCursor
+            quest
 
 toNpc :: NpcExtMap -> LocExtsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
-    let id'     = fromJust $ M.lookup (n L.^. Ext.id) npcMap
-        name'   = n L.^. name
-        gender' = case n L.^. gender of
+    let
+        id'           = fromJust $ M.lookup (n L.^. Ext.id) npcMap
+        name'         = n L.^. name
+        gender'       = case n L.^. gender of
             "male"      -> Male
             "female"    -> Female
             "nonbinary" -> NonBinary
             _           -> Unknown
-        desc' = n L.^. desc
-        role' = case n L.^. role of
+        desc'         = n L.^. desc
+        role'         = case n L.^. role of
             "dialog" -> Types.DialogRole
             "quest"  -> Types.QuestRole
             _        -> Types.DialogRole
@@ -296,16 +285,17 @@ toNpc npcMap locsMap n =
         dialog'       = n L.^. dialog
         dialogCursor' = n L.^. dialogCursor
         quest'        = []
-    in  Npc id'
-            name'
-            gender'
-            desc'
-            role'
-            loc'
-            alive'
-            dialog'
-            dialogCursor'
-            quest'
+    in Npc
+        id'
+        name'
+        gender'
+        desc'
+        role'
+        loc'
+        alive'
+        dialog'
+        dialogCursor'
+        quest'
 
 newtype NpcInj = NpcInj (NpcExtMap, LocExtsMap, NpcExt)
 
@@ -371,7 +361,8 @@ toGame g = do
     -- Containers
     let contExts  = g L.^. containers
     contsExtMap <- foldM foldIdGen M.empty contExts
-    let contExtInjs =
+    let
+        contExtInjs =
             fmap (\c -> ContainerInj (contsExtMap, locExtsMap, c)) contExts
     let conts       = fmap to contExtInjs
 
