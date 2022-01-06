@@ -23,7 +23,7 @@ import           Types                          ( Game
                                                 , GameLoop
                                                 )
 
-loadInternal :: GameLoop
+loadInternal :: (MonadState Game m, MonadIO m) => m () 
 loadInternal = do
     Data.setState
     game <- get
@@ -32,7 +32,7 @@ loadInternal = do
     liftIO . putStrLn $ "Running against internal config"
     liftIO . putStrLn $ ""
 
-loadExternal :: String -> GameLoop
+loadExternal :: (MonadState Game m, MonadIO m) => String -> m ()
 loadExternal file = do
     game <- loadGame file
     liftIO . putStrLn $ ""
