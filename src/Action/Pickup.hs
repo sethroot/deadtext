@@ -18,11 +18,10 @@ pickupAction inputs = do
     either printE printE out
     where printE = liftIO . putStrLn
 
-
 pickup :: (MonadState Game m) => [Input] -> m (Either String String)
 pickup inputs = runExceptT $ do
     let input' = headMay inputs
-    target      <- case input' of
+    target <- case input' of
         Nothing     -> hoistEither $ Left "Pickup what?"
         Just target -> hoistEither $ Right target
 
@@ -31,7 +30,7 @@ pickup inputs = runExceptT $ do
     items'      <- use items
     mItem       <- parseItemM $ target ^. normal
     item        <- case mItem of
-        Nothing   -> do
+        Nothing -> do
             let out = dontSeeObject $ target ^. raw
             hoistEither $ Left out
         Just item -> hoistEither $ Right item
@@ -69,7 +68,7 @@ pickup inputs = runExceptT $ do
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
     let filtered              = filter (inputMatchesItem target) itemsInOpenContainers
     case headMay filtered of
-        Nothing                -> do
+        Nothing -> do
             let out = dontSeeObject $ target ^. normal
             hoistEither $ Left out
         Just (item, container) -> do

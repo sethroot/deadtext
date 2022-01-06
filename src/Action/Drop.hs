@@ -24,17 +24,17 @@ dropItem inputs = runExceptT $ do
     target <- case input' of
         Nothing     -> hoistEither $ Left "Drop what?"
         Just target -> hoistEither $ Right target
-    itemM  <- parseInvItem $ target ^. normal
+    itemM <- parseInvItem $ target ^. normal
 
-    item   <- case itemM of
-        Nothing   -> do
+    item  <- case itemM of
+        Nothing -> do
             let out = dontHaveObject $ target ^. normal
             hoistEither $ Left out
         Just item -> pure item
 
     result <- dropMutation item
     case result of
-        Nothing   -> do
+        Nothing -> do
             let
                 out =
                     "Inexplicably, you are unable to drop your " ++ item ^. name
@@ -49,7 +49,7 @@ dropMutation item = runMaybeT $ do
     index  <- case elemIndex item items' of
         Nothing    -> hoistMaybe Nothing
         Just index -> pure index
-    loc'   <- use loc
+    loc' <- use loc
     items . ix index . loc .= ItemLoc loc'
 
 dontHaveObject :: String -> String

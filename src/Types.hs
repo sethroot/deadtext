@@ -55,7 +55,6 @@ data Npc = Npc
     , _npcGender       :: Gender
     , _npcDesc         :: String
     -- , _npcRel          :: NpcRel
-
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool

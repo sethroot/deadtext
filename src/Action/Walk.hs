@@ -19,13 +19,13 @@ walkAction inputs = do
 walk :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
 walk inputs = runExceptT $ do
     let input' = headMay inputs
-    target     <- case input' of
+    target <- case input' of
         Nothing     -> hoistEither $ Left "Go where?"
         Just target -> hoistEither $ Right target
 
-    mDir       <- parseDir $ target ^. normal
-    dir        <- case mDir of
-        Nothing  -> do
+    mDir <- parseDir $ target ^. normal
+    dir  <- case mDir of
+        Nothing -> do
             let out = "I don't know how to do that..."
             hoistEither $ Left out
         Just dir -> hoistEither $ Right dir
@@ -34,7 +34,7 @@ walk inputs = runExceptT $ do
     loc''      <- case M.lookup currentLoc locMap of
         Nothing -> hoistEither $ Left "Error: Could not lookup location"
         Just a  -> hoistEither $ Right a
-    conns'     <- use connections
+    conns' <- use connections
     let resolvedNext = resolveMove (Movement currentLoc dir) conns'
     loc .= resolvedNext
     nextLoc <- case M.lookup resolvedNext locMap of

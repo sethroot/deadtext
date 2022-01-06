@@ -33,7 +33,7 @@ talkTo input = runExceptT $ do
         Nothing -> do
             let out = dontSeeTarget (input ^. raw)
             hoistEither $ Left out
-        Just i  -> hoistEither $ Right i
+        Just i -> hoistEither $ Right i
     let npc = npcs' !! index
     npcHere' <- npcIsHere npc
     if not npcHere'

@@ -37,7 +37,7 @@ giveAction args = do
 
 doGive :: MonadState Game m => [Input] -> m (Either String String)
 doGive args = runExceptT $ do
-    input  <- case parseGiveArgsRaw args of
+    input <- case parseGiveArgsRaw args of
         Nothing    -> hoistEither . Left $ "Give what to who now?"
         Just input -> hoistEither $ Right input
     parsed <- parseGiveArgsInput input

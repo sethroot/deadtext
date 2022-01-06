@@ -20,13 +20,13 @@ closeAction inputs = do
 close :: MonadState Game m => [Input] -> m (Either String String)
 close inputs = runExceptT $ do
     let head = headMay inputs
-    target     <- case head of
+    target <- case head of
         Nothing     -> hoistEither $ Left "Close what?"
         Just target -> hoistEither $ Right target
 
     container  <- parseContainerM $ target ^. normal
     container' <- case container of
-        Nothing        -> do
+        Nothing -> do
             let out = "You don't see a " ++ target ^. normal ++ "."
             hoistEither $ Left out
         Just container -> hoistEither $ Right container
@@ -42,7 +42,7 @@ close inputs = runExceptT $ do
         Nothing -> do
             let out = "Can't close that."
             hoistEither $ Left out
-        Just i  -> hoistEither $ Right i
+        Just i -> hoistEither $ Right i
 
     containers . ix index . cState .= Closed
     let out = "You close the " ++ container' ^. name ++ "."

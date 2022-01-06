@@ -33,8 +33,8 @@ killTarget inputs = runExceptT $ do
             liftIO exitSuccess
         else hoistEither $ Right ()
 
-    npcs'   <- use npcs
-    npc     <- case parseNpc npcs' $ target ^. normal of
+    npcs' <- use npcs
+    npc   <- case parseNpc npcs' $ target ^. normal of
         Nothing  -> hoistEither $ Left $ dontSee target
         Just npc -> hoistEither $ Right npc
     npcHere <- npcIsHere npc

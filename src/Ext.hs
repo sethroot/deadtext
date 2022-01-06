@@ -152,7 +152,7 @@ toContainer contsMap locsMap container =
             "open"   -> Open
             "closed" -> Closed
             _        -> Closed
-        trans'  = container L.^. trans
+        trans' = container L.^. trans
     in Container id' name' look' desc' loc' cState' trans'
 
 newtype ContainerInj = ContainerInj (ContExtsMap, LocExtsMap, ContainerExt)
@@ -268,15 +268,15 @@ instance FromJSON NpcExt where
 toNpc :: NpcExtMap -> LocExtsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
     let
-        id'           = fromJust $ M.lookup (n L.^. Ext.id) npcMap
-        name'         = n L.^. name
-        gender'       = case n L.^. gender of
+        id'     = fromJust $ M.lookup (n L.^. Ext.id) npcMap
+        name'   = n L.^. name
+        gender' = case n L.^. gender of
             "male"      -> Male
             "female"    -> Female
             "nonbinary" -> NonBinary
             _           -> Unknown
-        desc'         = n L.^. desc
-        role'         = case n L.^. role of
+        desc' = n L.^. desc
+        role' = case n L.^. role of
             "dialog" -> Types.DialogRole
             "quest"  -> Types.QuestRole
             _        -> Types.DialogRole

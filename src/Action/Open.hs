@@ -19,13 +19,13 @@ openAction inputs = do
 open :: MonadState Game m => [Input] -> m (Either String String)
 open inputs = runExceptT $ do
     let input' = headMay inputs
-    target     <- case input' of
+    target <- case input' of
         Nothing     -> hoistEither $ Left "Open what?"
         Just target -> hoistEither $ Right target
 
     container  <- parseContainerM $ target ^. normal
     container' <- case container of
-        Nothing        -> do
+        Nothing -> do
             -- This feels wrong when trying to open a non-container object
 
             -- Detect if target is object and provide a message that the
@@ -47,7 +47,7 @@ open inputs = runExceptT $ do
         Nothing -> do
             let out = "Can't open that."
             hoistEither $ Left out
-        Just i  -> hoistEither $ Right i
+        Just i -> hoistEither $ Right i
 
     containers . ix index . cState .= Open
     let out = "You open the " ++ container' ^. name ++ "."

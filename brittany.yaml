@@ -48,7 +48,7 @@ conf_layout:
   lconfig_alignmentLimit: 30
   lconfig_indentListSpecial: true
   lconfig_indentAmount: 4
-  lconfig_alignmentBreakOnMultiline: false 
+  lconfig_alignmentBreakOnMultiline: true 
   lconfig_cols: 80
   lconfig_indentPolicy: IndentPolicyLeft
   lconfig_indentWhereSpecial: false

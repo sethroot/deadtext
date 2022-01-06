@@ -23,7 +23,7 @@ import Types
 import Util ((?))
 
 lookAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-lookAction []                            = do
+lookAction [] = do
     out <- Action.Look.look
     liftIO . putStrLn $ out
 lookAction ((Input _ "at") : target : _) = do
@@ -182,7 +182,7 @@ lookIn input = runExceptT $ do
         Nothing -> do
             let out = dontSeeObject $ input ^. normal
             hoistEither $ Left out
-        Just c  -> hoistEither $ Right c
+        Just c -> hoistEither $ Right c
     let cState' = container' ^. cState
     let trans'  = container' ^. trans
     out <- lookInContainer container' cState' trans'
@@ -195,17 +195,17 @@ lookInContainer :: MonadState Game m
                 -> m String
 lookInContainer cont Closed False = do
     pure . containerIsClosed $ cont ^. name
-lookInContainer cont Closed True  = do
+lookInContainer cont Closed True = do
     items' <- use items
     let item     = headMay . filter (itemPredicate cont) $ items'
     let itemName = maybe "object" (view name) item
     let contName = cont ^. name
     pure $ seeInTransparentContainer itemName contName
-lookInContainer cont Open   _     = do
+lookInContainer cont Open _ = do
     items' <- use items
     let item = headMay . filter (itemPredicate cont) $ items'
     case item of
-        Nothing    -> do
+        Nothing -> do
             pure . containerIsEmpty $ cont ^. name
         Just item' -> do
             let itemName = item' ^. name
