@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 -- {-# OPTIONS_GHC -Wno-unused-imports #-}
 
+
 module DeadText
     ( deadText
     ) where
@@ -14,9 +15,13 @@ import           Control.Monad                  ( forever
                                                 , void
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
+import           Control.Monad.Reader           ( MonadReader )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
+                                                , State,
+                                                state
                                                 )
+import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT) )
 import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
 import           Data                           ( initState )
 import           Data.Functor                   ( (<&>) )
@@ -30,16 +35,25 @@ import           System.Environment             ( getArgs )
 import           System.IO                      ( hFlush
                                                 , stdout
                                                 )
-import           Types                          ( Game
+import           Types                          ( Env(Env)
+                                                , Game
                                                 , GameLoop
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
 
 deadText :: IO ()
-deadText = void $ runStateT game initState
+deadText = void $ runReaderT
+    (ReaderT
+        (\e -> do
+            let s = state (const ((), 2))
+            a <- runStateT s 3
+            pure ()
+        )
+    )
+    Env
 
-game :: GameLoop
+game :: (MonadState Game m, MonadIO m) => m ()
 game = do
     args <- liftIO getArgs
     processArgs args
@@ -50,7 +64,7 @@ game = do
         input .= parsed
         tokenize parsed >>= exec
 
-processArgs :: [String] -> GameLoop
+processArgs :: (MonadState Game m, MonadIO m) => [String] -> m ()
 processArgs ("noload" : _) = loadInternal
 processArgs ("-n"     : _) = loadInternal
 processArgs (file     : _) = loadExternal file

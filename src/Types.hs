@@ -9,6 +9,7 @@ module Types where
 
 import           Control.Lens                   ( makeFields )
 import           Control.Monad.State.Lazy       ( StateT )
+import           Control.Monad.Trans.Reader     ( ReaderT )
 import           Data.Aeson                     ( FromJSON
                                                 , FromJSONKey
                                                 , ToJSON
@@ -158,7 +159,9 @@ data Game = Game
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
-type GameLoop = StateT Game IO ()
+data Env = Env
+
+type App = ReaderT Env IO ()
 
 makeFields ''Direction
 makeFields ''Loc
