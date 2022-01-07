@@ -11,9 +11,9 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Maybe (fromJust)
 import Ext (GameExt, toGame)
 import System.IO (IOMode(ReadMode), openFile)
-import Types (Game, GameLoop)
+import Types (Game)
 
-loadInternal :: GameLoop
+loadInternal :: (MonadState Game m, MonadIO m) => m () 
 loadInternal = do
     Data.setState
     game <- get
@@ -23,7 +23,7 @@ loadInternal = do
     liftIO . putStrLn $ "Running against internal config"
     liftIO . putStrLn $ ""
 
-loadExternal :: String -> GameLoop
+loadExternal :: (MonadState Game m, MonadIO m) => String -> m () 
 loadExternal file = do
     game <- loadGame file
     liftIO . putStrLn $ ""

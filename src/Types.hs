@@ -2,13 +2,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Types where
 
 import Control.Lens (makeFields)
 import Control.Monad.State.Lazy (StateT)
+import Control.Monad.Trans.Reader (ReaderT)
 import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 import qualified Data.Map.Strict as M
 import GHC.Generics (Generic)
@@ -154,7 +154,12 @@ data Game = Game
     }
     deriving (Show, Generic, FromJSON, ToJSON)
 
-type GameLoop = StateT Game IO ()
+data Env = Env
+    { foo :: String
+    , bar :: String
+    }
+
+type App = ReaderT Env (StateT Game IO)
 
 makeFields ''Direction
 makeFields ''Loc

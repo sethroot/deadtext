@@ -1,14 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
 -- {-# OPTIONS_GHC -Wno-unused-imports #-}
 
-
 module DeadText (deadText) where
 
 import Action (Action(..), lookAction, processAction)
 import Control.Lens ((.=))
 import Control.Monad (forever, void)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (MonadReader(ask), asks)
 import Control.Monad.State.Lazy (MonadIO, MonadState)
+import Control.Monad.Trans.Reader (ReaderT(runReaderT))
 import Control.Monad.Trans.State.Lazy (StateT(runStateT))
 import Data (initState)
 import Data.Functor ((<&>))
@@ -16,13 +17,16 @@ import Load (loadExternal, loadInternal)
 import Parser (normalizeInput, parseRawInput)
 import System.Environment (getArgs)
 import System.IO (hFlush, stdout)
-import Types (Game, GameLoop, HasInput(input), Input(Input))
+import Types
 
 deadText :: IO ()
-deadText = void $ runStateT game initState
+deadText = void $ runStateT (runReaderT game (Env "Hello" "World")) initState
 
-game :: GameLoop
+game :: App ()
 game = do
+    env  <- ask
+    bar' <- asks bar
+    liftIO . putStrLn $ foo env ++ " " ++ bar'
     args <- liftIO getArgs
     processArgs args
     lookAction []
@@ -32,7 +36,7 @@ game = do
         input .= parsed
         tokenize parsed >>= exec
 
-processArgs :: [String] -> GameLoop
+processArgs :: (MonadState Game m, MonadIO m) => [String] -> m ()
 processArgs ("noload" : _) = loadInternal
 processArgs ("-n"     : _) = loadInternal
 processArgs (file     : _) = loadExternal file
@@ -50,7 +54,6 @@ parseInput input' =
         normalized = normalizeInput raw
     in zipWith Input raw normalized
     -- liftIO $ dumpInputs raw
-
 
 tokenize :: Monad m => [Input] -> m Action
 tokenize input' = do
