@@ -15,13 +15,13 @@ import           Control.Monad                  ( forever
                                                 , void
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
-import           Control.Monad.Reader           ( MonadReader )
+import           Control.Monad.Reader           ( MonadReader (ask), asks )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
                                                 ,
                                                 state
                                                 )
-import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT), asks )
+import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT) )
 import           Control.Monad.Trans.State.Lazy ( State, runState, StateT (runStateT) )
 import           Data                           ( initState )
 import           Data.Functor                   ( (<&>) )
@@ -45,19 +45,11 @@ import           Types                          ( Env(Env, foo, bar)
 deadText :: IO ()
 deadText = void $ runStateT (runReaderT game (Env "Hello" "World")) initState 
 
-r :: ReaderT Env (StateT Game IO) ()
-r = do
-  foo' <- asks foo
-  bar' <- asks bar
-  liftIO . putStrLn $ foo' ++ " " ++ bar'
-  pure () 
-
-st :: State Game ()
-st = do
-  pure ()
-
-game :: (MonadState Game m, MonadIO m) => m ()
+game :: (MonadReader Env m, MonadState Game m, MonadIO m) => m ()
 game = do
+    env <- ask
+    bar' <- asks bar
+    liftIO . putStrLn $ foo env ++ " " ++ bar'
     args <- liftIO getArgs
     processArgs args
     lookAction []
