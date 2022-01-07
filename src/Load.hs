@@ -2,28 +2,18 @@
 
 module Load where
 
-import           Control.Error                  ( MaybeT(runMaybeT)
-                                                , hoistMaybe
-                                                )
-import           Control.Monad.State.Lazy       ( MonadIO(..)
-                                                , MonadState(get, put)
-                                                )
-import           Data                           ( setState )
-import           Data.Aeson                     ( decode )
-import           Data.Aeson.Encode.Pretty       ( encodePretty )
-import qualified Data.ByteString.Lazy          as BL
-import           Data.Maybe                     ( fromJust )
-import           Ext                            ( GameExt
-                                                , toGame
-                                                )
-import           System.IO                      ( IOMode(ReadMode)
-                                                , openFile
-                                                )
-import           Types                          ( Game
-                                                , GameLoop
-                                                )
+import Control.Error (MaybeT(runMaybeT), hoistMaybe)
+import Control.Monad.State.Lazy (MonadIO(..), MonadState(get, put))
+import Data (setState)
+import Data.Aeson (decode)
+import Data.Aeson.Encode.Pretty (encodePretty)
+import qualified Data.ByteString.Lazy as BL
+import Data.Maybe (fromJust)
+import Ext (GameExt, toGame)
+import System.IO (IOMode(ReadMode), openFile)
+import Types (Game)
 
-loadInternal :: (MonadState Game m, MonadIO m) => m () 
+loadInternal :: (MonadState Game m, MonadIO m) => m ()
 loadInternal = do
     Data.setState
     game <- get

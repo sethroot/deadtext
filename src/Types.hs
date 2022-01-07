@@ -7,16 +7,11 @@
 
 module Types where
 
-import           Control.Lens                   ( makeFields )
-import           Control.Monad.State.Lazy       ( StateT )
-import           Control.Monad.Trans.Reader     ( ReaderT )
-import           Data.Aeson                     ( FromJSON
-                                                , FromJSONKey
-                                                , ToJSON
-                                                , ToJSONKey
-                                                )
-import qualified Data.Map.Strict               as M
-import           GHC.Generics                   ( Generic )
+import Control.Lens (makeFields)
+import Control.Monad.Trans.Reader (ReaderT)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import qualified Data.Map.Strict as M
+import GHC.Generics (Generic)
 
 type UID = Int
 
@@ -60,6 +55,7 @@ data Npc = Npc
     , _npcGender       :: Gender
     , _npcDesc         :: String
     -- , _npcRel          :: NpcRel
+
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool
@@ -160,8 +156,12 @@ data Game = Game
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Env = Env
+    { foo :: String
+    , bar :: String
+    }
 
-type App = ReaderT Env IO ()
+-- type App = ReaderT (Env "hello") IO ()
+
 
 makeFields ''Direction
 makeFields ''Loc

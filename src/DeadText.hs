@@ -18,11 +18,11 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad.Reader           ( MonadReader )
 import           Control.Monad.State.Lazy       ( MonadIO
                                                 , MonadState
-                                                , State,
+                                                ,
                                                 state
                                                 )
-import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT) )
-import           Control.Monad.Trans.State.Lazy ( StateT(runStateT) )
+import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT), asks )
+import           Control.Monad.Trans.State.Lazy ( State, runState )
 import           Data                           ( initState )
 import           Data.Functor                   ( (<&>) )
 import           Load                           ( loadExternal
@@ -35,23 +35,26 @@ import           System.Environment             ( getArgs )
 import           System.IO                      ( hFlush
                                                 , stdout
                                                 )
-import           Types                          ( Env(Env)
+import           Types                          ( Env(Env, foo, bar)
                                                 , Game
-                                                , GameLoop
                                                 , HasInput(input)
                                                 , Input(Input)
                                                 )
 
 deadText :: IO ()
-deadText = void $ runReaderT
-    (ReaderT
-        (\e -> do
-            let s = state (const ((), 2))
-            a <- runStateT s 3
-            pure ()
-        )
-    )
-    Env
+deadText = runReaderT r (Env "Hello" "World")
+
+r :: ReaderT Env IO ()
+r = do
+  foo' <- asks foo
+  bar' <- asks bar
+  liftIO . putStrLn $ foo' ++ " " ++ bar'
+  let a = runState st initState
+  pure () 
+
+st :: State Game ()
+st = do
+  pure ()
 
 game :: (MonadState Game m, MonadIO m) => m ()
 game = do
