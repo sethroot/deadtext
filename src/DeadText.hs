@@ -22,7 +22,7 @@ import           Control.Monad.State.Lazy       ( MonadIO
                                                 state
                                                 )
 import           Control.Monad.Trans.Reader     ( ReaderT(ReaderT, runReaderT), asks )
-import           Control.Monad.Trans.State.Lazy ( State, runState )
+import           Control.Monad.Trans.State.Lazy ( State, runState, StateT (runStateT) )
 import           Data                           ( initState )
 import           Data.Functor                   ( (<&>) )
 import           Load                           ( loadExternal
@@ -41,15 +41,15 @@ import           Types                          ( Env(Env, foo, bar)
                                                 , Input(Input)
                                                 )
 
-deadText :: IO ()
-deadText = runReaderT r (Env "Hello" "World")
 
-r :: ReaderT Env IO ()
+deadText :: IO ()
+deadText = void $ runStateT (runReaderT game (Env "Hello" "World")) initState 
+
+r :: ReaderT Env (StateT Game IO) ()
 r = do
   foo' <- asks foo
   bar' <- asks bar
   liftIO . putStrLn $ foo' ++ " " ++ bar'
-  let a = runState st initState
   pure () 
 
 st :: State Game ()
