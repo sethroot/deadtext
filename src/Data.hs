@@ -11,6 +11,9 @@ import UID (genUid)
 initState :: Game
 initState = Game 0 M.empty [] [] [] [] [] 0
 
+initEnv :: Env
+initEnv = Env M.empty
+
 setState :: MonadState Game m => m ()
 setState = do
     bathroomUid <- genUid

@@ -155,8 +155,7 @@ data Game = Game
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Env = Env
-    { foo :: String
-    , bar :: String
+    { _envLocs :: M.Map UID Loc
     }
 
 type App = ReaderT Env (StateT Game IO)
@@ -176,3 +175,4 @@ makeFields ''Input
 makeFields ''Game
 makeFields ''Location
 makeFields ''Connection
+makeFields ''Env
