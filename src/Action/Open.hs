@@ -27,20 +27,21 @@ open inputs = runExceptT $ do
     container  <- parseContainerM $ target ^. normal
     container' <- case container of
         Nothing -> do
-            -- Not a container, but might be an Item
+            -- Not a container, but might be a world Item
             itemObj <- parseItemObj $ target ^. normal
             _       <- case itemObj of
                 Nothing -> hoistEither . Right $ ()
                 Just _  -> do
                     let out = cantBeOpened $ target ^. raw
                     hoistEither . Left $ out
+            -- Not a container or world Item, but might be an Inv Item
             invObj <- parseInvObj $ target ^. normal
             _      <- case invObj of
                 Nothing -> hoistEither . Right $ ()
                 Just _  -> do
                     let out = cantBeOpened $ target ^. raw
                     hoistEither . Left $ out
-            -- Not an item, stop searching
+            -- Not found yet, stop searching
             let out = dontSee $ target ^. normal
             hoistEither . Left $ out
         Just c -> hoistEither . Right $ c
