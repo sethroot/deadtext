@@ -6,8 +6,9 @@ import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
+import Data.Aeson (Value(String))
 import Data.List (elemIndex)
-import Parser (parseContainerM)
+import Parser (parseContainerM, parseInvObj, parseItemObj)
 import Types
 
 openAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
@@ -20,35 +21,56 @@ open :: MonadState Game m => [Input] -> m (Either String String)
 open inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
-        Nothing     -> hoistEither $ Left "Open what?"
-        Just target -> hoistEither $ Right target
+        Nothing     -> hoistEither . Left $ "Open what?"
+        Just target -> hoistEither . Right $ target
 
     container  <- parseContainerM $ target ^. normal
     container' <- case container of
         Nothing -> do
-            -- This feels wrong when trying to open a non-container object
-
-            -- Detect if target is object and provide a message that the
-
-            -- object is not a container before resolving to this
-
-            let out = "You don't see a " ++ target ^. normal ++ "."
-            hoistEither $ Left out
-        Just container -> hoistEither $ Right container
+            -- Not a container, but might be an Item
+            itemObj <- parseItemObj $ target ^. normal
+            _       <- case itemObj of
+                Nothing -> hoistEither . Right $ ()
+                Just _  -> do
+                    let out = cantBeOpened $ target ^. raw
+                    hoistEither . Left $ out
+            invObj <- parseInvObj $ target ^. normal
+            _      <- case invObj of
+                Nothing -> hoistEither . Right $ ()
+                Just _  -> do
+                    let out = cantBeOpened $ target ^. raw
+                    hoistEither . Left $ out
+            -- Not an item, stop searching
+            let out = dontSee $ target ^. normal
+            hoistEither . Left $ out
+        Just c -> hoistEither . Right $ c
 
     if (container' ^. cState) == Open
         then do
-            let out = "The " ++ container' ^. name ++ " is already open."
-            hoistEither $ Left out
-        else hoistEither $ Right ()
+            let out = alreadyOpen $ container' ^. name
+            hoistEither . Left $ out
+        else hoistEither . Right $ ()
 
     containers' <- use containers
     index       <- case elemIndex container' containers' of
-        Nothing -> do
-            let out = "Can't open that."
-            hoistEither $ Left out
-        Just i -> hoistEither $ Right i
+        Nothing -> hoistEither . Left $ somethingWrong
+        Just i  -> hoistEither . Right $ i
 
     containers . ix index . cState .= Open
-    let out = "You open the " ++ container' ^. name ++ "."
-    hoistEither $ Right out
+    let out = openContainer $ container' ^. name
+    hoistEither . Right $ out
+
+cantBeOpened :: String -> String
+cantBeOpened target = "The " ++ target ++ " is not able to be openend."
+
+dontSee :: String -> String
+dontSee target = "You don't see a " ++ target ++ "."
+
+alreadyOpen :: String -> String
+alreadyOpen target = "The " ++ target ++ " is already open."
+
+somethingWrong :: String
+somethingWrong = "Something has gone terribly wrong."
+
+openContainer :: String -> String
+openContainer target = "You open the " ++ target ++ "."
