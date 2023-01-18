@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Walk where
+module Action.Walk (walkAction) where
 
 import Control.Error (fromMaybe, headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), (^.), use)

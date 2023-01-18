@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Help where
+module Action.Help (helpAction) where
 
 import Control.Monad.State.Lazy (MonadIO(..))
 

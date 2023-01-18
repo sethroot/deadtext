@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Look where
+module Action.Look (lookAction) where
 
 import Common (containerIsHere, indefArt, itemIsHere, npcIsHere)
 import Control.Applicative (Alternative((<|>)))
@@ -126,7 +126,7 @@ pathGoing :: Direction -> String
 pathGoing dir = "There is a path going " ++ show dir ++ "."
 
 formatMulti :: [String] -> String
-formatMulti = mconcat . intersperse "\n\n" . filter (not . null)
+formatMulti = intercalate "\n\n" . filter (not . null)
 
 -- lookAt
 

@@ -28,9 +28,11 @@ processAction (Action action args) = case action ^. normal of
     "leave"     -> Drop.dropAction args
     "give"      -> Give.giveAction args
     "help"      -> Help.helpAction
+    "i"         -> Inv.invAction
     "inv"       -> Inv.invAction
     "inventory" -> Inv.invAction
     "kill"      -> Kill.killAction args
+    "l"         -> Look.lookAction args
     "look"      -> Look.lookAction args
     "open"      -> Open.openAction args
     "pickup"    -> Pickup.pickupAction args

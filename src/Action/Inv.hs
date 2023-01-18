@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Inv where
+module Action.Inv (invAction) where
 
 import Common (inventory)
 import Control.Lens ((^.))

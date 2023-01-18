@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Talk where
+module Action.Talk (talkAction) where
 
 import Common (npcIsHere)
 import Control.Error (hoistEither, runExceptT)

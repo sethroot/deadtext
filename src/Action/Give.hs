@@ -5,7 +5,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module Action.Give where
+module Action.Give (giveAction) where
 
 import Common (inventory, npcIsHere)
 import Control.Error (headMay, hoistEither, runExceptT, tailMay)
@@ -37,60 +37,66 @@ giveAction args = do
 
 doGive :: MonadState Game m => [Input] -> m (Either String String)
 doGive args = runExceptT $ do
-    input <- case parseGiveArgsRaw args of
-        Nothing    -> hoistEither . Left $ "Give what to who now?"
-        Just input -> hoistEither $ Right input
-    parsed <- parseGiveArgsInput input
-    case parsed of
-        GiveArgs Nothing     _          -> hoistEither . Right $ dontHaveA input
-        GiveArgs _           Nothing    -> hoistEither . Right $ isNotHere input
-        GiveArgs (Just item) (Just npc) -> do
-            out <- attemptExecGive input item npc
+    giveArgsInput <- case parseGiveArgsRaw args of
+        Nothing -> hoistEither . Left $ giveWhatToWho
+        Just i  -> hoistEither $ Right i
+    giveArgs <- parseGiveArgsInput giveArgsInput
+    case giveArgs of
+        GiveArgs Nothing _ ->
+            hoistEither . Right . doNotHave $ giveArgsInput ^. item . raw
+        GiveArgs _ Nothing ->
+            hoistEither . Right . isNotHere $ giveArgsInput ^. target . raw
+        GiveArgs (Just targetItem) (Just npc) -> do
+            out <- attemptExecGive targetItem npc
             hoistEither out
 
-dontHaveA :: GiveArgsInput -> String
-dontHaveA input = "You don't have a " ++ item' ++ "."
-    where item' = input ^. item . raw
-
-isNotHere :: GiveArgsInput -> String
-isNotHere input = npc' ++ " is not here." where npc' = input ^. target . raw
-
-attemptExecGive :: MonadState Game m
-                => GiveArgsInput
-                -> Item
-                -> Npc
-                -> m (Either String String)
-attemptExecGive input item npc = runExceptT $ do
+attemptExecGive :: MonadState Game m => Item -> Npc -> m (Either String String)
+attemptExecGive targetItem npc = runExceptT $ do
     inv <- inventory
-    if item `notElem` inv
-        then hoistEither . Left $ "You do not have a " ++ item ^. name ++ "."
+    if targetItem `notElem` inv
+        then hoistEither . Left . doNotHave $ targetItem ^. name
         else hoistEither . Right $ ()
     npcHere <- npcIsHere npc
     if not npcHere
-        then hoistEither . Left $ input ^. target . raw ++ " is not here."
+        then hoistEither . Left . isNotHere $ npc ^. name
         else hoistEither . Right $ ()
     items' <- use items
-    case elemIndex item items' of
-        Nothing    -> hoistEither . Left $ "Something has gone terribly wrong."
+    case elemIndex targetItem items' of
+        Nothing    -> hoistEither . Left $ somethingWrong
         Just index -> do
             items . ix index . loc .= ItemNpc (npc ^. uid)
-            hoistEither . Right $ giveTo item npc
+            hoistEither . Right $ giveTo targetItem npc
 
 giveTo :: Item -> Npc -> String
-giveTo item npc = "You give the " ++ item' ++ "to" ++ npc' ++ "."
+giveTo targetItem npc = youGive item' npc'
     where
-        item' = item ^. name
+        item' = targetItem ^. name
         npc'  = npc ^. name
 
 parseGiveArgsRaw :: [Input] -> Maybe GiveArgsInput
-parseGiveArgsRaw raw = do
-    let sanitized = filter (\x -> x ^. normal /= "to") raw
+parseGiveArgsRaw rawInput = do
+    let sanitized = filter (\x -> x ^. normal /= "to") rawInput
     itemInput   <- headMay sanitized
     targetInput <- tailMay sanitized >>= headMay
     Just $ GiveArgsInput itemInput targetInput
 
 parseGiveArgsInput :: MonadState Game m => GiveArgsInput -> m GiveArgs
-parseGiveArgsInput input = do
-    item' <- parseItemM $ input ^. item . normal
-    npc   <- parseNpcM $ input ^. target . normal
+parseGiveArgsInput giveArgsInput = do
+    item' <- parseItemM $ giveArgsInput ^. item . normal
+    npc   <- parseNpcM $ giveArgsInput ^. target . normal
     pure $ GiveArgs item' npc
+
+giveWhatToWho :: String
+giveWhatToWho = "Give what to who now?"
+
+doNotHave :: String -> String
+doNotHave targetItem = "You do not have a " ++ targetItem ++ "."
+
+isNotHere :: String -> String
+isNotHere npc = npc ++ " is not here."
+
+somethingWrong :: String
+somethingWrong = "Something has gone terribly wrong."
+
+youGive :: String -> String -> String
+youGive targetItem npc = "You give the " ++ targetItem ++ " to " ++ npc ++ "."

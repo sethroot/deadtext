@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Pickup where
+module Action.Pickup (pickupAction) where
 
 import Common (indefArt)
 import Control.Error (headMay, hoistEither, runExceptT)

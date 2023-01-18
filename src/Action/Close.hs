@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Close where
+module Action.Close (closeAction) where
 
 import Control.Error (hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
@@ -19,8 +19,8 @@ closeAction inputs = do
 
 close :: MonadState Game m => [Input] -> m (Either String String)
 close inputs = runExceptT $ do
-    let head = headMay inputs
-    target <- case head of
+    let inputHead = headMay inputs
+    target <- case inputHead of
         Nothing     -> hoistEither $ Left "Close what?"
         Just target -> hoistEither $ Right target
 
@@ -29,7 +29,7 @@ close inputs = runExceptT $ do
         Nothing -> do
             let out = "You don't see a " ++ target ^. normal ++ "."
             hoistEither $ Left out
-        Just container -> hoistEither $ Right container
+        Just c -> hoistEither $ Right c
 
     if (container' ^. cState) == Closed
         then do

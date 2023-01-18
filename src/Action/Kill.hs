@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Kill where
+module Action.Kill (killAction) where
 
 import Common (npcIsHere)
 import Control.Error (headMay, hoistEither, runExceptT)

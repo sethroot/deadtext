@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Open where
+module Action.Open (openAction) where
 
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)

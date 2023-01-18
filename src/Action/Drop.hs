@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Drop where
+module Action.Drop (dropAction) where
 
 import Common (indefArt)
 import Control.Error
@@ -24,33 +24,34 @@ dropItem inputs = runExceptT $ do
     target <- case input' of
         Nothing     -> hoistEither $ Left "Drop what?"
         Just target -> hoistEither $ Right target
-    itemM <- parseInvItem $ target ^. normal
+    itemM      <- parseInvItem $ target ^. normal
 
-    item  <- case itemM of
+    targetItem <- case itemM of
         Nothing -> do
             let out = dontHaveObject $ target ^. normal
             hoistEither $ Left out
-        Just item -> pure item
+        Just i -> pure i
 
-    result <- dropMutation item
+    result <- dropMutation targetItem
     case result of
         Nothing -> do
-            let
-                out =
-                    "Inexplicably, you are unable to drop your " ++ item ^. name
+            let out = cantDrop $ targetItem ^. name
             hoistEither $ Left out
-        Just item -> hoistEither $ Right ()
+        Just _ -> hoistEither $ Right ()
 
-    pure . dropObject $ item ^. name
+    pure . dropObject $ targetItem ^. name
 
 dropMutation :: MonadState Game m => Item -> m (Maybe ())
-dropMutation item = runMaybeT $ do
+dropMutation targetItem = runMaybeT $ do
     items' <- use items
-    index  <- case elemIndex item items' of
-        Nothing    -> hoistMaybe Nothing
-        Just index -> pure index
+    index  <- case elemIndex targetItem items' of
+        Nothing -> hoistMaybe Nothing
+        Just i  -> pure i
     loc' <- use loc
     items . ix index . loc .= ItemLoc loc'
+
+cantDrop :: String -> String
+cantDrop object = "Inexplicably, you are unable to drop your " ++ object ++ "."
 
 dontHaveObject :: String -> String
 dontHaveObject object =
