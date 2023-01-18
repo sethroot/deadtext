@@ -21,7 +21,7 @@ open :: MonadState Game m => [Input] -> m (Either String String)
 open inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
-        Nothing     -> hoistEither . Left $ "Open what?"
+        Nothing     -> hoistEither . Left $ openWhat 
         Just target -> hoistEither . Right $ target
 
     container  <- parseContainerM $ target ^. normal
@@ -60,6 +60,9 @@ open inputs = runExceptT $ do
     containers . ix index . cState .= Open
     let out = openContainer $ container' ^. name
     hoistEither . Right $ out
+
+openWhat :: String
+openWhat = "Open what?"
 
 cantBeOpened :: String -> String
 cantBeOpened target = "The " ++ target ++ " is not able to be openend."
