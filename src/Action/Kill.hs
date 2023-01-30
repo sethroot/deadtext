@@ -54,8 +54,8 @@ killTarget inputs = runExceptT $ do
             hoistEither $ Right $ kill npc
 
 dontSee :: Input -> String
-dontSee input = "You don't see " ++ input' ++ " here."
-    where input' = input ^. raw
+dontSee _input = "You don't see " ++ input' ++ " here."
+    where input' = _input ^. raw
 
 alreadyDead :: Npc -> String
 alreadyDead npc = npc' ++ " is already dead." where npc' = npc ^. name

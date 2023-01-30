@@ -17,7 +17,7 @@ invAction = do
     liftIO . putStrLn $ out
 
 invSummary :: [Item] -> String
-invSummary = foldl combine init
+invSummary = foldl combine _init
     where
-        init    = "You are holding: \n"
-        combine = \xs item -> xs ++ " - " ++ (item ^. name) ++ "\n"
+        _init    = "You are holding: \n"
+        combine = \xs _item -> xs ++ " - " ++ (_item ^. name) ++ "\n"

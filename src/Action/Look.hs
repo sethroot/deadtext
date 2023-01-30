@@ -71,8 +71,8 @@ npcsInLoc = do
         else pure $ Just . mconcat . intersperse "\n" . map descNpc $ npcsHere
 
 descNpc :: Npc -> String
-descNpc npc = lookDesc npc
-    where lookDesc = (npc ^. alive) ? seeNpc $ seeCorpse
+descNpc npc = _lookDesc npc
+    where _lookDesc = (npc ^. alive) ? seeNpc $ seeCorpse
 
 seeNpc :: Npc -> String
 seeNpc npc = "You see " ++ npc ^. name ++ " here."
@@ -81,15 +81,15 @@ seeCorpse :: Npc -> String
 seeCorpse npc = "You see " ++ npc ^. name ++ "'s corpse lying motionless."
 
 containersInLoc :: MonadState Game m => UID -> [Container] -> m (Maybe String)
-containersInLoc loc' containers = do
-    let containersHere = filter (\c -> c ^. loc == loc') containers
+containersInLoc loc' _containers = do
+    let containersHere = filter (\c -> c ^. loc == loc') _containers
     if null containersHere
         then pure Nothing
         else
-            let out = mconcat . intersperse "\n" . map desc $ containersHere
+            let out = mconcat . intersperse "\n" . map _desc $ containersHere
             in pure $ Just out
     where
-        desc c =
+        _desc c =
             (c ^. cState == Closed) ? containerHere c $ openContainerHere c
 
 containerHere :: Container -> String
@@ -104,26 +104,26 @@ itemsInLoc :: MonadState Game m => m (Maybe String)
 itemsInLoc = do
     items' <- use items
     loc'   <- use loc
-    let itemsHere = filter (\item -> ItemLoc loc' == item ^. loc) items'
+    let itemsHere = filter (\_item -> ItemLoc loc' == _item ^. loc) items'
     if null itemsHere
         then pure Nothing
         else pure $ Just . mconcat . intersperse "\n" . map itemHere $ itemsHere
 
 itemHere :: Item -> String
-itemHere item = "There is a " ++ item ^. name ++ " here."
+itemHere _item = "There is a " ++ _item ^. name ++ " here."
 
 pathsInLoc :: UID -> [Connection] -> String
-pathsInLoc loc conns =
-    let paths = pathsInLoc' loc conns
+pathsInLoc _loc conns =
+    let paths = pathsInLoc' _loc conns
     in mconcat . intersperse "\n" $ map (pathGoing . fst) paths
 
 pathsInLoc' :: UID -> [Connection] -> [(Direction, UID)]
-pathsInLoc' loc conns =
-    let paths = filter (\c -> (c ^. start) == loc) conns
+pathsInLoc' _loc conns =
+    let paths = filter (\c -> (c ^. start) == _loc) conns
     in zip (map (^. dir) paths) (map (^. dest) paths)
 
 pathGoing :: Direction -> String
-pathGoing dir = "There is a path going " ++ show dir ++ "."
+pathGoing _dir = "There is a path going " ++ show _dir ++ "."
 
 formatMulti :: [String] -> String
 formatMulti = intercalate "\n\n" . filter (not . null)
@@ -131,17 +131,17 @@ formatMulti = intercalate "\n\n" . filter (not . null)
 -- lookAt
 
 lookAt :: MonadState Game m => Input -> m (Maybe String)
-lookAt input = runMaybeT $ do
-    let target = input ^. normal
+lookAt _input = runMaybeT $ do
+    let target = _input ^. normal
     invItem <- parseInvObj target
-    item    <- parseItemObj target
+    _item    <- parseItemObj target
     npc     <- parseNpcObj target
     cont    <- parseContObj target
-    obj     <- hoistMaybe $ invItem <|> item <|> npc <|> cont
+    obj     <- hoistMaybe $ invItem <|> _item <|> npc <|> cont
     case obj of
-        ObjInv  item      -> pure $ item ^. desc
-        ObjNpc  npc       -> MaybeT $ lookAtNpc npc
-        ObjItem item      -> MaybeT $ lookAtItem item
+        ObjInv  _item      -> pure $ _item ^. desc
+        ObjNpc  _npc       -> MaybeT $ lookAtNpc _npc
+        ObjItem _item      -> MaybeT $ lookAtItem _item
         ObjCont container -> MaybeT $ lookAtContainer container
 
 lookAtNpc :: MonadState Game m => Npc -> m (Maybe String)
@@ -150,15 +150,15 @@ lookAtNpc npc = do
     pure $ npcIsHere' ? Just (npc ^. desc) $ Nothing
 
 lookAtItem :: MonadState Game m => Item -> m (Maybe String)
-lookAtItem item = do
-    itemIsHere' <- itemIsHere item
-    pure $ itemIsHere' ? Just (item ^. desc) $ Nothing
+lookAtItem _item = do
+    itemIsHere' <- itemIsHere _item
+    pure $ itemIsHere' ? Just (_item ^. desc) $ Nothing
 
 lookAtContainer :: MonadState Game m => Container -> m (Maybe String)
 lookAtContainer cont = do
     containerIsHere' <- containerIsHere cont
-    items            <- use items
-    let items'        = filter (\i -> i ^. loc == ItemContainer (cont ^. uid)) items
+    _items            <- use items
+    let items'        = filter (\i -> i ^. loc == ItemContainer (cont ^. uid)) _items
     let containerDesc = Just (cont ^. desc)
     if not (null items') && cont ^. trans
         then do
@@ -173,14 +173,14 @@ lookAtContainer cont = do
 -- lookIn
 
 lookIn :: MonadState Game m => Input -> m (Either String String)
-lookIn input = runExceptT $ do
+lookIn _input = runExceptT $ do
     loc'        <- use loc
     containers' <- use containers
-    let pred      = containerPredicate input loc'
-    let container = headMay . filter pred $ containers'
+    let _pred      = containerPredicate _input loc'
+    let container = headMay . filter _pred $ containers'
     container' <- case container of
         Nothing -> do
-            let out = dontSeeObject $ input ^. normal
+            let out = dontSeeObject $ _input ^. normal
             hoistEither $ Left out
         Just c -> hoistEither $ Right c
     let cState' = container' ^. cState
@@ -197,29 +197,29 @@ lookInContainer cont Closed False = do
     pure . containerIsClosed $ cont ^. name
 lookInContainer cont Closed True = do
     items' <- use items
-    let item     = headMay . filter (itemPredicate cont) $ items'
-    let itemName = maybe "object" (view name) item
+    let _item     = headMay . filter (itemPredicate cont) $ items'
+    let itemName = maybe "object" (view name) _item
     let contName = cont ^. name
     pure $ seeInTransparentContainer itemName contName
 lookInContainer cont Open _ = do
     items' <- use items
-    let item = headMay . filter (itemPredicate cont) $ items'
-    case item of
+    let _item' = headMay . filter (itemPredicate cont) $ items'
+    case _item' of
         Nothing -> do
             pure . containerIsEmpty $ cont ^. name
-        Just item' -> do
-            let itemName = item' ^. name
+        Just _item'' -> do
+            let itemName = _item'' ^. name
             pure $ seeInContainer itemName (cont ^. name)
 
 
 containerPredicate :: Input -> UID -> Container -> Bool
-containerPredicate input loc' container = nameMatch && locMatch
+containerPredicate _input loc' container = nameMatch && locMatch
     where
-        nameMatch = fmap toLower (container ^. name) == input ^. normal
+        nameMatch = fmap toLower (container ^. name) == _input ^. normal
         locMatch  = container ^. loc == loc'
 
 itemPredicate :: Container -> Item -> Bool
-itemPredicate container item = item ^. loc == ItemContainer (container ^. uid)
+itemPredicate container _item = _item ^. loc == ItemContainer (container ^. uid)
 
 dontSeeObject :: String -> String
 dontSeeObject object =
@@ -232,15 +232,15 @@ containerIsEmpty :: String -> String
 containerIsEmpty container = "The " ++ container ++ " is empty."
 
 seeInContainer :: String -> String -> String
-seeInContainer item container =
-    "You see " ++ indefArt item ++ " " ++ item ++ " in the " ++ container ++ "."
+seeInContainer _item container =
+    "You see " ++ indefArt _item ++ " " ++ _item ++ " in the " ++ container ++ "."
 
 seeInTransparentContainer :: String -> String -> String
-seeInTransparentContainer item container =
+seeInTransparentContainer _item container =
     "Inside the "
         ++ container
         ++ " you can see "
-        ++ indefArt item
+        ++ indefArt _item
         ++ " "
-        ++ item
+        ++ _item
         ++ "."

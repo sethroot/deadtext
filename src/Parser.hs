@@ -5,6 +5,7 @@ module Parser where
 import Common (inInventory)
 import Control.Error (MaybeT(runMaybeT), hoistMaybe)
 import Control.Lens.Getter (Getting, (^.), use)
+import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (find)
@@ -21,26 +22,26 @@ normalizeInput = fmap $ fmap toLower
 -- Generic
 
 parseTarget :: (HasName a String) => [a] -> String -> Maybe a
-parseTarget xs input = find pred xs where pred x = lowEq (x ^. name) input
+parseTarget xs _input = find _pred xs where _pred x = lowEq (x ^. name) _input
 
 parseTargetM :: (MonadState Game m, HasName a String)
              => Getting [a] Game [a]
              -> String
              -> m (Maybe a)
-parseTargetM get input = do
+parseTargetM get _input = do
     xs <- use get
-    pure $ parseTarget xs input
+    pure $ parseTarget xs _input
 
 parseTargetObj :: (MonadState Game m, HasName a String)
                => Getting [a] Game [a]
                -> (a -> Obj)
                -> String
                -> m (Maybe Obj)
-parseTargetObj get f input = runMaybeT $ do
+parseTargetObj get f _input = runMaybeT $ do
     xs    <- use get
-    found <- hoistMaybe $ find pred xs
+    found <- hoistMaybe $ find _pred xs
     pure $ f found
-    where pred x = lowEq (x ^. name) input
+    where _pred x = lowEq (x ^. name) _input
 
 -- Item
 
@@ -51,26 +52,26 @@ parseItemM :: MonadState Game m => String -> m (Maybe Item)
 parseItemM = parseTargetM items
 
 parseItemObj :: MonadState Game m => String -> m (Maybe Obj)
-parseItemObj input = runMaybeT $ do
+parseItemObj _input = runMaybeT $ do
     items' <- use items
-    found  <- hoistMaybe $ find pred items'
+    found  <- hoistMaybe $ find _pred items'
     pure $ ObjItem found
-    where pred item = not (inInventory item) && lowEq (item ^. name) input
+    where _pred _item = not (inInventory _item) && lowEq (_item ^. name) _input
 
 -- Inventory Items 
 
 parseInvItem :: MonadState Game m => String -> m (Maybe Item)
-parseInvItem input = do
+parseInvItem _input = do
     items' <- use items
-    pure $ find pred items'
-    where pred item = inInventory item && lowEq (item ^. name) input
+    pure $ find _pred items'
+    where _pred _item = inInventory _item && lowEq (_item ^. name) _input
 
 parseInvObj :: MonadState Game m => String -> m (Maybe Obj)
-parseInvObj input = runMaybeT $ do
+parseInvObj _input = runMaybeT $ do
     items' <- use items
-    found  <- hoistMaybe $ find pred items'
+    found  <- hoistMaybe $ find _pred items'
     pure $ ObjInv found
-    where pred item = inInventory item && lowEq (item ^. name) input
+    where _pred _item = inInventory _item && lowEq (_item ^. name) _input
 
 -- NPC
 
@@ -79,6 +80,35 @@ parseNpc = parseTarget
 
 parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
+
+parseNpcRecM :: (MonadIO m, MonadState Game m) => [Input] -> m (Maybe Npc)
+parseNpcRecM []       = pure Nothing
+parseNpcRecM (x : xs) = do
+    -- liftIO . print $ "x: " ++ show x
+    -- liftIO . print $ "xs: " ++ show xs
+    -- liftIO . putStrLn $ ""
+    npc' <- parseNpcM $ x ^. normal
+    case npc' of
+        Just n  -> pure . Just $ n
+        Nothing -> do
+            case compare (length xs) 1 of
+                GT ->
+                    let
+                        next       = head xs
+                        rest       = tail xs
+                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
+                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextInput  = Input nextRaw nextNormal
+                        joined     = [nextInput] <> rest
+                    in parseNpcRecM joined
+                EQ ->
+                    let
+                        next       = head xs
+                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
+                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextInput  = Input nextRaw nextNormal
+                    in parseNpcRecM [nextInput]
+                LT -> parseNpcRecM []
 
 parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
 parseNpcObj = parseTargetObj npcs ObjNpc

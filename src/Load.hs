@@ -9,7 +9,7 @@ import Data.Aeson (decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy as BL
 import Data.Maybe (fromJust)
-import Ext (GameExt, toGame)
+-- import Ext (GameExt, toGame)
 import System.IO (IOMode(ReadMode), openFile)
 import Types (Game)
 
@@ -23,25 +23,25 @@ loadInternal = do
     liftIO . putStrLn $ "Running against internal config"
     liftIO . putStrLn $ ""
 
-loadExternal :: (MonadState Game m, MonadIO m) => String -> m () 
-loadExternal file = do
-    game <- loadGame file
-    liftIO . putStrLn $ ""
-    -- liftIO $ printGame $ fromJust game
+-- loadExternal :: (MonadState Game m, MonadIO m) => String -> m () 
+-- loadExternal file = do
+--     game <- loadGame file
+--     liftIO . putStrLn $ ""
+--     -- liftIO $ printGame $ fromJust game
 
-    put $ fromJust game
+--     put $ fromJust game
 
-loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
-loadGame file = runMaybeT $ do
-    let path = "json/" ++ file ++ ".json"
-    handle   <- liftIO $ openFile path ReadMode
-    contents <- liftIO $ BL.hGetContents handle
-    let gameExt = decode contents :: Maybe GameExt
-    case gameExt of
-        Nothing      -> hoistMaybe Nothing
-        Just gameExt -> do
-            game <- toGame gameExt
-            hoistMaybe $ Just game
+-- loadGame :: (MonadState Game m, MonadIO m) => String -> m (Maybe Game)
+-- loadGame file = runMaybeT $ do
+--     let path = "json/" ++ file ++ ".json"
+--     handle   <- liftIO $ openFile path ReadMode
+--     contents <- liftIO $ BL.hGetContents handle
+--     let gameExt = decode contents :: Maybe GameExt
+--     case gameExt of
+--         Nothing      -> hoistMaybe Nothing
+--         Just gameExt -> do
+--             game <- toGame gameExt
+--             hoistMaybe $ Just game
 
 importRaw :: IO (Maybe Game)
 importRaw = do

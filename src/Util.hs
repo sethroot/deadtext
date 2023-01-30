@@ -27,8 +27,8 @@ maybeToEither (Just a) = Right a
 lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
 lowEq a b = (toLower <$> a) == (toLower <$> b)
 
-dumpInputs :: [String] -> IO ()
-dumpInputs = print . zip [0 ..]
+enumerate :: [a] -> [(Integer, a)] 
+enumerate = zip [0 ..]
 
 debugGameState :: (MonadState Game m, MonadIO m) => m ()
 debugGameState = do

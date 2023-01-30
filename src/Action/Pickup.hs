@@ -51,17 +51,7 @@ pickup inputs = runExceptT $ do
     case headMay inputInTransContainer of
         Nothing                -> hoistEither $ Right ()
         Just (item, container) -> do
-            let
-                out =
-                    "You can see "
-                        ++ indefArt (item ^. name)
-                        ++ " "
-                        ++ (item ^. name)
-                        ++ " in the "
-                        ++ (container ^. name)
-                        ++ ", but the "
-                        ++ (container ^. name)
-                        ++ " is closed."
+            let out = seeClosedCont item container
             hoistEither $ Left out
 
     let openContainersHere    = filter (openHere loc') containers'
@@ -107,3 +97,18 @@ takeItemFromContainer item container =
 dontSeeObject :: String -> String
 dontSeeObject object =
     "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
+
+seeClosedCont :: Item -> Container -> String
+seeClosedCont item container =
+    "You can see "
+        ++ indefArt i
+        ++ " "
+        ++ i
+        ++ " in the "
+        ++ c
+        ++ ", but the "
+        ++ c
+        ++ " is closed."
+    where
+        i = item ^. name
+        c = container ^. name

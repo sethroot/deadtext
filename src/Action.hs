@@ -2,6 +2,7 @@
 
 module Action (processAction, Look.lookAction, Action(Action)) where
 
+import qualified Action.Attack as Attack
 import qualified Action.Close as Close
 import qualified Action.Drop as Drop
 import qualified Action.Give as Give
@@ -22,6 +23,7 @@ data Action = Action Input [Input]
 
 processAction :: (MonadState Game m, MonadIO m) => Action -> m ()
 processAction (Action action args) = case action ^. normal of
+    "attack"    -> Attack.attackAction args
     "close"     -> Close.closeAction args
     "shut"      -> Close.closeAction args
     "drop"      -> Drop.dropAction args

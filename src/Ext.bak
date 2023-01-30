@@ -29,6 +29,7 @@ type EngineLocMap = M.Map UID String
 
 -- Location
 
+
 data LocExt = LocExt
     { _locExtId       :: String
     , _locExtName     :: String
@@ -41,11 +42,11 @@ L.makeFields ''LocExt
 
 instance FromJSON LocExt where
     parseJSON = withObject "LocExt" $ \obj -> do
-        id       <- obj .: "id"
-        name     <- obj .: "name"
-        walkDesc <- obj .: "walkDesc"
-        lookDesc <- obj .: "lookDesc"
-        pure $ LocExt id name walkDesc lookDesc
+        _id       <- obj .: "id"
+        _name     <- obj .: "name"
+        _walkDesc <- obj .: "walkDesc"
+        _lookDesc <- obj .: "lookDesc"
+        pure $ LocExt _id _name _walkDesc _lookDesc
 
 toLocation :: LocExt -> Loc
 toLocation l = Loc (l L.^. name) (l L.^. walkDesc) (l L.^. lookDesc)
@@ -67,6 +68,7 @@ nameToLoc les ls extId =
     in ls !! locIndex
 
 -- Item
+
 
 data ItemLocExt =
   ItemInvExt
@@ -96,11 +98,11 @@ L.makeFields ''ItemExt
 
 instance FromJSON ItemExt where
     parseJSON = withObject "ItemExt" $ \obj -> do
-        id   <- obj .: "id"
-        name <- obj .: "name"
-        desc <- obj .: "desc"
-        loc  <- obj .: "loc"
-        pure $ ItemExt id name desc loc
+        _id   <- obj .: "id"
+        _name <- obj .: "name"
+        _desc <- obj .: "desc"
+        _loc  <- obj .: "loc"
+        pure $ ItemExt _id _name _desc _loc
 
 toItem :: LocExtsMap -> ContExtsMap -> ItemExt -> Item
 toItem locsMap contsMap ie =
@@ -115,6 +117,7 @@ toItemLoc locsMap contsMap itemLoc = case itemLoc of
     ItemContainerExt s -> ItemContainer . fromJust $ M.lookup s contsMap
 
 -- Container
+
 
 data ContainerExt = ContainerExt
     { _containerExtId     :: String
@@ -131,14 +134,14 @@ L.makeFields ''ContainerExt
 
 instance FromJSON ContainerExt where
     parseJSON = withObject "ContainerExt" $ \obj -> do
-        id     <- obj .: "id"
-        name   <- obj .: "name"
-        look   <- obj .: "look"
-        desc   <- obj .: "desc"
-        loc    <- obj .: "loc"
-        cState <- obj .: "state"
-        trans  <- obj .: "transparent"
-        pure $ ContainerExt id name look desc loc cState trans
+        _id     <- obj .: "id"
+        _name   <- obj .: "name"
+        _look   <- obj .: "look"
+        _desc   <- obj .: "desc"
+        _loc    <- obj .: "loc"
+        _cState <- obj .: "state"
+        _trans  <- obj .: "transparent"
+        pure $ ContainerExt _id _name _look _desc _loc _cState _trans
 
 toContainer :: ContExtsMap -> LocExtsMap -> ContainerExt -> Container
 toContainer contsMap locsMap container =
@@ -162,6 +165,7 @@ instance Injective ContainerInj Container where
 
 -- Connection
 
+
 data ConnectionExt = ConnectionExt
     { _connectionExtStart :: String
     , _connectionExtEnd   :: String
@@ -173,12 +177,13 @@ L.makeFields ''ConnectionExt
 
 instance FromJSON ConnectionExt where
     parseJSON = withObject "ConnectionExt" $ \obj -> do
-        start <- obj .: "start"
-        end   <- obj .: "end"
-        dir   <- obj .: "dir"
-        pure $ ConnectionExt start end dir
+        _start <- obj .: "start"
+        _end   <- obj .: "end"
+        _dir   <- obj .: "dir"
+        pure $ ConnectionExt _start _end _dir
 
 -- Direction
+
 
 toDir :: String -> Direction
 toDir d = case d of
@@ -200,9 +205,9 @@ instance Injective String Direction where
 toConnection :: LocExtsMap -> ConnectionExt -> Connection
 toConnection m c =
     let
-        lookup getter = fromJust $ M.lookup (c L.^. getter) m
-        start' = lookup start
-        end'   = lookup end
+        _lookup getter = fromJust $ M.lookup (c L.^. getter) m
+        start' = _lookup start
+        end'   = _lookup end
         dir'   = to $ c L.^. dir
     in Connection start' dir' end'
 
@@ -211,19 +216,11 @@ newtype ConnectionInj = ConnectionInj (LocExtsMap, ConnectionExt)
 instance Injective ConnectionInj Connection where
     to (ConnectionInj (m, c)) = toConnection m c
 
--- NPC
+-- Npc
 
-data NpcRoleExt =
-  DialogRole
-  | QuestRole
-  deriving (Show, Generic, FromJSON)
 
-L.makeFields  ''NpcRoleExt
+-- data NpcztRole
 
-instance Injective NpcRoleExt Role where
-    to r = case r of
-        Ext.DialogRole -> Types.DialogRole
-        Ext.QuestRole  -> Types.QuestRole
 
 data NpcExt = NpcExt
     { _npcExtId           :: String
@@ -243,27 +240,27 @@ L.makeFields ''NpcExt
 
 instance FromJSON NpcExt where
     parseJSON = withObject "NpcExt" $ \obj -> do
-        id           <- obj .: "id"
-        name         <- obj .: "name"
-        gender       <- obj .: "gender"
-        desc         <- obj .: "desc"
-        role         <- obj .: "role"
-        loc          <- obj .: "loc"
-        alive        <- obj .: "alive"
-        dialog       <- obj .: "dialog"
-        dialogCursor <- obj .: "dialogCursor"
-        quest        <- obj .: "quest"
+        _id           <- obj .: "id"
+        _name         <- obj .: "name"
+        _gender       <- obj .: "gender"
+        _desc         <- obj .: "desc"
+        _role         <- obj .: "role"
+        _loc          <- obj .: "loc"
+        _alive        <- obj .: "alive"
+        _dialog       <- obj .: "dialog"
+        _dialogCursor <- obj .: "dialogCursor"
+        _quest        <- obj .: "quest"
         pure $ NpcExt
-            id
-            name
-            gender
-            desc
-            role
-            loc
-            alive
-            dialog
-            dialogCursor
-            quest
+            _id
+            _name
+            _gender
+            _desc
+            _role
+            _loc
+            _alive
+            _dialog
+            _dialogCursor
+            _quest
 
 toNpc :: NpcExtMap -> LocExtsMap -> NpcExt -> Npc
 toNpc npcMap locsMap n =
@@ -275,11 +272,14 @@ toNpc npcMap locsMap n =
             "female"    -> Female
             "nonbinary" -> NonBinary
             _           -> Unknown
+        alignment' =
+        combat' = 
         desc' = n L.^. desc
         role' = case n L.^. role of
-            "dialog" -> Types.DialogRole
-            "quest"  -> Types.QuestRole
-            _        -> Types.DialogRole
+            "dialog"  -> Types.Dialog
+            "quest"   -> Types.Quest
+            "monster" -> Types.Monster
+            _         -> Types.Dialog
         loc'          = fromJust $ M.lookup (n L.^. loc) locsMap
         alive'        = n L.^. alive
         dialog'       = n L.^. dialog
@@ -289,6 +289,8 @@ toNpc npcMap locsMap n =
         id'
         name'
         gender'
+        alignment'
+        combat'
         desc'
         role'
         loc'
@@ -302,7 +304,28 @@ newtype NpcInj = NpcInj (NpcExtMap, LocExtsMap, NpcExt)
 instance Injective NpcInj Npc where
     to (NpcInj (npcMap, locsMap, n)) = toNpc npcMap locsMap n
 
+-- NpcScene
+
+
+data NpcSceneExt = NpcSceneExt {}
+
+newtype NpcSceneInj = NpcSceneInj (LocExtsMap, NpcSceneExt)
+
+instance Injective NpcSceneInj Scene where
+    to inj = Scene 0 [] 0 []
+
+
+-- SceneDialog
+
+
+data SceneDialogExt = SceneDialogExt
+
+instance Injective SceneDialogExt SceneDialog where
+    to ext = SceneDialog 0 ""
+
+
 -- Game
+
 
 data GameExt = GameExt
     { _gameExtLocation    :: String
@@ -311,6 +334,7 @@ data GameExt = GameExt
     , _gameExtContainers  :: [ContainerExt]
     , _gameExtConnections :: [ConnectionExt]
     , _gameExtNpcs        :: [NpcExt]
+    , _gameExtScenes      :: [Scene]
     }
     deriving Show
 
@@ -318,77 +342,123 @@ L.makeFields ''GameExt
 
 instance FromJSON GameExt where
     parseJSON = withObject "GameExt" $ \obj -> do
-        location    <- obj .: "location"
-        locations   <- obj .: "locations"
-        items       <- obj .: "items"
-        containers  <- obj .: "containers"
-        connections <- obj .: "connections"
-        npcs        <- obj .: "npcs"
-        pure $ GameExt location locations items containers connections npcs
+        _location    <- obj .: "location"
+        _locations   <- obj .: "locations"
+        _items       <- obj .: "items"
+        _containers  <- obj .: "containers"
+        _connections <- obj .: "connections"
+        _npcs        <- obj .: "npcs"
+        _scenes      <- obj .: "scenes"
+        pure $ GameExt
+            _location
+            _locations
+            _items
+            _containers
+            _connections
+            _npcs
+            _scenes
 
 toGame :: MonadState Game m => GameExt -> m Game
 toGame g = do
     -- Starting location
-    locUid <- genUid
+
+    _locUid <- genUid
 
     let locExts = g L.^. locations
 
     {-
+
       Map external ID to internal UID
+
       Will be used provide UIDs to other types
+
       ["overlook_bath": 0]
+
     -}
     locExtsMap <- do
-        let justStartLoc = M.insert (g L.^. location) locUid M.empty
+        let justStartLoc = M.insert (g L.^. location) _locUid M.empty
         foldM foldIdGen justStartLoc locExts
 
     {- 
+
       Invert the ID map
+
       [0: "overlook_bath"] 
+
     -}
     let inverted  = invertMap locExtsMap
 
     -- Inject LocExt to Loc
-    let locs      = fmap to locExts
+
+    let _locs     = fmap to locExts
 
     {-
+
       Transform external ID to Loc to complete engine map
+
       [0: Loc]
+
     -}
-    let transform = nameToLoc locExts locs
-    let locsMap   = M.map transform inverted
+    let transform = nameToLoc locExts _locs
+    let _locsMap  = M.map transform inverted
 
     -- Containers
+
     let contExts  = g L.^. containers
     contsExtMap <- foldM foldIdGen M.empty contExts
     let
         contExtInjs =
             fmap (\c -> ContainerInj (contsExtMap, locExtsMap, c)) contExts
-    let conts       = fmap to contExtInjs
+    let _conts      = fmap to contExtInjs
 
     -- Connections
+
     let connExts    = g L.^. connections
     let connExtInjs = fmap (\c -> ConnectionInj (locExtsMap, c)) connExts
-    let conns       = fmap to connExtInjs
+    let _conns      = fmap to connExtInjs
 
     -- Items
+
     let itemExts    = g L.^. items
-    let items       = fmap (toItem locExtsMap contsExtMap) itemExts
+    let _items      = fmap (toItem locExtsMap contsExtMap) itemExts
+
+    -- Avatar
+
+    let _avatar     = 0
 
     -- Npcs
+
     let npcExts     = g L.^. npcs
     npcMap <- foldM foldIdGen M.empty npcExts
-    let npcExtInjs = fmap (\n -> NpcInj (npcMap, locExtsMap, n)) npcExts
-    let npcs       = fmap to npcExtInjs
+    let npcExtInjs   = fmap (\n -> NpcInj (npcMap, locExtsMap, n)) npcExts
+    let _npcs        = fmap to npcExtInjs
+
+    -- Scenes
+
+    let scenesExt = g L.^. scenes
+    let _scenes   = fmap to scenesExt
 
     -- Other
-    let input      = []
-    let gen        = 0
+
+    let _input       = []
+    let _gen         = 0
 
     -- Complete, loaded Game
-    pure $ Game locUid locsMap conns npcs items conts input gen
+
+    pure $ Game
+        _locUid
+        _locsMap
+        _conns
+        _avatar
+        _npcs
+        _scenes
+        _items
+        _conts
+        _input
+        _gen
 
 -- Common
+
 
 foldIdGen :: (MonadState Game m, HasId s String)
           => Map String Int
@@ -399,5 +469,5 @@ foldIdGen m s = do
     if M.member stringId m
         then pure m
         else do
-            uid <- genUid
-            pure $ M.insert stringId uid m
+            _uid <- genUid
+            pure $ M.insert stringId _uid m

@@ -37,41 +37,76 @@ data Loc = Loc
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
-data Role = DialogRole
-    | QuestRole
+data Role = Monster | Dialog | Quest
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
-data Quest = Quest
-    { _questStartText      :: String
-    , _questCompletionText :: String
-    , _questCursor         :: Int
-    , _questSteps          :: [String]
-    }
-    deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+-- data Quest = Quest
+--     { _questStartText      :: String
+--     , _questCompletionText :: String
+--     , _questCursor         :: Int
+--     , _questSteps          :: [String]
+--     }
+--     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Npc = Npc
     { _npcUid          :: UID
     , _npcName         :: String
     , _npcGender       :: Gender
+    , _npcAlignment    :: Alignment
+    , _npcCombat       :: [UID]
     , _npcDesc         :: String
-    -- , _npcRel          :: NpcRel
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool
     , _npcDialog       :: [String]
     , _npcDialogCursor :: Int
-    , _npcQuest        :: [Quest]
+    -- , _npcQuest        :: [Quest]
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data Scene = Scene
+    { _sceneLoc          :: UID
+    , _sceneDialog       :: [SceneDialog]
+    , _sceneDialogCursor :: Int
+    , _sceneDescription  :: [String]
+    }
+    deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+
+data SceneDialog =
+    SceneDialog
+      { _sceneDialogSpeaker   :: UID
+      , _sceneDialogStatement :: String
+      }
+    | SceneNarration
+      {
+          _sceneNarrationText :: String
+      }
+      deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Gender = Male | Female | NonBinary | Unknown
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
+data Alignment = Neutral | Hostile
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data CombatType = Melee | Ranged
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data CombatEffect = None | Stun
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data Combat = Combat
+    { _combatUid         :: UID
+    , _combatType        :: CombatType
+    , _combatDamage      :: Int
+    , _combatEffect      :: CombatEffect
+    , _combatDescription :: String
+    }
+    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
 data NpcRel = NpcRel
-    { _npcRelLevel       :: Int
-    , _npcRelKnown       :: Bool
-    , _npcRelDialog      :: [DialogGroup]
-    , _npcRelDescription :: [String]
+    { _npcRelLevel :: Int
+    , _npcRelKnown :: Bool
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
@@ -146,7 +181,9 @@ data Game = Game
     { _gameLoc         :: UID
     , _gameLocs        :: M.Map UID Loc
     , _gameConnections :: [Connection]
+    , _gameAvatar      :: UID
     , _gameNpcs        :: [Npc]
+    , _gameScenes      :: [Scene]
     , _gameItems       :: [Item]
     , _gameContainers  :: [Container]
     , _gameInput       :: [Input]
@@ -169,7 +206,7 @@ makeFields ''Obj
 makeFields ''Ext
 makeFields ''Npc
 makeFields ''Role
-makeFields ''Quest
+-- makeFields ''Quest
 makeFields ''Movement
 makeFields ''Input
 makeFields ''Game
