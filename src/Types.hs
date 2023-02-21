@@ -9,9 +9,10 @@ module Types where
 import Control.Lens (makeFields)
 import Control.Monad.State.Lazy (StateT)
 import Control.Monad.Trans.Reader (ReaderT)
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON (toJSON), ToJSONKey, object)
 import qualified Data.Map.Strict as M
 import GHC.Generics (Generic)
+import Data.Aeson.Types (FromJSON(parseJSON))
 
 type UID = Int
 
@@ -48,11 +49,22 @@ data Role = Monster | Dialog | Quest
 --     }
 --     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
+data Avatar = Avatar
+    { _avatarName   :: String
+    , _avatarCombat :: Combat
+    }
+    deriving (Generic, FromJSON, ToJSON)
+    
+
+instance Show Avatar where
+    show (Avatar name _) = name
+
 data Npc = Npc
     { _npcUid          :: UID
     , _npcName         :: String
     , _npcGender       :: Gender
     , _npcAlignment    :: Alignment
+    , _npcHealth       :: Int
     , _npcCombat       :: [UID]
     , _npcDesc         :: String
     , _npcRole         :: Role
@@ -89,7 +101,7 @@ data Gender = Male | Female | NonBinary | Unknown
 data Alignment = Neutral | Hostile
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
-data CombatType = Melee | Ranged
+data CombatKind = Melee | Ranged
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data CombatEffect = None | Stun
@@ -97,12 +109,20 @@ data CombatEffect = None | Stun
 
 data Combat = Combat
     { _combatUid         :: UID
-    , _combatType        :: CombatType
+    , _combatKind        :: CombatKind
     , _combatDamage      :: Int
     , _combatEffect      :: CombatEffect
-    , _combatDescription :: String
+    , _combatDescription :: Npc -> String
     }
-    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+    deriving (Generic)
+    -- deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+instance FromJSON Combat where
+  parseJSON _ = return $ Combat 0 Melee 10 None (const "") 
+
+instance ToJSON Combat where
+  toJSON _ = object [] 
+
 
 data NpcRel = NpcRel
     { _npcRelLevel :: Int
@@ -181,7 +201,7 @@ data Game = Game
     { _gameLoc         :: UID
     , _gameLocs        :: M.Map UID Loc
     , _gameConnections :: [Connection]
-    , _gameAvatar      :: UID
+    , _gameAvatar      :: Maybe Avatar
     , _gameNpcs        :: [Npc]
     , _gameScenes      :: [Scene]
     , _gameItems       :: [Item]
@@ -204,7 +224,9 @@ makeFields ''Item
 makeFields ''Container
 makeFields ''Obj
 makeFields ''Ext
+makeFields ''Avatar
 makeFields ''Npc
+makeFields ''Combat
 makeFields ''Role
 -- makeFields ''Quest
 makeFields ''Movement

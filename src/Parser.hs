@@ -43,6 +43,35 @@ parseTargetObj get f _input = runMaybeT $ do
     pure $ f found
     where _pred x = lowEq (x ^. name) _input
 
+parseRecM :: MonadState Game m
+          => (String -> m (Maybe a))
+          -> [Input]
+          -> m (Maybe a)
+parseRecM _ []       = pure Nothing
+parseRecM f (x : xs) = do
+    result <- f $ x ^. normal
+    case result of
+        Just found  -> pure . Just $ found 
+        Nothing -> do
+            case compare (length xs) 1 of
+                GT ->
+                    let
+                        next       = head xs
+                        rest       = tail xs
+                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
+                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextInput  = Input nextRaw nextNormal
+                        joined     = [nextInput] <> rest
+                    in parseRecM f joined
+                EQ ->
+                    let
+                        next       = head xs
+                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
+                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextInput  = Input nextRaw nextNormal
+                    in parseRecM f [nextInput]
+                LT -> parseRecM f []
+
 -- Item
 
 parseItem :: [Item] -> String -> Maybe Item
@@ -80,35 +109,6 @@ parseNpc = parseTarget
 
 parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
-
-parseNpcRecM :: (MonadIO m, MonadState Game m) => [Input] -> m (Maybe Npc)
-parseNpcRecM []       = pure Nothing
-parseNpcRecM (x : xs) = do
-    -- liftIO . print $ "x: " ++ show x
-    -- liftIO . print $ "xs: " ++ show xs
-    -- liftIO . putStrLn $ ""
-    npc' <- parseNpcM $ x ^. normal
-    case npc' of
-        Just n  -> pure . Just $ n
-        Nothing -> do
-            case compare (length xs) 1 of
-                GT ->
-                    let
-                        next       = head xs
-                        rest       = tail xs
-                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
-                        nextNormal = x ^. normal ++ " " ++ next ^. normal
-                        nextInput  = Input nextRaw nextNormal
-                        joined     = [nextInput] <> rest
-                    in parseNpcRecM joined
-                EQ ->
-                    let
-                        next       = head xs
-                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
-                        nextNormal = x ^. normal ++ " " ++ next ^. normal
-                        nextInput  = Input nextRaw nextNormal
-                    in parseNpcRecM [nextInput]
-                LT -> parseNpcRecM []
 
 parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
 parseNpcObj = parseTargetObj npcs ObjNpc

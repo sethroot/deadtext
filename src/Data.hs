@@ -2,14 +2,14 @@
 
 module Data where
 
-import Control.Lens ((.=))
+import Control.Lens ((.=), (^.))
 import Control.Monad.State.Lazy (MonadState)
 import qualified Data.Map.Strict as M
 import Types
 import UID (genUid)
 
 initState :: Game
-initState = Game 0 M.empty [] 0 [] [] [] [] [] 0
+initState = Game 0 M.empty [] Nothing [] [] [] [] [] 0
 
 initEnv :: Env
 initEnv = Env M.empty
@@ -46,7 +46,15 @@ setState = do
            , Connection cemetaryUid    SE overlookLotUid
            ]
     jamesUid <- genUid
-    avatar .= jamesUid
+    let
+        jamesCombat = Combat
+            jamesUid
+            Melee
+            10
+            None
+            (\npc -> "James swings his fists at " ++ npc ^. name ++ ".")
+    let james = Avatar "James" jamesCombat
+    avatar .= Just james
     angelaUid <- genUid
     let
         angela = Npc
@@ -54,6 +62,7 @@ setState = do
             "Angela"
             Female
             Neutral
+            100
             []
             "Angela is frantically searching the cemetary for something."
             Dialog
@@ -72,7 +81,7 @@ setState = do
             Ranged
             10
             None
-            "It sprays a vile mist at you."
+            (\npc -> "It sprays a vile mist at " ++ show npc ++ ".")
     lyingFigureUid <- genUid
     let
         lyingFigure0 = Npc
@@ -80,6 +89,7 @@ setState = do
             "Lying Figure"
             Female
             Neutral
+            100
             [lyingFigureAttackUid]
             "The lying figure is motionless"
             Monster
