@@ -8,46 +8,55 @@ import Control.Lens ((%=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
-import Data.List (findIndex)
+import Data.List (elemIndex, findIndex)
 import qualified Data.Map.Strict as M
+import Parser (parseNpcM, parseRecM)
 import Types
 import Util ((?))
 
 talkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-talkAction []                          = liftIO . putStrLn $ noTalkTarget
-talkAction (Input _ "to" : target : _) = processTalkTo target
-talkAction (target                : _) = processTalkTo target
+talkAction []                  = liftIO . putStrLn $ noTalkTarget
+talkAction (Input _ "to" : xs) = processTalkTo xs
+talkAction (target       : _ ) = processTalkTo [target]
 
-processTalkTo :: (MonadState Game m, MonadIO m) => Input -> m ()
+processTalkTo :: (MonadState Game m, MonadIO m) => [Input] -> m ()
 processTalkTo target = do
     out <- talkTo target
     either printE printE out
     where printE = liftIO . putStrLn
 
-talkTo :: (MonadState Game m, MonadIO m) => Input -> m (Either String String)
-talkTo input = runExceptT $ do
+talkTo :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
+talkTo inputs = runExceptT $ do
     npcs' <- use npcs
     -- todo: add support for talking to unknown npcs by gender, description
 
-    index <- case findIndex (nameMatches input) npcs' of
+    npc   <- parseRecM parseNpcM inputs
+    npc'  <- case npc of
         Nothing -> do
-            let out = dontSeeTarget (input ^. raw)
-            hoistEither $ Left out
-        Just i -> hoistEither $ Right i
-    let npc = npcs' !! index
-    npcHere' <- npcIsHere npc
+            let input' = head inputs
+            let out    = dontSeeTarget (input' ^. raw)
+            hoistEither . Left $ out
+        Just npc' -> hoistEither . Right $ npc'
+
+    index <- case elemIndex npc' npcs' of
+        Nothing -> do
+            let out = dontSeeTarget (npc' ^. name)
+            hoistEither . Left $ out
+        Just i -> hoistEither . Right $ i
+
+    npcHere' <- npcIsHere npc'
     if not npcHere'
         then do
-            let out = dontSeeTarget $ npc ^. name
+            let out = dontSeeTarget $ npc' ^. name
             hoistEither $ Left out
         else hoistEither $ Right ()
-    if not $ npc ^. alive
+    if not $ npc' ^. alive
         then do
-            let out = talkCorpse npc
+            let out = talkCorpse npc'
             hoistEither $ Left out
         else do
             hoistEither $ Right ()
-    let out = (npc ^. dialog) !! (npc ^. dialogCursor)
+    let out = (npc' ^. dialog) !! (npc' ^. dialogCursor)
     advanceDialog index
     hoistEither $ Right out
 
