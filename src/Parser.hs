@@ -5,7 +5,6 @@ module Parser where
 import Common (inInventory)
 import Control.Error (MaybeT(runMaybeT), hoistMaybe)
 import Control.Lens.Getter (Getting, (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (find)
@@ -51,23 +50,23 @@ parseRecM _ []       = pure Nothing
 parseRecM f (x : xs) = do
     result <- f $ x ^. normal
     case result of
-        Just found  -> pure . Just $ found 
-        Nothing -> do
+        Just found -> pure . Just $ found
+        Nothing    -> do
             case compare (length xs) 1 of
                 GT ->
                     let
                         next       = head xs
                         rest       = tail xs
-                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
-                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextRaw    = unwords [x ^. raw, next ^. raw]
+                        nextNormal = unwords [x ^. normal, next ^. normal]
                         nextInput  = Input nextRaw nextNormal
                         joined     = [nextInput] <> rest
                     in parseRecM f joined
                 EQ ->
                     let
                         next       = head xs
-                        nextRaw    = x ^. raw ++ " " ++ next ^. raw
-                        nextNormal = x ^. normal ++ " " ++ next ^. normal
+                        nextRaw    = unwords [x ^. raw, next ^. raw]
+                        nextNormal = unwords [x ^. normal, next ^. normal]
                         nextInput  = Input nextRaw nextNormal
                     in parseRecM f [nextInput]
                 LT -> parseRecM f []

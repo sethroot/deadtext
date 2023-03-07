@@ -2,9 +2,9 @@
 
 module Action.Drop (dropAction) where
 
-import Common (indefArt)
+import Common (indefArt, period)
 import Control.Error
-    (MaybeT(runMaybeT), headMay, hoistEither, hoistMaybe, runExceptT)
+    ((??), MaybeT(runMaybeT), headMay, hoistMaybe, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
@@ -20,26 +20,13 @@ dropAction inputs = do
 
 dropItem :: MonadState Game m => [Input] -> m (Either String String)
 dropItem inputs = runExceptT $ do
-    let input' = headMay inputs
-    target <- case input' of
-        Nothing     -> hoistEither $ Left "Drop what?"
-        Just target -> hoistEither $ Right target
+    target     <- headMay inputs ?? dropWhat
     itemM      <- parseInvItem $ target ^. normal
-
-    targetItem <- case itemM of
-        Nothing -> do
-            let out = dontHaveObject $ target ^. normal
-            hoistEither $ Left out
-        Just i -> pure i
-
+    targetItem <- itemM ?? dontHaveObject (target ^. normal)
+    let itemName = targetItem ^. name
     result <- dropMutation targetItem
-    case result of
-        Nothing -> do
-            let out = cantDrop $ targetItem ^. name
-            hoistEither $ Left out
-        Just _ -> hoistEither $ Right ()
-
-    pure . dropObject $ targetItem ^. name
+    _      <- result ?? cantDrop itemName
+    pure . dropObject $ itemName
 
 dropMutation :: MonadState Game m => Item -> m (Maybe ())
 dropMutation targetItem = runMaybeT $ do
@@ -50,12 +37,16 @@ dropMutation targetItem = runMaybeT $ do
     loc' <- use loc
     items . ix index . loc .= ItemLoc loc'
 
+dropWhat :: String
+dropWhat = "Drop what?"
+
 cantDrop :: String -> String
-cantDrop object = "Inexplicably, you are unable to drop your " ++ object ++ "."
+cantDrop object =
+    period . unwords $ ["Inexplicably, you are unable to drop your", object]
 
 dontHaveObject :: String -> String
 dontHaveObject object =
-    "You do not have " ++ indefArt object ++ " " ++ object ++ "."
+    period . unwords $ ["You do not have", indefArt object, object]
 
 dropObject :: String -> String
-dropObject object = "You drop the " ++ object ++ "."
+dropObject object = period . unwords $ ["You drop the", object]

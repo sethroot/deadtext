@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module DeadText (deadText) where
+module DeadText where
 
 import Action (Action(..), lookAction, processAction)
 import Control.Lens ((.=))

@@ -11,6 +11,7 @@ import Control.Error
     , hoistEither
     , hoistMaybe
     , runExceptT
+    , (??)
     )
 import Control.Lens ((^.), use, view)
 import Control.Monad.IO.Class (MonadIO(..))
@@ -178,15 +179,12 @@ lookIn _input = runExceptT $ do
     containers' <- use containers
     let _pred      = containerPredicate _input loc'
     let container = headMay . filter _pred $ containers'
-    container' <- case container of
-        Nothing -> do
-            let out = dontSeeObject $ _input ^. normal
-            hoistEither $ Left out
-        Just c -> hoistEither $ Right c
+    let target = _input ^. normal
+    container' <- container ?? dontSeeObject target 
     let cState' = container' ^. cState
     let trans'  = container' ^. trans
     out <- lookInContainer container' cState' trans'
-    hoistEither $ Right out
+    hoistEither . Right $ out
 
 lookInContainer :: MonadState Game m
                 => Container

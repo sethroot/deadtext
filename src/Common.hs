@@ -14,9 +14,9 @@ npcIsHere npc = do
     pure $ npc ^. loc == loc'
 
 itemIsHere :: MonadState Game m => Item -> m Bool
-itemIsHere item = do
+itemIsHere i = do
     loc' <- use loc
-    pure $ item ^. loc == ItemLoc loc'
+    pure $ i ^. loc == ItemLoc loc'
 
 containerIsHere :: MonadState Game m => Container -> m Bool
 containerIsHere cont = do
@@ -24,7 +24,7 @@ containerIsHere cont = do
     pure $ cont ^. loc == loc'
 
 inInventory :: HasLoc s ItemLocation => s -> Bool
-inInventory item = item ^. loc == ItemInv
+inInventory a = a ^. loc == ItemInv
 
 inventory :: MonadState Game m => m [Item]
 inventory = do
@@ -34,3 +34,12 @@ inventory = do
 indefArt :: String -> String
 indefArt s = isVowel ? "an" $ "a"
     where isVowel = toLower (head s) `elem` ['a', 'e', 'i', 'o', 'u']
+
+period :: String -> String
+period s = s ++ "."
+
+outF :: String
+outF = "Something has gone horribly wrong."
+
+dontKnowHowToDoThat :: String
+dontKnowHowToDoThat = "Don't know how to do that."

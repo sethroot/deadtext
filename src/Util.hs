@@ -27,7 +27,7 @@ maybeToEither (Just a) = Right a
 lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
 lowEq a b = (toLower <$> a) == (toLower <$> b)
 
-enumerate :: [a] -> [(Integer, a)] 
+enumerate :: [a] -> [(Integer, a)]
 enumerate = zip [0 ..]
 
 debugGameState :: (MonadState Game m, MonadIO m) => m ()
@@ -40,3 +40,14 @@ printGame g = do
     putStrLn ""
     pPrint g
     putStrLn ""
+
+partitionBy :: Eq a => a -> [a] -> [[a]]
+partitionBy sep l = partitionByAux l []
+    where
+        partitionByAux (h : t) acc | sep == h = acc : partitionByAux t []
+        partitionByAux (h : t) acc            = partitionByAux t (acc `snoc` h)
+        partitionByAux []      acc            = [acc]
+
+snoc :: [a] -> a -> [a]
+snoc []      a = [a]
+snoc (h : t) a = h : t `snoc` a

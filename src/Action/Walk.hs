@@ -2,7 +2,8 @@
 
 module Action.Walk (walkAction) where
 
-import Control.Error (fromMaybe, headMay, hoistEither, runExceptT)
+import Common (dontKnowHowToDoThat, outF)
+import Control.Error ((??), fromMaybe, headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), (^.), use)
 import Control.Monad.State.Lazy (MonadIO(..), MonadState)
 import Data.List (find)
@@ -18,29 +19,15 @@ walkAction inputs = do
 
 walk :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
 walk inputs = runExceptT $ do
-    let input' = headMay inputs
-    target <- case input' of
-        Nothing     -> hoistEither $ Left "Go where?"
-        Just target -> hoistEither $ Right target
-
-    mDir <- parseDir $ target ^. normal
-    dir  <- case mDir of
-        Nothing -> do
-            let out = "I don't know how to do that..."
-            hoistEither $ Left out
-        Just dir -> hoistEither $ Right dir
+    target     <- headMay inputs ?? goWhere
+    mDir       <- parseDir $ target ^. normal
+    dir'       <- mDir ?? dontKnowHowToDoThat
     currentLoc <- use loc
     locMap     <- use locs
-    loc''      <- case M.lookup currentLoc locMap of
-        Nothing -> hoistEither $ Left "Error: Could not lookup location"
-        Just a  -> hoistEither $ Right a
-    conns' <- use connections
-    let resolvedNext = resolveMove (Movement currentLoc dir) conns'
-    loc .= resolvedNext
-    nextLoc <- case M.lookup resolvedNext locMap of
-        Nothing ->
-            hoistEither $ Left "Error: Could not lookup resolved next location"
-        Just a -> hoistEither $ Right a
+    conns'     <- use connections
+    let next = resolveMove (Movement currentLoc dir') conns'
+    loc .= next
+    nextLoc <- M.lookup next locMap ?? outF
     let out = nextLoc ^. walkDesc
     hoistEither $ Right out
 
@@ -51,10 +38,13 @@ maybeLocFromMove :: Movement -> [Connection] -> Maybe UID
 maybeLocFromMove move = fmap (^. dest) . maybeConnFromMove move
 
 maybeConnFromMove :: Movement -> [Connection] -> Maybe Connection
-maybeConnFromMove (Movement s d) = find pred
+maybeConnFromMove (Movement s d) = find predicate
     where
-        pred = \c ->
+        predicate = \c ->
             let
                 start' = c ^. start
                 dir'   = c ^. dir
             in s == start' && d == dir'
+
+goWhere :: String
+goWhere = "Go where?"

@@ -195,7 +195,7 @@ data Input = Input
     { _inputRaw    :: String
     , _inputNormal :: String
     }
-    deriving (Show, Generic, FromJSON, ToJSON)
+    deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 data Game = Game
     { _gameLoc         :: UID
