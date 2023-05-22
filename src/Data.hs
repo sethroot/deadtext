@@ -34,11 +34,19 @@ setState = do
             "A cemetary"
             "You have entered a cemetary surrounded by tall fencing"
             "You are standing in a cemetary surrounded by tall fencing. There are many graves here."
+    room205Uid <- genUid
+    let
+        room205 = Loc
+            "Room 202"
+            "You have entered room 202. In the middle of the room, you see a mannequin. A bright light shines at you."
+            "You are standing in room 202. In the middle of the room, you see a mannequin. A bright light shines at you."
     locs .= M.fromList
         [ (bathroomUid   , bathroom)
         , (overlookLotUid, overlookLot)
         , (cemetaryUid   , cemetary)
+        , (room205Uid    , room205)
         ]
+    loc .= room205Uid
     connections
         .= [ Connection bathroomUid    S  overlookLotUid
            , Connection overlookLotUid N  bathroomUid
@@ -62,6 +70,7 @@ setState = do
             "Angela"
             Female
             Neutral
+            True
             100
             []
             "Angela is frantically searching the cemetary for something."
@@ -89,6 +98,7 @@ setState = do
             "Lying Figure"
             Female
             Neutral
+            True
             100
             [lyingFigureAttackUid]
             "The lying figure is motionless"
@@ -97,7 +107,24 @@ setState = do
             True
             []
             0
-    npcs .= [angela, lyingFigure0]
+    mannequinRoom205Uid <- genUid
+    let
+        mannequinRoom205 = Npc
+            mannequinRoom205Uid
+            "Mannequin"
+            Female
+            Hostile
+            False
+            100
+            []
+            "The figure appears to be mannequin legs attached to mannequin legs"
+            Monster
+            room205Uid
+            True
+            []
+            0
+
+    npcs .= [angela, lyingFigure0, mannequinRoom205]
     let
         cemetaryScene = Scene
             cemetaryUid
@@ -125,8 +152,15 @@ setState = do
             True
     containers .= [car]
     let
-        map = Item
+        map' = Item
             "Map"
+            []
             "It's a well-worn map of Silent Hill."
             (ItemContainer carUid)
-    items .= [map]
+    let
+        flashlight = Item
+            "Flashlight"
+            ["light", "flash light"]
+            "The flashlight is covered in scratches. It feels heavy."
+            (ItemLoc room205Uid)
+    items .= [map', flashlight]

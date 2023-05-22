@@ -2,14 +2,14 @@
 
 module Action.Pickup (pickupAction) where
 
-import Common (indefArt)
+import Common (indefArt, period)
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (elemIndex)
-import Parser (parseItemM)
+import Parser (parseItemM, parseRecM)
 import Types
 
 pickupAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
@@ -28,7 +28,7 @@ pickup inputs = runExceptT $ do
     loc'        <- use loc
     containers' <- use containers
     items'      <- use items
-    mItem       <- parseItemM $ target ^. normal
+    mItem       <- parseRecM parseItemM inputs
     item        <- case mItem of
         Nothing -> do
             let out = dontSeeObject $ target ^. raw
@@ -78,12 +78,12 @@ itemsInContainers is cs =
     [ (i, c) | i <- is, c <- cs, i ^. loc == ItemContainer (c ^. uid) ]
 
 inputMatchesItem :: Input -> (Item, Container) -> Bool
-inputMatchesItem input (i, _) = fmap toLower (i ^. name) == input ^. normal
+inputMatchesItem input' (i, _) = fmap toLower (i ^. name) == input' ^. normal
 
 pickupItemMutation :: MonadState Game m => Item -> m ()
-pickupItemMutation item = do
+pickupItemMutation item' = do
     items' <- use items
-    case elemIndex item items' of
+    case elemIndex item' items' of
         Nothing -> pure ()
         Just i  -> items . ix i . loc .= ItemInv
 
@@ -92,23 +92,25 @@ takeItemFromContainer item container =
     let
         i = item ^. name
         c = container ^. name
-    in "You take the " ++ i ++ " from the " ++ c ++ "."
+    in period . unwords $ ["You take the", i, "from the", c]
 
 dontSeeObject :: String -> String
 dontSeeObject object =
-    "You don't see " ++ indefArt object ++ " " ++ object ++ " here."
+    period . unwords $ ["You don't see", indefArt object, object, "here"]
 
 seeClosedCont :: Item -> Container -> String
-seeClosedCont item container =
-    "You can see "
-        ++ indefArt i
-        ++ " "
-        ++ i
-        ++ " in the "
-        ++ c
-        ++ ", but the "
-        ++ c
-        ++ " is closed."
+seeClosedCont item' container =
+    period
+        . unwords
+        $ [ "You can see"
+          , indefArt i
+          , i
+          , "in the"
+          , c ++ ","
+          , "but the"
+          , c
+          , "is closed"
+          ]
     where
-        i = item ^. name
+        i = item' ^. name
         c = container ^. name

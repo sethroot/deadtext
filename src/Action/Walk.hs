@@ -8,7 +8,7 @@ import Control.Lens ((.=), (^.), use)
 import Control.Monad.State.Lazy (MonadIO(..), MonadState)
 import Data.List (find)
 import qualified Data.Map.Strict as M
-import Parser (parseDir)
+import Parser (parseDirM)
 import Types
 
 walkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
@@ -20,7 +20,7 @@ walkAction inputs = do
 walk :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
 walk inputs = runExceptT $ do
     target     <- headMay inputs ?? goWhere
-    mDir       <- parseDir $ target ^. normal
+    mDir       <- parseDirM $ target ^. normal
     dir'       <- mDir ?? dontKnowHowToDoThat
     currentLoc <- use loc
     locMap     <- use locs

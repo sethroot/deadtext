@@ -21,7 +21,7 @@ itemIsHere i = do
 containerIsHere :: MonadState Game m => Container -> m Bool
 containerIsHere cont = do
     loc' <- use loc
-    pure $ cont ^. loc == loc'
+    pure $ cont ^. loc == loc' 
 
 inInventory :: HasLoc s ItemLocation => s -> Bool
 inInventory a = a ^. loc == ItemInv

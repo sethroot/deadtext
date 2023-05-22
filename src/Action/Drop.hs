@@ -9,7 +9,7 @@ import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
-import Parser (parseInvItem)
+import Parser (parseInvItemM)
 import Types
 
 dropAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
@@ -21,7 +21,7 @@ dropAction inputs = do
 dropItem :: MonadState Game m => [Input] -> m (Either String String)
 dropItem inputs = runExceptT $ do
     target     <- headMay inputs ?? dropWhat
-    itemM      <- parseInvItem $ target ^. normal
+    itemM      <- parseInvItemM $ target ^. normal
     targetItem <- itemM ?? dontHaveObject (target ^. normal)
     let itemName = targetItem ^. name
     result <- dropMutation targetItem

@@ -38,7 +38,7 @@ debugGameState = do
 printGame :: Game -> IO ()
 printGame g = do
     putStrLn ""
-    pPrint g
+    -- pPrint g
     putStrLn ""
 
 partitionBy :: Eq a => a -> [a] -> [[a]]

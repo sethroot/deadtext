@@ -8,7 +8,7 @@ import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Aeson (Value(String))
 import Data.List (elemIndex)
-import Parser (parseContainerM, parseInvObj, parseItemObj)
+import Parser (parseContainerM, parseInvObjM, parseItemObjM)
 import Types
 
 openAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
@@ -28,14 +28,14 @@ open inputs = runExceptT $ do
     container' <- case container of
         Nothing -> do
             -- Not a container, but might be a world Item
-            itemObj <- parseItemObj $ target ^. normal
+            itemObj <- parseItemObjM $ target ^. normal
             _       <- case itemObj of
                 Nothing -> hoistEither . Right $ ()
                 Just _  -> do
                     let out = cantBeOpened $ target ^. raw
                     hoistEither . Left $ out
             -- Not a container or world Item, but might be an Inv Item
-            invObj <- parseInvObj $ target ^. normal
+            invObj <- parseInvObjM $ target ^. normal
             _      <- case invObj of
                 Nothing -> hoistEither . Right $ ()
                 Just _  -> do

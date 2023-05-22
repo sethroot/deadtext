@@ -45,15 +45,17 @@ loadInternal = do
 
 importRaw :: IO (Maybe Game)
 importRaw = do
-    handle   <- openFile "json/in.json" ReadMode
-    contents <- BL.hGetContents handle
-    -- BL.putStr contents
+    pure Nothing
+    -- handle   <- openFile "json/in.json" ReadMode
+    -- contents <- BL.hGetContents handle
+    -- -- BL.putStr contents
 
-    let game = decode contents :: Maybe Game
-    -- liftIO $ printGame $ fromJust game
+    -- let game = decode contents :: Maybe Game
+    -- -- liftIO $ printGame $ fromJust game
 
-    pure game
+    -- pure game
 
 exportRaw :: Game -> IO ()
 exportRaw state = do
-    BL.writeFile "json/out.json" $ encodePretty state
+    pure ()
+    -- BL.writeFile "json/out.json" $ encodePretty state

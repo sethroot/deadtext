@@ -13,6 +13,7 @@ import qualified Action.Look as Look
 import qualified Action.Open as Open
 import qualified Action.Pickup as Pickup
 import qualified Action.Talk as Talk
+import qualified Action.Use as Use
 import qualified Action.Walk as Walk
 import Control.Lens ((^.))
 import Control.Monad.State (MonadIO, MonadState)
@@ -40,6 +41,7 @@ processAction (Action action args) = case action ^. normal of
     "pickup"    -> Pickup.pickupAction args
     "take"      -> Pickup.pickupAction args
     "talk"      -> Talk.talkAction args
+    "use"       -> Use.useAction args
     "go"        -> Walk.walkAction args
     "walk"      -> Walk.walkAction args
     "debug"     -> debugGameState

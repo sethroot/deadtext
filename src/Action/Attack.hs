@@ -6,6 +6,7 @@ import Control.Error ((??), MaybeT(runMaybeT), hoistMaybe, runExceptT)
 import Control.Lens ((%~), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState(get, put))
+import Data.Function ((&))
 import Data.List (elemIndex, intersperse)
 import Data.Maybe (fromJust)
 import Parser (parseNpcM, parseRecM)
@@ -26,7 +27,7 @@ attack inputs = runExceptT $ do
     _       <- attackMutation npc
     pure
         . mconcat
-        . intersperse "\n"
+        . intersperse "\n\n"
         $ [avatar' ^. combat . description $ npc, looksHurt npc]
 
 attackMutation :: MonadState Game m => Npc -> m (Maybe Int)
@@ -39,7 +40,7 @@ attackMutation targetNpc = runMaybeT $ do
     avatarM <- use avatar
     avatar' <- hoistMaybe avatarM
     let dmg = avatar' ^. combat . damage
-    put $ npcs . ix index . health %~ subtract dmg $ game
+    _ <- put $ game & npcs . ix index . health %~ subtract dmg
     pure dmg
 
 attackWhat :: String

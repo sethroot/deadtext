@@ -9,6 +9,7 @@ import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (find)
 import Data.List.Split (splitOn)
+import Data.Monoid (Any(Any, getAny))
 import Types
 import Util (lowEq)
 
@@ -79,23 +80,33 @@ parseItem = parseTarget
 parseItemM :: MonadState Game m => String -> m (Maybe Item)
 parseItemM = parseTargetM items
 
-parseItemObj :: MonadState Game m => String -> m (Maybe Obj)
-parseItemObj _input = runMaybeT $ do
+parseItemObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseItemObjM _input = runMaybeT $ do
     items' <- use items
-    found  <- hoistMaybe $ find _pred items'
+    found  <- hoistMaybe $ find (itemMatchesInput _input) items'
     pure $ ObjItem found
-    where _pred _item = not (inInventory _item) && lowEq (_item ^. name) _input
+
+itemMatchesInput :: String -> Item -> Bool
+itemMatchesInput _input item' =
+    let
+        notHolding     = not $ inInventory item'
+        testInput      = lowEq _input
+        matchesName    = testInput $ item' ^. name
+        syns           = item' ^. syn
+        synsEqual      = fmap testInput syns
+        matchesSynonym = getAny . mconcat . fmap Any $ synsEqual
+    in notHolding && (matchesName || matchesSynonym)
 
 -- Inventory Items 
 
-parseInvItem :: MonadState Game m => String -> m (Maybe Item)
-parseInvItem _input = do
+parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
+parseInvItemM _input = do
     items' <- use items
     pure $ find _pred items'
     where _pred _item = inInventory _item && lowEq (_item ^. name) _input
 
-parseInvObj :: MonadState Game m => String -> m (Maybe Obj)
-parseInvObj _input = runMaybeT $ do
+parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseInvObjM _input = runMaybeT $ do
     items' <- use items
     found  <- hoistMaybe $ find _pred items'
     pure $ ObjInv found
@@ -109,8 +120,8 @@ parseNpc = parseTarget
 parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
 
-parseNpcObj :: MonadState Game m => String -> m (Maybe Obj)
-parseNpcObj = parseTargetObj npcs ObjNpc
+parseNpcObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseNpcObjM = parseTargetObj npcs ObjNpc
 
 -- Container
 
@@ -120,13 +131,13 @@ parseContainer = parseTarget
 parseContainerM :: MonadState Game m => String -> m (Maybe Container)
 parseContainerM = parseTargetM containers
 
-parseContObj :: MonadState Game m => String -> m (Maybe Obj)
-parseContObj = parseTargetObj containers ObjCont
+parseContObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseContObjM = parseTargetObj containers ObjCont
 
 -- Direction
 
-parseDir :: Monad m => String -> m (Maybe Direction)
-parseDir = pure . go . map toLower
+parseDirM :: Monad m => String -> m (Maybe Direction)
+parseDirM = pure . go . map toLower
     where
         go "n"         = Just N
         go "north"     = Just N

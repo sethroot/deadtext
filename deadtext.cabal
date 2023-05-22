@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ad055d73005fc3a819f1ea5f2477b579de8e380aa330c28d3cdebfa235509efc
+-- hash: dd7a6ee9400e449c3cce20b572ca524319f828250437f19c37a7ddff290b00b2
 
 name:           deadtext
 version:        0.1.0.0
@@ -39,11 +39,13 @@ library
       Action.Open
       Action.Pickup
       Action.Talk
+      Action.Use
       Action.Walk
       Common
       Data
       DeadText
       Load
+      Look.Text
       Parser
       Types
       UID

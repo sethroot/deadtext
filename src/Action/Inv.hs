@@ -11,9 +11,9 @@ import Types
 invAction :: (MonadState Game m, MonadIO m) => m ()
 invAction = do
     inv <- inventory
-    out <- if not (null inv)
-        then pure $ invSummary inv
-        else pure "Your pockets are empty."
+    out <- if null inv
+        then pure "Your pockets are empty."
+        else pure $ invSummary inv
     liftIO . putStrLn $ out
 
 invSummary :: [Item] -> String

@@ -79,13 +79,18 @@ giveTo targetItem npc = youGive item' npc'
         npc'  = npc ^. name
 
 parseGiveArgsRaw :: [Input] -> Maybe GiveArgsInput
-parseGiveArgsRaw [] = Nothing
+parseGiveArgsRaw []       = Nothing
 parseGiveArgsRaw rawInput = do
-    -- FIX: Crashes if args do not follow this pattern
-    let partitioned = partitionBy (Input "to" "to") rawInput
-    let a           = head partitioned
-    let b           = partitioned !! 1
-    Just $ GiveArgsInput a b
+    let separator = Input "to" "to"
+    let isElem = separator `elem` rawInput
+    let normalHead = head rawInput
+    if not isElem || normalHead == separator 
+        then Nothing
+        else do
+            let partitioned = partitionBy separator rawInput
+            let a           = head partitioned
+            let b           = partitioned !! 1
+            Just $ GiveArgsInput a b
 
 parseGiveArgsInput :: MonadState Game m => GiveArgsInput -> m GiveArgs
 parseGiveArgsInput giveArgsInput = do
@@ -94,7 +99,7 @@ parseGiveArgsInput giveArgsInput = do
     pure $ GiveArgs item' npc
 
 giveWhatToWho :: String
-giveWhatToWho = "Give what to who now?"
+giveWhatToWho = "Give what to who?"
 
 doNotHave :: String -> String
 doNotHave targetItem = period . unwords $ ["You do not have a", targetItem]

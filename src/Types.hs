@@ -9,10 +9,10 @@ module Types where
 import Control.Lens (makeFields)
 import Control.Monad.State.Lazy (StateT)
 import Control.Monad.Trans.Reader (ReaderT)
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON (toJSON), ToJSONKey, object)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON(toJSON), ToJSONKey, object)
+import Data.Aeson.Types (FromJSON(parseJSON))
 import qualified Data.Map.Strict as M
 import GHC.Generics (Generic)
-import Data.Aeson.Types (FromJSON(parseJSON))
 
 type UID = Int
 
@@ -36,7 +36,8 @@ data Loc = Loc
     , _locWalkDesc :: String
     , _locLookDesc :: String
     }
-    deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+
+data MapLoc = OverlookBathroom | OverlookParkingLot | Cemetary | Room202
 
 data Role = Monster | Dialog | Quest
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
@@ -49,12 +50,25 @@ data Role = Monster | Dialog | Quest
 --     }
 --     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
+-- Progress types
+-- picked up item
+-- talked to npc
+-- killed key enemy
+-- looked at item
+-- gave item to npc
+-- placed item in container
+-- 
+-- data Progress = Progress
+--     { _
+
+--     }
+
 data Avatar = Avatar
     { _avatarName   :: String
     , _avatarCombat :: Combat
     }
     deriving (Generic, FromJSON, ToJSON)
-    
+
 
 instance Show Avatar where
     show (Avatar name _) = name
@@ -64,6 +78,7 @@ data Npc = Npc
     , _npcName         :: String
     , _npcGender       :: Gender
     , _npcAlignment    :: Alignment
+    , _npcActive       :: Bool
     , _npcHealth       :: Int
     , _npcCombat       :: [UID]
     , _npcDesc         :: String
@@ -114,14 +129,14 @@ data Combat = Combat
     , _combatEffect      :: CombatEffect
     , _combatDescription :: Npc -> String
     }
-    deriving (Generic)
+    deriving Generic
     -- deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 instance FromJSON Combat where
-  parseJSON _ = return $ Combat 0 Melee 10 None (const "") 
+    parseJSON _ = return $ Combat 0 Melee 10 None (const "")
 
 instance ToJSON Combat where
-  toJSON _ = object [] 
+    toJSON _ = object []
 
 
 data NpcRel = NpcRel
@@ -141,6 +156,7 @@ data ItemLocation = ItemInv
 
 data Item = Item
     { _itemName :: String
+    , _itemSyn  :: [String]
     , _itemDesc :: String
     , _itemLoc  :: ItemLocation
     }
@@ -183,7 +199,6 @@ data Location = Location
     { _locationItem  :: Item
     , _locationPlace :: Loc
     }
-    deriving (Show, Generic, FromJSON, ToJSON)
 
 data Movement = Movement
     { _movementStart     :: UID
@@ -209,7 +224,6 @@ data Game = Game
     , _gameInput       :: [Input]
     , _gameUidGen      :: Int
     }
-    deriving (Show, Generic, FromJSON, ToJSON)
 
 data Env = Env
     { _envLocs :: M.Map UID Loc
@@ -235,3 +249,4 @@ makeFields ''Game
 makeFields ''Location
 makeFields ''Connection
 makeFields ''Env
+
