@@ -24,6 +24,12 @@ normalizeInput = fmap $ fmap toLower
 parseTarget :: (HasName a String) => [a] -> String -> Maybe a
 parseTarget xs _input = find _pred xs where _pred x = lowEq (x ^. name) _input
 
+parseTargetWithSyn :: (HasName a String, HasSyn a [String])
+                   => [a]
+                   -> String
+                   -> Maybe a
+parseTargetWithSyn xs _input = find (nameOrSynMatchesInput _input) xs
+
 parseTargetM :: (MonadState Game m, HasName a String)
              => Getting [a] Game [a]
              -> String
@@ -31,6 +37,14 @@ parseTargetM :: (MonadState Game m, HasName a String)
 parseTargetM get _input = do
     xs <- use get
     pure $ parseTarget xs _input
+
+parseTargetWithSynM :: (MonadState Game m, HasName a String, HasSyn a [String])
+                    => Getting [a] Game [a]
+                    -> String
+                    -> m (Maybe a)
+parseTargetWithSynM get _input = do
+    xs <- use get
+    pure $ parseTargetWithSyn xs _input
 
 parseTargetObj :: (MonadState Game m, HasName a String)
                => Getting [a] Game [a]
@@ -72,39 +86,47 @@ parseRecM f (x : xs) = do
                     in parseRecM f [nextInput]
                 LT -> parseRecM f []
 
--- Item
-
-parseItem :: [Item] -> String -> Maybe Item
-parseItem = parseTarget
-
-parseItemM :: MonadState Game m => String -> m (Maybe Item)
-parseItemM = parseTargetM items
-
-parseItemObjM :: MonadState Game m => String -> m (Maybe Obj)
-parseItemObjM _input = runMaybeT $ do
-    items' <- use items
-    found  <- hoistMaybe $ find (itemMatchesInput _input) items'
-    pure $ ObjItem found
-
-itemMatchesInput :: String -> Item -> Bool
-itemMatchesInput _input item' =
+nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
+                      => String
+                      -> a
+                      -> Bool
+nameOrSynMatchesInput _input item' =
     let
-        notHolding     = not $ inInventory item'
         testInput      = lowEq _input
         matchesName    = testInput $ item' ^. name
         syns           = item' ^. syn
         synsEqual      = fmap testInput syns
         matchesSynonym = getAny . mconcat . fmap Any $ synsEqual
-    in notHolding && (matchesName || matchesSynonym)
+    in matchesName || matchesSynonym
+
+-- Item
+
+parseItem :: [Item] -> String -> Maybe Item
+parseItem = parseTargetWithSyn
+
+parseItemM :: MonadState Game m => String -> m (Maybe Item)
+parseItemM = parseTargetWithSynM items
+
+parseItemObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseItemObjM _input = runMaybeT $ do
+    items' <- use items
+    found  <- hoistMaybe $ find pred' items'
+    pure $ ObjItem found
+    where pred' i = notHolding i && nameOrSynMatchesInput _input i
+
+notHolding :: Item -> Bool
+notHolding = not . inInventory
 
 -- Inventory Items 
 
+-- TODO: Add synonym support
 parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
 parseInvItemM _input = do
     items' <- use items
     pure $ find _pred items'
     where _pred _item = inInventory _item && lowEq (_item ^. name) _input
 
+-- TODO: Add synonym support
 parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)
 parseInvObjM _input = runMaybeT $ do
     items' <- use items

@@ -9,7 +9,6 @@ import Control.Error
     , MaybeT(MaybeT, runMaybeT)
     , fromMaybe
     , headMay
-    , hoistEither
     , hoistMaybe
     , runExceptT
     )
@@ -19,7 +18,8 @@ import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (intercalate, intersperse)
 import qualified Data.Map.Strict as M
-import Parser (parseContObjM, parseInvObjM, parseItemObjM, parseNpcObjM, parseRecM)
+import Parser
+    (parseContObjM, parseInvObjM, parseItemObjM, parseNpcObjM, parseRecM)
 import Types
 import Util ((?))
 

@@ -9,10 +9,10 @@ import Types
 import UID (genUid)
 
 initState :: Game
-initState = Game 0 M.empty [] Nothing [] [] [] [] [] 0
+initState = Game 0 M.empty [] Nothing [] [] [] [] [] [] 0
 
 initEnv :: Env
-initEnv = Env M.empty
+initEnv = Env
 
 setState :: MonadState Game m => m ()
 setState = do
@@ -107,6 +107,7 @@ setState = do
             True
             []
             0
+    combats .= [lyingFigureAttack]
     mannequinRoom205Uid <- genUid
     let
         mannequinRoom205 = Npc

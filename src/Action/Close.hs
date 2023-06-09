@@ -8,7 +8,6 @@ import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
-import Data.String (String)
 import Parser (parseContainerM)
 import Safe (headMay)
 import Types

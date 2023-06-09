@@ -29,15 +29,15 @@ pickup inputs = runExceptT $ do
     containers' <- use containers
     items'      <- use items
     mItem       <- parseRecM parseItemM inputs
-    item        <- case mItem of
+    item''      <- case mItem of
         Nothing -> do
             let out = dontSeeObject $ target ^. raw
             hoistEither $ Left out
-        Just item -> hoistEither $ Right item
-    if item ^. loc == ItemLoc loc'
+        Just item' -> hoistEither $ Right item'
+    if item'' ^. loc == ItemLoc loc'
         then do
-            pickupItemMutation item
-            let out = (item ^. name) ++ " taken."
+            pickupItemMutation item''
+            let out = (item'' ^. name) ++ " taken."
             hoistEither $ Left out
         else hoistEither $ Right ()
 
@@ -50,8 +50,8 @@ pickup inputs = runExceptT $ do
             filter (inputMatchesItem target) itemsInClosedTransContainersHere
     case headMay inputInTransContainer of
         Nothing                -> hoistEither $ Right ()
-        Just (item, container) -> do
-            let out = seeClosedCont item container
+        Just (item', container) -> do
+            let out = seeClosedCont item' container
             hoistEither $ Left out
 
     let openContainersHere    = filter (openHere loc') containers'
@@ -61,9 +61,9 @@ pickup inputs = runExceptT $ do
         Nothing -> do
             let out = dontSeeObject $ target ^. normal
             hoistEither $ Left out
-        Just (item, container) -> do
-            pickupItemMutation item
-            let out = takeItemFromContainer item container
+        Just (item', container) -> do
+            pickupItemMutation item'
+            let out = takeItemFromContainer item' container
             hoistEither $ Right out
 
 openHere :: UID -> Container -> Bool
@@ -88,9 +88,9 @@ pickupItemMutation item' = do
         Just i  -> items . ix i . loc .= ItemInv
 
 takeItemFromContainer :: Item -> Container -> String
-takeItemFromContainer item container =
+takeItemFromContainer item' container =
     let
-        i = item ^. name
+        i = item' ^. name
         c = container ^. name
     in period . unwords $ ["You take the", i, "from the", c]
 

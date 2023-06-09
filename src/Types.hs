@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GADTs #-}
 
 module Types where
 
@@ -62,6 +63,13 @@ data Role = Monster | Dialog | Quest
 --     { _
 
 --     }
+
+data ProgressType = PickedUpItem |
+       TalkedToNPC |
+    KilledKeyEnemy |
+    LookedAtItem |
+    GaveItemToNpc |
+    PlacedItemInContainer
 
 data Avatar = Avatar
     { _avatarName   :: String
@@ -138,7 +146,6 @@ instance FromJSON Combat where
 instance ToJSON Combat where
     toJSON _ = object []
 
-
 data NpcRel = NpcRel
     { _npcRelLevel :: Int
     , _npcRelKnown :: Bool
@@ -161,6 +168,14 @@ data Item = Item
     , _itemLoc  :: ItemLocation
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+
+data Consumable = Health | Ammo
+
+data Key = Key
+
+data Usable a where
+     UConsumable ::Usable Consumable
+     UKey ::Usable Key
 
 data ContainerState = Open | Closed
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
@@ -218,6 +233,7 @@ data Game = Game
     , _gameConnections :: [Connection]
     , _gameAvatar      :: Maybe Avatar
     , _gameNpcs        :: [Npc]
+    , _gameCombats     :: [Combat]
     , _gameScenes      :: [Scene]
     , _gameItems       :: [Item]
     , _gameContainers  :: [Container]
@@ -225,9 +241,7 @@ data Game = Game
     , _gameUidGen      :: Int
     }
 
-data Env = Env
-    { _envLocs :: M.Map UID Loc
-    }
+data Env = Env {}
 
 type App = ReaderT Env (StateT Game IO)
 
