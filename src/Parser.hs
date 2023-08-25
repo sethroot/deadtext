@@ -119,7 +119,6 @@ notHolding = not . inInventory
 
 -- Inventory Items 
 
--- TODO: Add synonym support
 parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
 parseInvItemM _input = runMaybeT $ do
     items' <- use items
