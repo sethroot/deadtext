@@ -166,18 +166,22 @@ data Item = Item
     , _itemSyn  :: [String]
     , _itemDesc :: String
     , _itemLoc  :: ItemLocation
+    , _itemUses :: [ItemUse]
     }
-    deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+    deriving (Show, Eq, Ord, Generic)
 
-data Consumable = Health | Ammo
-
-data Key = Key
-
-data Usable a where
-     UConsumable ::Usable Consumable
-     UKey ::Usable Key
+data ItemUse = Eat | Drink | Readable | Key | Ammo | OnOff
+    deriving (Show, Eq, Ord, Generic)
+-- data Usable a where
+--      UseEdible ::Usable Edible
+--      UseKey ::Usable Key
+--      UseAmmo ::Usable Ammo
+--      NoUse ::Usable ()
 
 data ContainerState = Open | Closed
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+
+data ContainerTransparency = Opaque | Transparent
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data Container = Container
@@ -187,7 +191,7 @@ data Container = Container
     , _containerDesc   :: String
     , _containerLoc    :: UID
     , _containerCState :: ContainerState
-    , _containerTrans  :: Bool
+    , _containerTrans  :: ContainerTransparency 
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
@@ -201,7 +205,7 @@ data Ext = Ext
     { _extNpcs  :: [Npc]
     , _extItems :: [Item]
     }
-    deriving (Show, Generic, FromJSON, ToJSON)
+    deriving (Show, Generic)
 
 data Connection = Connection
     { _connectionStart :: UID

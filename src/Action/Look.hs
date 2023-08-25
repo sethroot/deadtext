@@ -44,30 +44,28 @@ lookWhere = "Look where?"
 
 look :: MonadState Game m => m String
 look = do
-    locUid           <- use loc
-    locMap           <- use locs
-    conns'           <- use connections
-    containers'      <- use containers
-    npcsInLoc'       <- npcsInLoc
-    containersInLoc' <- containersInLoc locUid containers'
-    itemsInLoc'      <- itemsInLoc
-    let loc''         = M.lookup locUid locMap
-    let locDesc       = maybe "" (^. lookDesc) loc'' :: String
+    npcs'       <- use npcs
+    locUid      <- use loc
+    locMap      <- use locs
+    conns'      <- use connections
+    containers' <- use containers
+    itemsInLoc' <- itemsInLoc
+    let loc'          = M.lookup locUid locMap
+    let locDesc       = maybe "" (^. lookDesc) loc' :: String
     let pathsDesc     = pathsInLoc locUid conns'
-    let npcDesc       = fromMaybe "" npcsInLoc'
-    let containerDesc = fromMaybe "" containersInLoc'
-    let itemDesc      = fromMaybe "" itemsInLoc'
+    let npcDesc       = go $ npcsInLoc locUid npcs'
+    let containerDesc = go $ containersInLoc locUid containers'
+    let itemDesc      = go itemsInLoc'
     let descs         = [locDesc, pathsDesc, npcDesc, containerDesc, itemDesc]
     pure $ formatMulti descs
+    where go = fromMaybe ""
 
-npcsInLoc :: MonadState Game m => m (Maybe String)
-npcsInLoc = do
-    npcs' <- use npcs
-    loc'  <- use loc
-    let npcsHere = filter (\npc -> loc' == npc ^. loc) npcs'
+npcsInLoc :: UID -> [Npc] -> Maybe String
+npcsInLoc locUid npcs' = do
+    let npcsHere = filter (\npc -> locUid == npc ^. loc) npcs'
     if null npcsHere
-        then pure Nothing
-        else pure $ Just . mconcat . intersperse "\n" . map descNpc $ npcsHere
+        then Nothing
+        else Just . mconcat . intersperse "\n" . map descNpc $ npcsHere
 
 descNpc :: Npc -> String
 descNpc npc = _lookDesc npc
@@ -80,14 +78,14 @@ seeCorpse :: Npc -> String
 seeCorpse npc =
     period . unwords $ ["You see", npc ^. name ++ "'s corpse lying motionless"]
 
-containersInLoc :: MonadState Game m => UID -> [Container] -> m (Maybe String)
+containersInLoc :: UID -> [Container] -> Maybe String
 containersInLoc loc' _containers = do
     let containersHere = filter (\c -> c ^. loc == loc') _containers
     if null containersHere
-        then pure Nothing
+        then Nothing
         else
             let out = mconcat . intersperse "\n" . map _desc $ containersHere
-            in pure $ Just out
+            in Just out
     where
         _desc c =
             (c ^. cState == Closed) ? containerHere c $ openContainerHere c
@@ -129,12 +127,13 @@ formatMulti = intercalate "\n\n" . filter (not . null)
 
 lookAt :: MonadState Game m => [Input] -> m (Maybe String)
 lookAt inputs = runMaybeT $ do
-    let target = head inputs ^. normal
+    fst' <- hoistMaybe . headMay $ inputs
+    let target = fst' ^. normal
     invItem <- parseInvObjM target
-    _item   <- parseRecM parseItemObjM inputs
+    item'   <- parseRecM parseItemObjM inputs
     npc     <- parseNpcObjM target
     cont    <- parseContObjM target
-    obj     <- hoistMaybe $ invItem <|> _item <|> npc <|> cont
+    obj     <- hoistMaybe $ invItem <|> item' <|> npc <|> cont
     case obj of
         ObjInv  _item     -> pure $ _item ^. desc
         ObjNpc  _npc      -> MaybeT $ lookAtNpc _npc
@@ -157,7 +156,7 @@ lookAtContainer cont = do
     _items           <- use items
     let items'        = filter (\i -> i ^. loc == ItemContainer (cont ^. uid)) _items
     let containerDesc = Just (cont ^. desc)
-    if not (null items') && cont ^. trans
+    if not (null items') && cont ^. trans == Transparent
         then do
             let contName = fmap toLower $ cont ^. name
             let
@@ -182,11 +181,11 @@ lookIn _input = runExceptT $ do
 lookInContainer :: MonadState Game m
                 => Container
                 -> ContainerState
-                -> Bool
+                -> ContainerTransparency 
                 -> m String
-lookInContainer cont Closed False = do
+lookInContainer cont Closed Opaque = do
     pure . containerIsClosed $ cont ^. name
-lookInContainer cont Closed True = do
+lookInContainer cont Closed Transparent = do
     items' <- use items
     let _item    = headMay . filter (itemPredicate cont) $ items'
     let itemName = maybe "object" (view name) _item

@@ -4,7 +4,9 @@ module Action (processAction, Look.lookAction, Action(Action)) where
 
 import qualified Action.Attack as Attack
 import qualified Action.Close as Close
+import qualified Action.Drink as Drink
 import qualified Action.Drop as Drop
+import qualified Action.Eat as Eat
 import qualified Action.Give as Give
 import qualified Action.Help as Help
 import qualified Action.Inv as Inv
@@ -27,8 +29,10 @@ processAction (Action action args) = case action ^. normal of
     "attack"    -> Attack.attackAction args
     "close"     -> Close.closeAction args
     "shut"      -> Close.closeAction args
+    "drink"     -> Drink.drinkAction args
     "drop"      -> Drop.dropAction args
     "leave"     -> Drop.dropAction args
+    "eat"       -> Eat.eatAction args
     "give"      -> Give.giveAction args
     "help"      -> Help.helpAction
     "i"         -> Inv.invAction

@@ -71,7 +71,7 @@ openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)
 
 closedTransHere :: UID -> Container -> Bool
 closedTransHere loc' cont =
-    (cont ^. loc == loc') && (cont ^. trans) && (cont ^. cState == Closed)
+    (cont ^. loc == loc') && (cont ^. trans == Transparent) && (cont ^. cState == Closed)
 
 itemsInContainers :: [Item] -> [Container] -> [(Item, Container)]
 itemsInContainers is cs =

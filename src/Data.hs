@@ -150,7 +150,7 @@ setState = do
             "It's a baby blue 1976 Chevy Nova."
             overlookLotUid
             Closed
-            True
+            Transparent
     containers .= [car]
     let
         map' = Item
@@ -158,10 +158,13 @@ setState = do
             []
             "It's a well-worn map of Silent Hill."
             (ItemContainer carUid)
+            [Readable]
     let
         flashlight = Item
             "Flashlight"
             ["light", "flash light"]
             "The flashlight is covered in scratches. It feels heavy."
             (ItemLoc room205Uid)
+            [OnOff]
+
     items .= [map', flashlight]

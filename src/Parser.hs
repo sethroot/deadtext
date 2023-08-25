@@ -121,10 +121,10 @@ notHolding = not . inInventory
 
 -- TODO: Add synonym support
 parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
-parseInvItemM _input = do
+parseInvItemM _input = runMaybeT $ do
     items' <- use items
-    pure $ find _pred items'
-    where _pred _item = inInventory _item && lowEq (_item ^. name) _input
+    hoistMaybe $ find pred' items'
+    where pred' i = inInventory i && nameOrSynMatchesInput _input i
 
 -- TODO: Add synonym support
 parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)

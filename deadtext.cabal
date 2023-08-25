@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd7a6ee9400e449c3cce20b572ca524319f828250437f19c37a7ddff290b00b2
+-- hash: e1c65372a431c915a1ca0f01ab1428b85aaad839e2940d7ceb850c64c379d944
 
 name:           deadtext
 version:        0.1.0.0
@@ -30,7 +30,9 @@ library
       Action
       Action.Attack
       Action.Close
+      Action.Drink
       Action.Drop
+      Action.Eat
       Action.Give
       Action.Help
       Action.Inv
