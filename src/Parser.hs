@@ -93,13 +93,13 @@ nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
                       -> Bool
 nameOrSynMatchesInput _input item' =
     let
-        testInput   = lowEq _input
-        matchesName = testInput $ item' ^. name
+        test        = lowEq _input
+        matchName   = test $ item' ^. name
         syns        = item' ^. syn
-        synsEqual   = fmap testInput syns
+        synsResult  = fmap test syns
         toAny       = iso getAny (fmap Any)
-        anySynEqual = under toAny mconcat synsEqual
-    in matchesName || anySynEqual
+        anySynEqual = under toAny mconcat synsResult
+    in matchName || anySynEqual
 
 -- Item
 
