@@ -125,13 +125,11 @@ parseInvItemM _input = runMaybeT $ do
     hoistMaybe $ find pred' items'
     where pred' i = inInventory i && nameOrSynMatchesInput _input i
 
--- TODO: Add synonym support
 parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)
 parseInvObjM _input = runMaybeT $ do
     items' <- use items
-    found  <- hoistMaybe $ find _pred items'
-    pure $ ObjInv found
-    where _pred _item = inInventory _item && lowEq (_item ^. name) _input
+    hoistMaybe . fmap ObjInv $ find pred' items'
+    where pred' i = inInventory i && nameOrSynMatchesInput _input i
 
 -- NPC
 
