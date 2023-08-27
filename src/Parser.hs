@@ -5,6 +5,7 @@ module Parser where
 import Common (inInventory)
 import Control.Error (MaybeT(runMaybeT), hoistMaybe)
 import Control.Lens.Getter (Getting, (^.), use)
+import Control.Lens.Iso (iso, under)
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (find)
@@ -92,12 +93,13 @@ nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
                       -> Bool
 nameOrSynMatchesInput _input item' =
     let
-        testInput      = lowEq _input
-        matchesName    = testInput $ item' ^. name
-        syns           = item' ^. syn
-        synsEqual      = fmap testInput syns
-        matchesSynonym = getAny . mconcat . fmap Any $ synsEqual
-    in matchesName || matchesSynonym
+        testInput   = lowEq _input
+        matchesName = testInput $ item' ^. name
+        syns        = item' ^. syn
+        synsEqual   = fmap testInput syns
+        toAny       = iso getAny (fmap Any)
+        anySynEqual = under toAny mconcat synsEqual
+    in matchesName || anySynEqual
 
 -- Item
 
