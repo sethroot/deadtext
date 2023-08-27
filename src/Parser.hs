@@ -91,11 +91,12 @@ nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
                       => String
                       -> a
                       -> Bool
-nameOrSynMatchesInput _input item' =
+nameOrSynMatchesInput _input k =
     let
+        name'       = k ^. name
+        syns        = k ^. syn
         test        = lowEq _input
-        matchName   = test $ item' ^. name
-        syns        = item' ^. syn
+        matchName   = test name'
         synsResult  = fmap test syns
         toAny       = iso getAny (fmap Any)
         matchAnySyn = under toAny mconcat synsResult
