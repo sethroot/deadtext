@@ -98,8 +98,8 @@ nameOrSynMatchesInput _input item' =
         syns        = item' ^. syn
         synsResult  = fmap test syns
         toAny       = iso getAny (fmap Any)
-        anySynEqual = under toAny mconcat synsResult
-    in matchName || anySynEqual
+        matchAnySyn = under toAny mconcat synsResult
+    in matchName || matchAnySyn
 
 -- Item
 
