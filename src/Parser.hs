@@ -62,30 +62,26 @@ parseRecM :: MonadState Game m
           => (String -> m (Maybe a))
           -> [Input]
           -> m (Maybe a)
-parseRecM _ []       = pure Nothing
-parseRecM f (x : xs) = do
+parseRecM _ []             = pure Nothing
+parseRecM f inputs@(x : _) = do
     result <- f $ x ^. normal
     case result of
         Just found -> pure . Just $ found
-        Nothing    -> do
-            case compare (length xs) 1 of
-                GT ->
-                    let
-                        next       = head xs
-                        rest       = tail xs
-                        nextRaw    = unwords [x ^. raw, next ^. raw]
-                        nextNormal = unwords [x ^. normal, next ^. normal]
-                        nextInput  = Input nextRaw nextNormal
-                        joined     = [nextInput] <> rest
-                    in parseRecM f joined
-                EQ ->
-                    let
-                        next       = head xs
-                        nextRaw    = unwords [x ^. raw, next ^. raw]
-                        nextNormal = unwords [x ^. normal, next ^. normal]
-                        nextInput  = Input nextRaw nextNormal
-                    in parseRecM f [nextInput]
-                LT -> parseRecM f []
+        Nothing    -> parseRecM f $ consumeNext inputs
+
+consumeNext :: [Input] -> [Input]
+consumeNext [] = []
+consumeNext (x : xs) =
+    let
+        next       = head xs
+        rest       = tail xs
+        nextRaw    = unwords [x ^. raw, next ^. raw]
+        nextNormal = unwords [x ^. normal, next ^. normal]
+        nextInput  = Input nextRaw nextNormal
+    in case compare (length xs) 1 of
+        GT -> [nextInput] <> rest
+        EQ -> [nextInput]
+        LT -> []
 
 nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
                       => String
