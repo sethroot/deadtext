@@ -9,14 +9,13 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State.Lazy (MonadIO, MonadState)
 import Control.Monad.Trans.Reader (ReaderT(runReaderT))
 import Control.Monad.Trans.State.Lazy (StateT(runStateT))
-import Data (initState, initEnv)
-import Data.Functor ((<&>))
+import Data (initEnv, initState)
 import Load (loadInternal)
 import Parser (normalizeInput, parseRawInput)
 import System.Environment (getArgs)
 import System.IO (hFlush, stdout)
 import Types
-import Util (enumerate)
+import Util (printE)
 
 deadText :: IO ()
 deadText = void $ runStateT (runReaderT game initEnv) initState
@@ -25,7 +24,7 @@ game :: App ()
 game = do
     args <- liftIO getArgs
     processArgs args
-    lookAction []
+    lookAction [] >>= printE
     forever $ do
         printPrompt
         parsed <- liftIO getLine >>= parseInput
@@ -45,11 +44,13 @@ printPrompt = do
 
 parseInput :: MonadIO m => String -> m [Input]
 parseInput input' = do
-    let rawInputs = parseRawInput input'
+    let rawInputs        = parseRawInput input'
     let normalizedInputs = normalizeInput rawInputs
-    let inputs = zipWith Input rawInputs normalizedInputs
+    let inputs           = zipWith Input rawInputs normalizedInputs
     -- liftIO . print . enumerate $ normalizedInputs
+
     -- liftIO . print $ inputs
+
     pure inputs
 
 tokenize :: Monad m => [Input] -> m Action

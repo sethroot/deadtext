@@ -15,14 +15,8 @@ instance Usable Obj where
     doUse (ObjInv _) = pure "using."
     doUse _          = pure ""
 
-useAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-useAction inputs = do
-    out <- use inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-use :: MonadState Game m => [Input] -> m (Either String String)
-use inputs = runExceptT $ do
+useAction :: MonadState Game m => [Input] -> m (Either String String)
+useAction inputs = runExceptT $ do
     item'  <- recParseInvObj inputs
     result <- doUse item'
     hoistEither . Right $ result

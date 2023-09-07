@@ -11,14 +11,8 @@ import Data.List (elemIndex)
 import Parser (parseInvItemM, parseRecM)
 import Types
 
-dropAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-dropAction inputs = do
-    out <- dropItem inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-dropItem :: MonadState Game m => [Input] -> m (Either String String)
-dropItem inputs = runExceptT $ do
+dropAction :: MonadState Game m => [Input] -> m (Either String String)
+dropAction inputs = runExceptT $ do
     itemM      <- parseRecM parseInvItemM inputs 
     target     <- headMay inputs ?? dropWhat
     targetItem <- itemM ?? dontHaveObject (target ^. normal)

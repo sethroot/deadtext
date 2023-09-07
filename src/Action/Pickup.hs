@@ -12,14 +12,8 @@ import Data.List (elemIndex)
 import Parser (parseItemM, parseRecM)
 import Types
 
-pickupAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-pickupAction inputs = do
-    out <- pickup inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-pickup :: (MonadState Game m) => [Input] -> m (Either String String)
-pickup inputs = runExceptT $ do
+pickupAction :: (MonadState Game m) => [Input] -> m (Either String String)
+pickupAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
         Nothing     -> hoistEither $ Left "Pickup what?"

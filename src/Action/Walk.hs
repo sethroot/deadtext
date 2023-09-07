@@ -5,20 +5,14 @@ module Action.Walk (walkAction) where
 import Common (dontKnowHowToDoThat, outF)
 import Control.Error ((??), fromMaybe, headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), (^.), use)
-import Control.Monad.State.Lazy (MonadIO(..), MonadState)
+import Control.Monad.State.Lazy (MonadState)
 import Data.List (find)
 import qualified Data.Map.Strict as M
 import Parser (parseDirM)
 import Types
 
-walkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-walkAction inputs = do
-    out <- walk inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-walk :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
-walk inputs = runExceptT $ do
+walkAction :: MonadState Game m => [Input] -> m (Either String String)
+walkAction inputs = runExceptT $ do
     target     <- headMay inputs ?? goWhere
     mDir       <- parseDirM $ target ^. normal
     dir'       <- mDir ?? dontKnowHowToDoThat

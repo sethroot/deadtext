@@ -12,14 +12,8 @@ import Parser (parseContainerM)
 import Safe (headMay)
 import Types
 
-closeAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-closeAction inputs = do
-    out <- close inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-close :: MonadState Game m => [Input] -> m (Either String String)
-close inputs = runExceptT $ do
+closeAction :: MonadState Game m => [Input] -> m (Either String String)
+closeAction inputs = runExceptT $ do
     target     <- headMay inputs ?? closeWhat
     container  <- parseContainerM $ target ^. normal
     container' <- container ?? youDontSeeA target
@@ -32,7 +26,7 @@ close inputs = runExceptT $ do
     containers' <- use containers
     index       <- case elemIndex container' containers' of
         Nothing -> hoistEither $ Left cantCloseThat
-        Just i -> hoistEither $ Right i
+        Just i  -> hoistEither $ Right i
 
     containers . ix index . cState .= Closed
     hoistEither . Right $ youCloseThe container'

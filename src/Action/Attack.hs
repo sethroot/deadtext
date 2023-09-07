@@ -4,7 +4,6 @@ module Action.Attack where
 
 import Control.Error ((??), MaybeT(runMaybeT), hoistMaybe, runExceptT)
 import Control.Lens ((%~), Ixed(ix), (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState(get, put))
 import Data.Function ((&))
 import Data.List (elemIndex, intersperse)
@@ -13,14 +12,8 @@ import Parser (parseNpcM, parseRecM)
 import Safe (headMay)
 import Types
 
-attackAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-attackAction inputs = do
-    out <- attack inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-attack :: (MonadIO m, MonadState Game m) => [Input] -> m (Either String String)
-attack inputs = runExceptT $ do
+attackAction :: MonadState Game m => [Input] -> m (Either String String)
+attackAction inputs = runExceptT $ do
     target  <- headMay inputs ?? attackWhat
     npc     <- parseRecM parseNpcM inputs >>= (?? dontSee target)
     avatar' <- fromJust <$> use avatar

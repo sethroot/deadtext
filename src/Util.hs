@@ -8,6 +8,10 @@ import qualified Data.Map.Strict as M
 import Text.Pretty.Simple (pPrint)
 import Types (Game)
 
+printE :: MonadIO m => Either String String -> m ()
+printE = either go go
+    where go = liftIO . putStrLn
+
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs
     where pairs = [ (v, [k]) | (k, vs) <- M.toList m, v <- vs ]

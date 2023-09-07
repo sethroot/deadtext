@@ -2,12 +2,13 @@
 
 module Action.Help (helpAction) where
 
-import Control.Monad.State.Lazy (MonadIO(..))
+import Control.Monad.State.Lazy (MonadState)
+import Types
 
-helpAction :: MonadIO m => m ()
-helpAction = do
-    liftIO
-        .  putStrLn
+helpAction :: MonadState Game m => [Input] -> m (Either String String)
+helpAction _ =
+    pure
+        .  Right
         $  "===================\n"
         ++ "Available commands:\n"
         ++ "===================\n"

@@ -4,20 +4,20 @@ module Action.Inv (invAction) where
 
 import Common (inventory)
 import Control.Lens ((^.))
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Types
 
-invAction :: (MonadState Game m, MonadIO m) => m ()
-invAction = do
+invAction :: MonadState Game m
+          => [Input]
+          -> m (Either String String)
+invAction _ = do
     inv <- inventory
-    out <- if null inv
-        then pure "Your pockets are empty."
-        else pure $ invSummary inv
-    liftIO . putStrLn $ out
+    if null inv
+        then pure . Right $ "Your pockets are empty."
+        else pure . Right $ invSummary inv
 
 invSummary :: [Item] -> String
 invSummary = foldl combine _init
     where
-        _init    = "You are holding: \n"
+        _init   = "You are holding: \n"
         combine = \xs _item -> xs ++ " - " ++ (_item ^. name) ++ "\n"

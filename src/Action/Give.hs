@@ -31,14 +31,8 @@ data GiveArgs = GiveArgs
 makeFields ''GiveArgsInput
 makeFields ''GiveArgs
 
-giveAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-giveAction args = do
-    out <- doGive args
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-doGive :: MonadState Game m => [Input] -> m (Either String String)
-doGive args = runExceptT $ do
+giveAction :: MonadState Game m => [Input] -> m (Either String String)
+giveAction args = runExceptT $ do
     giveArgsInput <- parseGiveArgsRaw args ?? giveWhatToWho
     giveArgs      <- parseGiveArgsInput giveArgsInput
     case giveArgs of

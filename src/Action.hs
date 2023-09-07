@@ -18,35 +18,47 @@ import qualified Action.Talk as Talk
 import qualified Action.Use as Use
 import qualified Action.Walk as Walk
 import Control.Lens ((^.))
-import Control.Monad.State (MonadIO, MonadState)
+import Control.Monad.IO.Class (MonadIO(liftIO))
+import Control.Monad.State (MonadState)
 import Types (Game, HasNormal(normal), Input)
-import Util (debugGameState)
+import Util (debugGameState, printE)
 
 data Action = Action Input [Input]
 
 processAction :: (MonadState Game m, MonadIO m) => Action -> m ()
-processAction (Action action args) = case action ^. normal of
-    "attack"    -> Attack.attackAction args
-    "close"     -> Close.closeAction args
-    "shut"      -> Close.closeAction args
-    "drink"     -> Drink.drinkAction args
-    "drop"      -> Drop.dropAction args
-    "leave"     -> Drop.dropAction args
-    "eat"       -> Eat.eatAction args
-    "give"      -> Give.giveAction args
+processAction action@(Action input _) = do
+    case input ^. normal of
+        "debug" -> debugGameState
+        _       -> processGameAction action
+
+processGameAction :: (MonadState Game m, MonadIO m) => Action -> m ()
+processGameAction (Action input args) = do
+    let action = mapAction input
+    out <- action args
+    printE out
+
+mapAction :: (MonadState Game m) => Input -> ([Input] -> m (Either String String))
+mapAction input = case input ^. normal of
+    "attack"    -> Attack.attackAction
+    "close"     -> Close.closeAction
+    "shut"      -> Close.closeAction
+    "drink"     -> Drink.drinkAction
+    "drop"      -> Drop.dropAction
+    "leave"     -> Drop.dropAction
+    "eat"       -> Eat.eatAction
+    "give"      -> Give.giveAction
     "help"      -> Help.helpAction
     "i"         -> Inv.invAction
     "inv"       -> Inv.invAction
     "inventory" -> Inv.invAction
-    "kill"      -> Kill.killAction args
-    "l"         -> Look.lookAction args
-    "look"      -> Look.lookAction args
-    "open"      -> Open.openAction args
-    "pickup"    -> Pickup.pickupAction args
-    "take"      -> Pickup.pickupAction args
-    "talk"      -> Talk.talkAction args
-    "use"       -> Use.useAction args
-    "go"        -> Walk.walkAction args
-    "walk"      -> Walk.walkAction args
-    "debug"     -> debugGameState
-    _           -> Walk.walkAction [action]
+    "kill"      -> Kill.killAction
+    "l"         -> Look.lookAction
+    "look"      -> Look.lookAction
+    "open"      -> Open.openAction
+    "pickup"    -> Pickup.pickupAction
+    "take"      -> Pickup.pickupAction
+    "talk"      -> Talk.talkAction
+    "use"       -> Use.useAction
+    "go"        -> Walk.walkAction
+    "walk"      -> Walk.walkAction
+    _           -> Walk.walkAction

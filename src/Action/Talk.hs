@@ -5,25 +5,18 @@ module Action.Talk (talkAction) where
 import Common (npcIsHere)
 import Control.Error ((??), hoistEither, runExceptT)
 import Control.Lens ((%=), Ixed(ix), (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseNpcM, parseRecM)
 import Types
 import Util ((?))
 
-talkAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-talkAction []                  = liftIO . putStrLn $ noTalkTarget
-talkAction (Input _ "to" : xs) = processTalkTo xs
-talkAction (target       : _ ) = processTalkTo [target]
+talkAction :: MonadState Game m => [Input] -> m (Either String String)
+talkAction []                  = pure . Right $ noTalkTarget
+talkAction (Input _ "to" : xs) = talkTo xs
+talkAction (target       : _ ) = talkTo [target]
 
-processTalkTo :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-processTalkTo target = do
-    out <- talkTo target
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-talkTo :: (MonadState Game m, MonadIO m) => [Input] -> m (Either String String)
+talkTo :: MonadState Game m => [Input] -> m (Either String String)
 talkTo inputs = runExceptT $ do
     -- todo: add support for talking to unknown npcs by gender, description
     let target = head inputs ^. raw

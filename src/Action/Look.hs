@@ -13,7 +13,6 @@ import Control.Error
     , runExceptT
     )
 import Control.Lens ((^.), use, view)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (intercalate, intersperse)
@@ -23,18 +22,18 @@ import Parser
 import Types
 import Util ((?))
 
-lookAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
+lookAction :: MonadState Game m
+           => [Input]
+           -> m (Either String String)
 lookAction [] = do
     out <- Action.Look.look
-    liftIO . putStrLn $ out
+    pure . Right $ out
 lookAction ((Input _ "at") : inputs) = do
     out <- lookAt inputs
-    liftIO . putStrLn $ fromMaybe dontSeeThat out
+    pure . Right $ fromMaybe dontSeeThat out
 lookAction ((Input _ "in") : target : _) = do
-    out <- lookIn target
-    either printE printE out
-    where printE = liftIO . putStrLn
-lookAction _ = liftIO . putStrLn $ lookWhere
+    lookIn target
+lookAction _ = pure . Right $ lookWhere
 
 dontSeeThat :: String
 dontSeeThat = "You don't see that here."
@@ -181,7 +180,7 @@ lookIn _input = runExceptT $ do
 lookInContainer :: MonadState Game m
                 => Container
                 -> ContainerState
-                -> ContainerTransparency 
+                -> ContainerTransparency
                 -> m String
 lookInContainer cont Closed Opaque = do
     pure . containerIsClosed $ cont ^. name

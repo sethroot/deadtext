@@ -10,14 +10,8 @@ import Data.List (elemIndex)
 import Parser (parseContainerM, parseInvObjM, parseItemObjM)
 import Types
 
-openAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
-openAction inputs = do
-    out <- open inputs
-    either printE printE out
-    where printE = liftIO . putStrLn
-
-open :: MonadState Game m => [Input] -> m (Either String String)
-open inputs = runExceptT $ do
+openAction :: MonadState Game m => [Input] -> m (Either String String)
+openAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
         Nothing     -> hoistEither . Left $ openWhat 
