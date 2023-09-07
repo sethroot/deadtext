@@ -2,12 +2,18 @@
 
 module Action.Use where
 
-import Control.Error ((!?), runExceptT)
-import Control.Lens ((^.))
+import Control.Error (hoistEither, runExceptT)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
-import Parser (parseInvItemM, parseRecM)
+import Parser (recParseInvObj)
 import Types
+
+class Usable a where
+    doUse :: (MonadState Game m) => a -> m String
+
+instance Usable Obj where
+    doUse (ObjInv _) = pure "using."
+    doUse _          = pure ""
 
 useAction :: (MonadState Game m, MonadIO m) => [Input] -> m ()
 useAction inputs = do
@@ -17,8 +23,6 @@ useAction inputs = do
 
 use :: MonadState Game m => [Input] -> m (Either String String)
 use inputs = runExceptT $ do
-    item' <- parseRecM parseInvItemM inputs !? doNotHaveItem
-    pure . unwords $ ["You use the", item' ^. name]
-
-doNotHaveItem :: String
-doNotHaveItem = "You do not have that item."
+    item'  <- recParseInvObj inputs
+    result <- doUse item'
+    hoistEither . Right $ result

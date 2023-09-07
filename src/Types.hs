@@ -4,6 +4,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Types where
 
@@ -191,7 +192,7 @@ data Container = Container
     , _containerDesc   :: String
     , _containerLoc    :: UID
     , _containerCState :: ContainerState
-    , _containerTrans  :: ContainerTransparency 
+    , _containerTrans  :: ContainerTransparency
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
@@ -248,6 +249,8 @@ data Game = Game
 data Env = Env {}
 
 type App = ReaderT Env (StateT Game IO)
+
+
 
 makeFields ''Direction
 makeFields ''Loc
