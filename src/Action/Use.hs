@@ -3,7 +3,6 @@
 module Action.Use where
 
 import Control.Error (hoistEither, runExceptT)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Parser (recParseInvObj)
 import Types

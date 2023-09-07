@@ -1,16 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module Action.Give (giveAction) where
 
 import Common (inventory, npcIsHere, period)
 import Control.Error ((??), hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), makeFields, use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseItemM, parseNpcM, parseRecM)

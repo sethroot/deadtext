@@ -4,7 +4,6 @@ module Action.Open (openAction) where
 
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseContainerM, parseInvObjM, parseItemObjM)

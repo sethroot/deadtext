@@ -5,7 +5,6 @@ module Action.Pickup (pickupAction) where
 import Common (indefArt, period)
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (elemIndex)

@@ -5,7 +5,6 @@ module Action.Drop (dropAction) where
 import Common (indefArt, period)
 import Control.Error ((??), MaybeT(runMaybeT), headMay, hoistMaybe, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
-import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseInvItemM, parseRecM)

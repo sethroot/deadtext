@@ -2,10 +2,9 @@
 
 module Util where
 
-import Control.Monad.State (MonadIO(..), MonadState(get))
+import Control.Monad.State (MonadIO(liftIO), MonadState(get))
 import Data.Char (toLower)
 import qualified Data.Map.Strict as M
-import Text.Pretty.Simple (pPrint)
 import Types (Game)
 
 printE :: MonadIO m => Either String String -> m ()
