@@ -18,7 +18,7 @@ import qualified Action.Talk as Talk
 import qualified Action.Use as Use
 import qualified Action.Walk as Walk
 import Control.Lens ((^.))
-import Control.Monad.IO.Class (MonadIO(liftIO))
+import Control.Monad.IO.Class (MonadIO())
 import Control.Monad.State (MonadState)
 import Types (Game, HasNormal(normal), Input)
 import Util (debugGameState, printE)
