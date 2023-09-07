@@ -48,9 +48,7 @@ parseInput input' = do
     let normalizedInputs = normalizeInput rawInputs
     let inputs           = zipWith Input rawInputs normalizedInputs
     -- liftIO . print . enumerate $ normalizedInputs
-
     -- liftIO . print $ inputs
-
     pure inputs
 
 tokenize :: Monad m => [Input] -> m Action
