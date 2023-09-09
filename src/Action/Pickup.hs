@@ -12,6 +12,7 @@ import Parser (parseItemM, parseRecM, recParseNpc)
 import Types
 import Util (hoistL, hoistR)
 
+-- TODO: Add support for 'pickup all'
 pickupAction :: (MonadState Game m) => [Input] -> m (Either String String)
 pickupAction inputs = runExceptT $ do
     npc' <- recParseNpc inputs

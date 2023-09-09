@@ -16,7 +16,7 @@ import Control.Lens.Each (each)
 
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
-import Parser (parseInvItemM, parseRecM)
+import Parser (recParseInvItem)
 import Types
 import Util (hoistL, hoistR)
 
@@ -27,7 +27,7 @@ dropAction inputs = runExceptT $ do
         "all"        -> dropAll
         "everything" -> dropAll
         _            -> hoistR ()
-    itemM      <- parseRecM parseInvItemM inputs
+    itemM      <- recParseInvItem inputs
     targetItem <- itemM ?? dontHaveObject (target ^. normal)
     let itemName = targetItem ^. name
     result <- dropMutation targetItem

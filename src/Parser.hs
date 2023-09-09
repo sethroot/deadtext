@@ -121,6 +121,9 @@ parseInvItemM _input = runMaybeT $ do
     hoistMaybe $ find pred' items'
     where pred' i = inInventory i && nameOrSynMatchesInput _input i
 
+recParseInvItem :: MonadState Game m => [Input] -> m (Maybe Item)
+recParseInvItem = parseRecM parseInvItemM
+
 parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)
 parseInvObjM _input = runMaybeT $ do
     items' <- use items

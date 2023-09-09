@@ -70,9 +70,9 @@ parseGiveArgsRaw rawInput = do
         then Nothing
         else do
             let partitioned = partitionBy separator rawInput
-            let a           = head partitioned
-            let b           = partitioned !! 1
-            Just $ GiveArgsInput a b
+            let item'       = head partitioned
+            let target'     = partitioned !! 1
+            Just $ GiveArgsInput item' target'
 
 parseGiveArgsInput :: MonadState Game m => GiveArgsInput -> m GiveArgs
 parseGiveArgsInput giveArgsInput = do
