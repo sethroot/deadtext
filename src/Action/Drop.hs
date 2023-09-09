@@ -27,7 +27,6 @@ dropAction inputs = runExceptT $ do
         "all"        -> dropAll
         "everything" -> dropAll
         _            -> hoistR ()
-
     itemM      <- parseRecM parseInvItemM inputs
     targetItem <- itemM ?? dontHaveObject (target ^. normal)
     let itemName = targetItem ^. name
