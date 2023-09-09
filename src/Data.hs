@@ -157,7 +157,8 @@ setState = do
             "Map"
             []
             "It's a well-worn map of Silent Hill."
-            (ItemContainer carUid)
+            -- (ItemContainer carUid)
+            (ItemLoc room205Uid)
             [Readable]
     let
         flashlight = Item

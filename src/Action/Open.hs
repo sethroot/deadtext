@@ -8,13 +8,14 @@ import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseContainerM, parseInvObjM, parseItemObjM)
 import Types
+import Util (hoistL, hoistR)
 
 openAction :: MonadState Game m => [Input] -> m (Either String String)
 openAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
-        Nothing     -> hoistEither . Left $ openWhat 
-        Just target -> hoistEither . Right $ target
+        Nothing     -> hoistL openWhat
+        Just target -> hoistR target
 
     container  <- parseContainerM $ target ^. normal
     container' <- case container of
@@ -22,36 +23,36 @@ openAction inputs = runExceptT $ do
             -- Not a container, but might be a world Item
             itemObj <- parseItemObjM $ target ^. normal
             _       <- case itemObj of
-                Nothing -> hoistEither . Right $ ()
+                Nothing -> hoistR ()
                 Just _  -> do
                     let out = cantBeOpened $ target ^. raw
-                    hoistEither . Left $ out
+                    hoistL out
             -- Not a container or world Item, but might be an Inv Item
             invObj <- parseInvObjM $ target ^. normal
             _      <- case invObj of
-                Nothing -> hoistEither . Right $ ()
+                Nothing -> hoistR ()
                 Just _  -> do
                     let out = cantBeOpened $ target ^. raw
-                    hoistEither . Left $ out
+                    hoistL out
             -- Not found yet, stop searching
             let out = dontSee $ target ^. normal
-            hoistEither . Left $ out
-        Just c -> hoistEither . Right $ c
+            hoistL out
+        Just c -> hoistR c
 
     if (container' ^. cState) == Open
         then do
             let out = alreadyOpen $ container' ^. name
-            hoistEither . Left $ out
-        else hoistEither . Right $ ()
+            hoistL out
+        else hoistR ()
 
     containers' <- use containers
     index       <- case elemIndex container' containers' of
-        Nothing -> hoistEither . Left $ somethingWrong
-        Just i  -> hoistEither . Right $ i
+        Nothing -> hoistL somethingWrong
+        Just i  -> hoistR i
 
     containers . ix index . cState .= Open
     let out = openContainer $ container' ^. name
-    hoistEither . Right $ out
+    hoistR out
 
 openWhat :: String
 openWhat = "Open what?"

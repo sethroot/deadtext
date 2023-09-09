@@ -8,15 +8,21 @@ import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
 import Data.List (elemIndex)
-import Parser (parseItemM, parseRecM)
+import Parser (parseItemM, parseRecM, recParseNpc)
 import Types
+import Util (hoistL, hoistR)
 
 pickupAction :: (MonadState Game m) => [Input] -> m (Either String String)
 pickupAction inputs = runExceptT $ do
+    npc' <- recParseNpc inputs
+    _    <- case npc' of
+        Just npc'' -> hoistL $ cantPickupNpc npc''
+        Nothing    -> hoistR ()
+
     let input' = headMay inputs
     target <- case input' of
-        Nothing     -> hoistEither $ Left "Pickup what?"
-        Just target -> hoistEither $ Right target
+        Nothing     -> hoistL pickupWhat
+        Just target -> hoistR target
 
     loc'        <- use loc
     containers' <- use containers
@@ -25,14 +31,14 @@ pickupAction inputs = runExceptT $ do
     item''      <- case mItem of
         Nothing -> do
             let out = dontSeeObject $ target ^. raw
-            hoistEither $ Left out
-        Just item' -> hoistEither $ Right item'
+            hoistL out
+        Just item' -> hoistR item'
     if item'' ^. loc == ItemLoc loc'
         then do
             pickupItemMutation item''
             let out = (item'' ^. name) ++ " taken."
-            hoistEither $ Left out
-        else hoistEither $ Right ()
+            hoistL out
+        else hoistR ()
 
     let closedTransContainersHere = filter (closedTransHere loc') containers'
     let
@@ -42,10 +48,10 @@ pickupAction inputs = runExceptT $ do
         inputInTransContainer =
             filter (inputMatchesItem target) itemsInClosedTransContainersHere
     case headMay inputInTransContainer of
-        Nothing                -> hoistEither $ Right ()
+        Nothing                 -> hoistEither $ Right ()
         Just (item', container) -> do
             let out = seeClosedCont item' container
-            hoistEither $ Left out
+            hoistL out
 
     let openContainersHere    = filter (openHere loc') containers'
     let itemsInOpenContainers = itemsInContainers items' openContainersHere
@@ -53,18 +59,20 @@ pickupAction inputs = runExceptT $ do
     case headMay filtered of
         Nothing -> do
             let out = dontSeeObject $ target ^. normal
-            hoistEither $ Left out
+            hoistL out
         Just (item', container) -> do
             pickupItemMutation item'
             let out = takeItemFromContainer item' container
-            hoistEither $ Right out
+            hoistR out
 
 openHere :: UID -> Container -> Bool
 openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)
 
 closedTransHere :: UID -> Container -> Bool
 closedTransHere loc' cont =
-    (cont ^. loc == loc') && (cont ^. trans == Transparent) && (cont ^. cState == Closed)
+    (cont ^. loc == loc')
+        && (cont ^. trans == Transparent)
+        && (cont ^. cState == Closed)
 
 itemsInContainers :: [Item] -> [Container] -> [(Item, Container)]
 itemsInContainers is cs =
@@ -86,6 +94,12 @@ takeItemFromContainer item' container =
         i = item' ^. name
         c = container ^. name
     in period . unwords $ ["You take the", i, "from the", c]
+
+pickupWhat :: String
+pickupWhat = "Pickup what?"
+
+cantPickupNpc :: Npc -> String
+cantPickupNpc npc = period . unwords $ ["You can't pickup", npc ^. name]
 
 dontSeeObject :: String -> String
 dontSeeObject object =

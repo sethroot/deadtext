@@ -12,7 +12,7 @@ import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseItemM, parseNpcM, parseRecM)
 import Types
-import Util (partitionBy)
+import Util (hoistL, hoistR, partitionBy)
 
 data GiveArgsInput = GiveArgsInput
     { _giveArgsInputItem   :: [Input]
@@ -34,16 +34,9 @@ giveAction args = runExceptT $ do
     giveArgs      <- parseGiveArgsInput giveArgsInput
     case giveArgs of
         GiveArgs Nothing _ -> do
-            -- let
-            --     targetItem =
-            --         intersperse " " . fmap (^. raw) $ giveArgsInput ^. item
-            hoistEither . Right . doNotHave $ "item"
+            hoistR . doNotHave $ "item"
         GiveArgs _ Nothing -> do
-
-            -- let
-            --     targetNpc =
-            --         intersperse " " . fmap (^. raw) $ giveArgsInput ^. target
-            hoistEither . Right . isNotHere $ "npc"
+            hoistR . isNotHere $ "npc"
         GiveArgs (Just targetItem) (Just npc) -> do
             out <- attemptExecGive targetItem npc
             hoistEither out
@@ -52,12 +45,10 @@ attemptExecGive :: MonadState Game m => Item -> Npc -> m (Either String String)
 attemptExecGive targetItem npc = runExceptT $ do
     inv <- inventory
     if targetItem `notElem` inv
-        then hoistEither . Left . doNotHave $ targetItem ^. name
-        else hoistEither . Right $ ()
+        then hoistL . doNotHave $ targetItem ^. name
+        else hoistR ()
     npcHere <- npcIsHere npc
-    if not npcHere
-        then hoistEither . Left . isNotHere $ npc ^. name
-        else hoistEither . Right $ ()
+    if not npcHere then hoistL . isNotHere $ npc ^. name else hoistR ()
     items' <- use items
     index  <- elemIndex targetItem items' ?? somethingWrong
     items . ix index . loc .= ItemNpc (npc ^. uid)
@@ -72,10 +63,10 @@ giveTo targetItem npc = youGive item' npc'
 parseGiveArgsRaw :: [Input] -> Maybe GiveArgsInput
 parseGiveArgsRaw []       = Nothing
 parseGiveArgsRaw rawInput = do
-    let separator = Input "to" "to"
-    let isElem = separator `elem` rawInput
+    let separator  = Input "to" "to"
+    let isElem     = separator `elem` rawInput
     let normalHead = head rawInput
-    if not isElem || normalHead == separator 
+    if not isElem || normalHead == separator
         then Nothing
         else do
             let partitioned = partitionBy separator rawInput

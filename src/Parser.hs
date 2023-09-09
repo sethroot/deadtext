@@ -3,11 +3,10 @@
 module Parser where
 
 import Common (inInventory, notHolding)
-import Control.Error ((!?), MaybeT(runMaybeT), hoistMaybe)
+import Control.Error (MaybeT(runMaybeT), hoistMaybe)
 import Control.Lens.Getter (Getting, (^.), use)
 import Control.Lens.Iso (iso, under)
 import Control.Monad.State.Lazy (MonadState)
-import Control.Monad.Trans.Except (ExceptT)
 import Data.Char (toLower)
 import Data.List (find)
 import Data.List.Split (splitOn)
@@ -22,7 +21,6 @@ normalizeInput :: [String] -> [String]
 normalizeInput = fmap $ fmap toLower
 
 -- Generic
-
 
 parseTarget :: (HasName a String) => [a] -> String -> Maybe a
 parseTarget xs _input = find _pred xs where _pred x = lowEq (x ^. name) _input
@@ -102,7 +100,6 @@ nameOrSynMatchesInput _input k =
 
 -- Item
 
-
 parseItem :: [Item] -> String -> Maybe Item
 parseItem = parseTargetWithSyn
 
@@ -116,8 +113,7 @@ parseItemObjM _input = runMaybeT $ do
     pure $ ObjItem found
     where pred' i = notHolding i && nameOrSynMatchesInput _input i
 
--- Inventory Items 
-
+-- Inventory Items
 
 parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
 parseInvItemM _input = runMaybeT $ do
@@ -131,8 +127,10 @@ parseInvObjM _input = runMaybeT $ do
     hoistMaybe . fmap ObjInv $ find pred' items'
     where pred' i = inInventory i && nameOrSynMatchesInput _input i
 
--- NPC
+recParseInvObj :: MonadState Game m => [Input] -> m (Maybe Obj)
+recParseInvObj = parseRecM parseInvObjM
 
+-- NPC
 
 parseNpc :: [Npc] -> String -> Maybe Npc
 parseNpc = parseTarget
@@ -140,11 +138,13 @@ parseNpc = parseTarget
 parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
 
+recParseNpc :: MonadState Game m => [Input] -> m (Maybe Npc)
+recParseNpc = parseRecM parseNpcM
+
 parseNpcObjM :: MonadState Game m => String -> m (Maybe Obj)
 parseNpcObjM = parseTargetObj npcs ObjNpc
 
 -- Container
-
 
 parseContainer :: [Container] -> String -> Maybe Container
 parseContainer = parseTarget
@@ -156,7 +156,6 @@ parseContObjM :: MonadState Game m => String -> m (Maybe Obj)
 parseContObjM = parseTargetObj containers ObjCont
 
 -- Direction
-
 
 parseDirM :: Monad m => String -> m (Maybe Direction)
 parseDirM = pure . go . map toLower
@@ -182,9 +181,3 @@ parseDirM = pure . go . map toLower
         go "d"         = Just D
         go "down"      = Just D
         go _           = Nothing
-
-recParseInvObj :: MonadState Game m => [Input] -> ExceptT String m Obj
-recParseInvObj inputs = parseRecM parseInvObjM inputs !? doNotHaveItem
-
-doNotHaveItem :: String
-doNotHaveItem = "You do not have that item."

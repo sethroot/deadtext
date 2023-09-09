@@ -10,6 +10,7 @@ import Data.List (elemIndex)
 import Parser (parseContainerM)
 import Safe (headMay)
 import Types
+import Util (hoistL, hoistR)
 
 closeAction :: MonadState Game m => [Input] -> m (Either String String)
 closeAction inputs = runExceptT $ do
@@ -19,8 +20,8 @@ closeAction inputs = runExceptT $ do
 
     if (container' ^. cState) == Closed
         then do
-            hoistEither . Left $ alreadyClosed container'
-        else hoistEither . Right $ ()
+            hoistL $ alreadyClosed container'
+        else hoistR ()
 
     containers' <- use containers
     index       <- case elemIndex container' containers' of
@@ -28,7 +29,7 @@ closeAction inputs = runExceptT $ do
         Just i  -> hoistEither $ Right i
 
     containers . ix index . cState .= Closed
-    hoistEither . Right $ youCloseThe container'
+    hoistR $ youCloseThe container'
 
 closeWhat :: String
 closeWhat = "Close what?"

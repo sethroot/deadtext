@@ -9,10 +9,9 @@ import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
 import Parser (parseNpc)
 import Types
+import Util (hoistL, hoistR)
 
-killAction :: MonadState Game m
-           => [Input]
-           -> m (Either String String)
+killAction :: MonadState Game m => [Input] -> m (Either String String)
 killAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
@@ -20,28 +19,24 @@ killAction inputs = runExceptT $ do
         Just target -> hoistEither $ Right target
 
     if target ^. normal == "self"
-        then hoistEither . Left $ "You are dead. Congrats."
-        else hoistEither . Right $ ()
+        then hoistL "You are dead. Congrats."
+        else hoistR ()
 
     npcs' <- use npcs
     npc   <- case parseNpc npcs' $ target ^. normal of
-        Nothing  -> hoistEither $ Left $ dontSee target
-        Just npc -> hoistEither $ Right npc
+        Nothing  -> hoistL $ dontSee target
+        Just npc -> hoistR npc
     npcHere <- npcIsHere npc
 
-    if not npcHere
-        then hoistEither . Left $ dontSee target
-        else hoistEither . Right $ ()
+    if not npcHere then hoistL $ dontSee target else hoistR ()
 
-    if not (npc ^. alive)
-        then hoistEither . Left $ alreadyDead npc
-        else hoistEither $ Right ()
+    if not (npc ^. alive) then hoistL $ alreadyDead npc else hoistR ()
 
     case elemIndex npc npcs' of
-        Nothing    -> hoistEither . Left $ "Something went terrible wrong"
+        Nothing    -> hoistL "Something went terrible wrong"
         Just index -> do
             npcs . ix index . alive .= False
-            hoistEither $ Right $ kill npc
+            hoistR $ kill npc
 
 dontSee :: Input -> String
 dontSee _input = "You don't see " ++ input' ++ " here."
