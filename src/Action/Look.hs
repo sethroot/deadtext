@@ -15,7 +15,7 @@ import Control.Error
 import Control.Lens ((^.), use, view)
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
-import Data.List (intercalate, intersperse)
+import Data.List (intercalate, intersperse, partition)
 import qualified Data.Map.Strict as M
 import Parser
     (parseContObjM, parseInvObjM, parseItemObjM, parseNpcObjM, parseRecM)
@@ -51,11 +51,11 @@ look = do
     itemsInLoc' <- itemsInLoc
     let loc'          = M.lookup locUid locMap
     let locDesc       = maybe "" (^. lookDesc) loc' :: String
-    let pathsDesc     = pathsInLoc locUid conns'
+    let exitsDesc     = exitsInLoc locUid conns'
     let npcDesc       = go $ npcsInLoc locUid npcs'
     let containerDesc = go $ containersInLoc locUid containers'
     let itemDesc      = go itemsInLoc'
-    let descs         = [locDesc, pathsDesc, npcDesc, containerDesc, itemDesc]
+    let descs         = [locDesc, exitsDesc, npcDesc, containerDesc, itemDesc]
     pure $ formatMulti descs
     where go = fromMaybe ""
 
@@ -108,18 +108,27 @@ itemsInLoc = do
 itemHere :: Item -> String
 itemHere _item = period . unwords $ ["There is a", _item ^. name, "here"]
 
-pathsInLoc :: UID -> [Connection] -> String
-pathsInLoc _loc conns =
-    let paths = pathsInLoc' _loc conns
-    in mconcat . intersperse "\n" $ map (pathGoing . fst) paths
+exitsInLoc :: UID -> [Connection] -> String
+exitsInLoc _loc conns =
+    let pathsStartingHere = filter (\c -> (c ^. start) == _loc) conns
+        partitioned = partition (\p -> p ^. method == ConnectionMethodPath) pathsStartingHere
+        paths = fst partitioned
+        doors = snd partitioned
+        desc' = fmap describePath
+        exits = desc' paths <> [""] <> desc' doors
+    in mconcat . intersperse "\n" $ exits
 
-pathsInLoc' :: UID -> [Connection] -> [(Direction, UID)]
-pathsInLoc' _loc conns =
-    let paths = filter (\c -> (c ^. start) == _loc) conns
-    in zip (map (^. dir) paths) (map (^. dest) paths)
+describePath :: Connection -> String
+describePath (Connection _ dir' _ method' _) =
+    case method' of
+        ConnectionMethodPath -> pathDesc dir' 
+        ConnectionMethodDoor -> doorDesc dir'
 
-pathGoing :: Direction -> String
-pathGoing _dir = period . unwords $ ["There is a path going", show _dir]
+pathDesc :: Direction -> String
+pathDesc _dir = period . unwords $ ["There is a path going", show _dir]
+
+doorDesc :: Direction -> String
+doorDesc _dir = period . unwords $ ["You see a door to the", show _dir]
 
 formatMulti :: [String] -> String
 formatMulti = intercalate "\n\n" . filter (not . null)

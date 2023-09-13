@@ -171,7 +171,8 @@ data Item = Item
     }
     deriving (Show, Eq, Ord, Generic)
 
-data ItemUse = Eat | Drink | Readable | Key | Ammo | OnOff
+data ItemUse = NoUse
+  -- Eat | Drink | Readable | Key | Ammo | OnOff
     deriving (Show, Eq, Ord, Generic)
 -- data Usable a where
 --      UseEdible ::Usable Edible
@@ -208,12 +209,20 @@ data Ext = Ext
     }
     deriving (Show, Generic)
 
+data ConnectionAccess = ConnectionOpen | ConnectionClosed | ConnectionLocked
+    deriving (Show, Generic)
+
+data ConnectionMethod = ConnectionMethodPath | ConnectionMethodDoor
+    deriving (Show, Eq, Generic)
+
 data Connection = Connection
     { _connectionStart :: UID
     , _connectionDir   :: Direction
     , _connectionDest  :: UID
+    , _connectionMethod :: ConnectionMethod
+    , _connectionAccess :: ConnectionAccess
     }
-    deriving (Show, Generic, FromJSON, ToJSON)
+    deriving (Show, Generic)
 
 data Location = Location
     { _locationItem  :: Item

@@ -107,34 +107,34 @@ setState = do
         ]
     loc .= woodSideExtWestUid
     connections
-        .= [ Connection bathroomUid    S  overlookLotUid
-           , Connection overlookLotUid N  bathroomUid
-           , Connection overlookLotUid NW cemetaryUid
-           , Connection cemetaryUid    SE overlookLotUid
+        .= [ Connection bathroomUid    S  overlookLotUid ConnectionMethodPath ConnectionOpen
+           , Connection overlookLotUid N  bathroomUid ConnectionMethodPath ConnectionOpen
+           , Connection overlookLotUid NW cemetaryUid ConnectionMethodPath ConnectionOpen
+           , Connection cemetaryUid    SE overlookLotUid ConnectionMethodPath ConnectionOpen
 
-           , Connection woodSideExtWestUid E woodSideExtEastUid
-           , Connection woodSideExtEastUid W woodSideExtWestUid
+           , Connection woodSideExtWestUid E woodSideExtEastUid ConnectionMethodPath ConnectionOpen
+           , Connection woodSideExtEastUid W woodSideExtWestUid ConnectionMethodPath ConnectionOpen
 
-           , Connection woodSideExtWestUid N westHallway1FSouthUid
-           , Connection westHallway1FSouthUid S woodSideExtWestUid
+           , Connection woodSideExtWestUid N westHallway1FSouthUid ConnectionMethodDoor ConnectionOpen
+           , Connection westHallway1FSouthUid S woodSideExtWestUid ConnectionMethodDoor ConnectionOpen
 
-           , Connection westHallway1FSouthUid N westHallway1FMidUid
-           , Connection westHallway1FMidUid S westHallway1FSouthUid
+           , Connection westHallway1FSouthUid N westHallway1FMidUid ConnectionMethodPath ConnectionOpen
+           , Connection westHallway1FMidUid S westHallway1FSouthUid ConnectionMethodPath ConnectionOpen
 
-           , Connection westHallway1FMidUid N westHallway1FNorthUid
-           , Connection westHallway1FNorthUid S westHallway1FMidUid
+           , Connection westHallway1FMidUid N westHallway1FNorthUid ConnectionMethodPath ConnectionOpen
+           , Connection westHallway1FNorthUid S westHallway1FMidUid ConnectionMethodPath ConnectionOpen
 
-           , Connection westHallway1FSouthUid E room101Uid
-           , Connection room101Uid W westHallway1FSouthUid
+           , Connection westHallway1FSouthUid E room101Uid ConnectionMethodDoor ConnectionOpen
+           , Connection room101Uid W westHallway1FSouthUid ConnectionMethodDoor ConnectionOpen
 
-           , Connection westHallway1FMidUid E room102Uid
-           , Connection room102Uid W westHallway1FMidUid
+           , Connection westHallway1FMidUid E room102Uid ConnectionMethodDoor ConnectionOpen
+           , Connection room102Uid W westHallway1FMidUid ConnectionMethodDoor ConnectionOpen
 
-           , Connection westHallway1FMidUid NE room103Uid
-           , Connection room103Uid W westHallway1FMidUid
+           , Connection westHallway1FMidUid NE room103Uid ConnectionMethodDoor ConnectionOpen
+           , Connection room103Uid W westHallway1FMidUid ConnectionMethodDoor ConnectionOpen
 
-           , Connection westHallway1FNorthUid E room104Uid
-           , Connection room104Uid W westHallway1FNorthUid
+           , Connection westHallway1FNorthUid E room104Uid ConnectionMethodDoor ConnectionOpen
+           , Connection room104Uid W westHallway1FNorthUid ConnectionMethodDoor ConnectionOpen
            ]
     jamesUid <- genUid
     let
@@ -242,13 +242,13 @@ setState = do
             "It's a well-worn map of Silent Hill."
             -- (ItemContainer carUid)
             (ItemLoc room205Uid)
-            [Readable]
+            [NoUse]
     let
         flashlight = Item
             "Flashlight"
             ["light", "flash light"]
             "The flashlight is covered in scratches. It feels heavy."
             (ItemLoc room205Uid)
-            [OnOff]
+            [NoUse]
 
     items .= [map', flashlight]
