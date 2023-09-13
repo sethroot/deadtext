@@ -20,25 +20,41 @@ import qualified Action.Walk as Walk
 import Control.Lens ((^.))
 import Control.Monad.IO.Class (MonadIO())
 import Control.Monad.State (MonadState)
-import Types (Game, HasNormal(normal), Input)
+import Types
 import Util (debugGameState, printE)
 
 data Action = Action Input [Input]
 
 processAction :: (MonadState Game m, MonadIO m) => Action -> m ()
-processAction action@(Action input _) = do
-    case input ^. normal of
+processAction action@(Action input' _) = do
+    case input' ^. normal of
         "debug" -> debugGameState
-        _       -> processGameAction action
+        "n"     -> processGameAction $ Action (Input "walk" "walk") [Input "n" "n"]
+        "e"     -> processGameAction $ Action (Input "walk" "walk") [Input "e" "e"]
+        "w"     -> processGameAction $ Action (Input "walk" "walk") [Input "w" "w"]
+        "s"     -> processGameAction $ Action (Input "walk" "walk") [Input "s" "s"]
+        "ne" ->
+            processGameAction $ Action (Input "walk" "walk") [Input "ne" "ne"]
+        "nw" ->
+            processGameAction $ Action (Input "walk" "walk") [Input "nw" "nw"]
+        "se" ->
+            processGameAction $ Action (Input "walk" "walk") [Input "se" "se"]
+        "sw" ->
+            processGameAction $ Action (Input "walk" "walk") [Input "sw" "sw"]
+        "u" -> processGameAction $ Action (Input "walk" "walk") [Input "u" "u"]
+        "d" -> processGameAction $ Action (Input "walk" "walk") [Input "d" "d"]
+        _   -> processGameAction action
 
 processGameAction :: (MonadState Game m, MonadIO m) => Action -> m ()
-processGameAction (Action input args) = do
-    let action = mapAction input
+processGameAction (Action input' args) = do
+    let action = mapAction input'
     out <- action args
     printE out
 
-mapAction :: (MonadState Game m) => Input -> ([Input] -> m (Either String String))
-mapAction input = case input ^. normal of
+mapAction :: (MonadState Game m)
+          => Input
+          -> ([Input] -> m (Either String String))
+mapAction input' = case input' ^. normal of
     "attack"    -> Attack.attackAction
     "close"     -> Close.closeAction
     "shut"      -> Close.closeAction

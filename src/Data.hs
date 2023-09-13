@@ -40,18 +40,101 @@ setState = do
             "Room 202"
             "You have entered room 202. In the middle of the room, you see a mannequin. A bright light shines at you."
             "You are standing in room 202. In the middle of the room, you see a mannequin. A bright light shines at you."
+
+    -- Wood Side Exterior
+
+    woodSideExtWestUid <- genUid
+    let woodSideExtWest = Loc "Wood Side Exterior West" "Apartment Ext West" ""
+
+    woodSideExtEastUid <- genUid
+    let woodSideExtEast = Loc "Wood Side Exterior East" "Apartment Ext East" ""
+
+    -- Wood Side Apartments 1F
+
+    westHallway1FSouthUid <- genUid
+    let westHallway1FSouth = Loc "1st Floor West Hallway South" "1F West Hallway South" "1F West Hallway South"
+
+    westHallway1FMidUid <- genUid
+    let westHallway1FMid = Loc "1st Floor West Hallway Mid" "1F West Hallway Mid" "1F West Hallway Mid"
+
+    westHallway1FNorthUid <- genUid
+    let westHallway1FNorth = Loc "1st Floor West Hallway North" "1F West Hallway North" "1F West Hallway North"
+
+    eastHallway1FSouthUid <- genUid
+    let eastHallway1FSouth = Loc "1st Floor East Hallway South" "1F East Hallway South" "1F East Hallway South"
+
+    eastHallway1FMidUid <- genUid
+    let eastHallway1FMid = Loc "1st Floor East Hallway Mid" "1F East Hallway Mid" "1F East Hallway Mid"
+
+    eastHallway1FNorthUid <- genUid
+    let eastHallway1FNorth = Loc "1st Floor East Hallway North" "1F East Hallway North" "1F East Hallway North"
+
+    room101Uid <- genUid
+    let room101 = Loc "Room 101" "Room 101" "Room 101"
+    room102Uid <- genUid
+    let room102 = Loc "Room 102" "Room 102" "Room 102"
+    room103Uid <- genUid
+    let room103 = Loc "Room 103" "Room 103" "Room 103"
+    room104Uid <- genUid
+    let room104 = Loc "Room 104" "Room 104" "Room 104"
+    room105Uid <- genUid
+    let room105 = Loc "Room 105" "Room 105" "Room 105"
+    room106Uid <- genUid
+    let room106 = Loc "Room 106" "Room 106" "Room 106"
+    room107Uid <- genUid
+    let room107 = Loc "Room 107" "Room 107" "Room 107"
+
     locs .= M.fromList
-        [ (bathroomUid   , bathroom)
-        , (overlookLotUid, overlookLot)
-        , (cemetaryUid   , cemetary)
-        , (room205Uid    , room205)
+        [ (bathroomUid          , bathroom)
+        , (overlookLotUid       , overlookLot)
+        , (cemetaryUid          , cemetary)
+        , (room205Uid           , room205)
+        , (woodSideExtWestUid   , woodSideExtWest)
+        , (woodSideExtEastUid   , woodSideExtEast)
+        , (westHallway1FSouthUid, westHallway1FSouth)
+        , (westHallway1FMidUid  , westHallway1FMid)
+        , (westHallway1FNorthUid, westHallway1FNorth)
+        , (eastHallway1FSouthUid, eastHallway1FSouth)
+        , (eastHallway1FMidUid  , eastHallway1FMid)
+        , (eastHallway1FNorthUid, eastHallway1FNorth)
+        , (room101Uid           , room101)
+        , (room102Uid           , room102)
+        , (room103Uid           , room103)
+        , (room104Uid           , room104)
+        , (room105Uid           , room105)
+        , (room106Uid           , room106)
+        , (room107Uid           , room107)
         ]
-    loc .= room205Uid
+    loc .= woodSideExtWestUid
     connections
         .= [ Connection bathroomUid    S  overlookLotUid
            , Connection overlookLotUid N  bathroomUid
            , Connection overlookLotUid NW cemetaryUid
            , Connection cemetaryUid    SE overlookLotUid
+
+           , Connection woodSideExtWestUid E woodSideExtEastUid
+           , Connection woodSideExtEastUid W woodSideExtWestUid
+
+           , Connection woodSideExtWestUid N westHallway1FSouthUid
+           , Connection westHallway1FSouthUid S woodSideExtWestUid
+
+           , Connection westHallway1FSouthUid N westHallway1FMidUid
+           , Connection westHallway1FMidUid S westHallway1FSouthUid
+
+           , Connection westHallway1FMidUid N westHallway1FNorthUid
+           , Connection westHallway1FNorthUid S westHallway1FMidUid
+
+           , Connection westHallway1FSouthUid E room101Uid
+           , Connection room101Uid W westHallway1FSouthUid
+
+           , Connection westHallway1FMidUid E room102Uid
+           , Connection room102Uid W westHallway1FMidUid
+
+           , Connection westHallway1FMidUid NE room103Uid
+           , Connection room103Uid W westHallway1FMidUid
+
+           , Connection westHallway1FNorthUid E room104Uid
+           , Connection room104Uid W westHallway1FNorthUid
            ]
     jamesUid <- genUid
     let
