@@ -22,9 +22,7 @@ import Parser
 import Types
 import Util ((?))
 
-lookAction :: MonadState Game m
-           => [Input]
-           -> m (Either String String)
+lookAction :: MonadState Game m => [Input] -> m (Either String String)
 lookAction [] = do
     out <- Action.Look.look
     pure . Right $ out
@@ -110,8 +108,11 @@ itemHere _item = period . unwords $ ["There is a", _item ^. name, "here"]
 
 exitsInLoc :: UID -> [Connection] -> String
 exitsInLoc _loc conns =
-    let pathsStartingHere = filter (\c -> (c ^. start) == _loc) conns
-        partitioned = partition (\p -> p ^. method == ConnectionMethodPath) pathsStartingHere
+    let
+        pathsStartingHere = filter (\c -> (c ^. start) == _loc) conns
+        partitioned       = partition
+            (\p -> p ^. method == ConnectionMethodPath)
+            pathsStartingHere
         paths = fst partitioned
         doors = snd partitioned
         desc' = fmap describePath
@@ -119,10 +120,9 @@ exitsInLoc _loc conns =
     in mconcat . intersperse "\n" $ exits
 
 describePath :: Connection -> String
-describePath (Connection _ dir' _ method' _) =
-    case method' of
-        ConnectionMethodPath -> pathDesc dir' 
-        ConnectionMethodDoor -> doorDesc dir'
+describePath (Connection _ dir' _ method' _) = case method' of
+    ConnectionMethodPath -> pathDesc dir'
+    ConnectionMethodDoor -> doorDesc dir'
 
 pathDesc :: Direction -> String
 pathDesc _dir = period . unwords $ ["There is a path going", show _dir]
