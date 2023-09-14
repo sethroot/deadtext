@@ -45,25 +45,43 @@ data Role = Monster | Dialog | Quest
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 -- data Quest = Quest
+
 --     { _questStartText      :: String
+
 --     , _questCompletionText :: String
+
 --     , _questCursor         :: Int
+
 --     , _questSteps          :: [String]
+
 --     }
+
 --     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
+
 -- Progress types
+
 -- picked up item
+
 -- talked to npc
+
 -- killed key enemy
+
 -- looked at item
+
 -- gave item to npc
+
 -- placed item in container
+
 -- 
+
 -- data Progress = Progress
+
 --     { _
 
+
 --     }
+
 
 data ProgressType = PickedUpItem |
        TalkedToNPC |
@@ -141,6 +159,7 @@ data Combat = Combat
     deriving Generic
     -- deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
+
 instance FromJSON Combat where
     parseJSON _ = return $ Combat 0 Melee 10 None (const "")
 
@@ -163,7 +182,8 @@ data ItemLocation = ItemInv
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data Item = Item
-    { _itemName :: String
+    { _itemUid  :: String
+    , _itemName :: String
     , _itemSyn  :: [String]
     , _itemDesc :: String
     , _itemLoc  :: ItemLocation
@@ -171,14 +191,22 @@ data Item = Item
     }
     deriving (Show, Eq, Ord, Generic)
 
-data ItemUse = NoUse
+type KeyUseLocation = UID
+type KeyAccessLocation = UID
+data ItemUse = NoUse | Key KeyUseLocation KeyAccessLocation
   -- Eat | Drink | Readable | Key | Ammo | OnOff
+
     deriving (Show, Eq, Ord, Generic)
 -- data Usable a where
+
 --      UseEdible ::Usable Edible
+
 --      UseKey ::Usable Key
+
 --      UseAmmo ::Usable Ammo
+
 --      NoUse ::Usable ()
+
 
 data ContainerState = Open | Closed
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
@@ -210,19 +238,19 @@ data Ext = Ext
     deriving (Show, Generic)
 
 data ConnectionAccess = ConnectionOpen | ConnectionClosed | ConnectionLocked
-    deriving (Show, Generic)
+    deriving (Show, Eq, Generic)
 
 data ConnectionMethod = ConnectionMethodPath | ConnectionMethodDoor
     deriving (Show, Eq, Generic)
 
 data Connection = Connection
-    { _connectionStart :: UID
-    , _connectionDir   :: Direction
-    , _connectionDest  :: UID
+    { _connectionStart  :: UID
+    , _connectionDir    :: Direction
+    , _connectionDest   :: UID
     , _connectionMethod :: ConnectionMethod
     , _connectionAccess :: ConnectionAccess
     }
-    deriving (Show, Generic)
+    deriving (Show, Eq, Generic)
 
 data Location = Location
     { _locationItem  :: Item
@@ -273,6 +301,7 @@ makeFields ''Npc
 makeFields ''Combat
 makeFields ''Role
 -- makeFields ''Quest
+
 makeFields ''Movement
 makeFields ''Input
 makeFields ''Game

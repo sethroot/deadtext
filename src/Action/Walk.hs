@@ -10,6 +10,7 @@ import Data.List (find)
 import qualified Data.Map.Strict as M
 import Parser (parseDirM)
 import Types
+import Util (hoistL, hoistR)
 
 walkAction :: MonadState Game m => [Input] -> m (Either String String)
 walkAction inputs = runExceptT $ do
@@ -19,14 +20,26 @@ walkAction inputs = runExceptT $ do
     currentLoc <- use loc
     locMap     <- use locs
     conns'     <- use connections
+    let move = Movement currentLoc dir'
+    _ <- if isLocked move conns' then hoistL theDoorIsLocked else hoistR ()
     let next = resolveMove (Movement currentLoc dir') conns'
     loc .= next
     nextLoc <- M.lookup next locMap ?? outF
     let out = nextLoc ^. walkDesc
     hoistEither $ Right out
 
+isLocked :: Movement -> [Connection] -> Bool
+isLocked move conns = maybe
+    False
+    ((== ConnectionLocked) . (^. access))
+    (maybeConnFromMove move conns)
+
 resolveMove :: Movement -> [Connection] -> UID
-resolveMove move = fromMaybe (move ^. start) . maybeLocFromMove move
+resolveMove move conns =
+    let
+        current = move ^. start
+        dest'   = maybeLocFromMove move conns
+    in fromMaybe current dest'
 
 maybeLocFromMove :: Movement -> [Connection] -> Maybe UID
 maybeLocFromMove move = fmap (^. dest) . maybeConnFromMove move
@@ -42,3 +55,6 @@ maybeConnFromMove (Movement s d) = find predicate
 
 goWhere :: String
 goWhere = "Go where?"
+
+theDoorIsLocked :: String
+theDoorIsLocked = "The door is locked."

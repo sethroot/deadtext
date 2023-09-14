@@ -115,7 +115,7 @@ setState = do
            , Connection woodSideExtWestUid E woodSideExtEastUid ConnectionMethodPath ConnectionOpen
            , Connection woodSideExtEastUid W woodSideExtWestUid ConnectionMethodPath ConnectionOpen
 
-           , Connection woodSideExtWestUid N westHallway1FSouthUid ConnectionMethodDoor ConnectionOpen
+           , Connection woodSideExtWestUid N westHallway1FSouthUid ConnectionMethodDoor ConnectionLocked
            , Connection westHallway1FSouthUid S woodSideExtWestUid ConnectionMethodDoor ConnectionOpen
 
            , Connection westHallway1FSouthUid N westHallway1FMidUid ConnectionMethodPath ConnectionOpen
@@ -237,6 +237,7 @@ setState = do
     containers .= [car]
     let
         map' = Item
+            "map"
             "Map"
             []
             "It's a well-worn map of Silent Hill."
@@ -245,10 +246,18 @@ setState = do
             [NoUse]
     let
         flashlight = Item
+            "flashlight"
             "Flashlight"
             ["light", "flash light"]
             "The flashlight is covered in scratches. It feels heavy."
             (ItemLoc room205Uid)
             [NoUse]
-
-    items .= [map', flashlight]
+    let 
+        woodSideApartmentsKey = Item
+            "wood-side-apt-key"
+            "Wood Side Apartments Key"
+            ["wood side key", "apartments key", "key"]
+            "A key to the Wood Side Apartments"
+            (ItemLoc woodSideExtEastUid)
+            [Key woodSideExtWestUid westHallway1FSouthUid]
+    items .= [map', flashlight, woodSideApartmentsKey]
