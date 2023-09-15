@@ -240,6 +240,7 @@ setState = do
             "map"
             "Map"
             []
+            "Picking up the map, you see the various streets of a small portion of Silent Hill. This area is situated on the south side of Toluca Lake."
             "It's a well-worn map of Silent Hill."
             -- (ItemContainer carUid)
             (ItemLoc room205Uid)
@@ -248,16 +249,18 @@ setState = do
         flashlight = Item
             "flashlight"
             "Flashlight"
-            ["light", "flash light"]
+            ["flashlight", "light", "flash light"]
+            "You pickup the flashlight and are surprised at it's weight. Flipping the switch, you see a bright but narrow beam of light emitting from the lens end. You flip the switch again and turn the light off."
             "The flashlight is covered in scratches. It feels heavy."
             (ItemLoc room205Uid)
             [NoUse]
     let 
         woodSideApartmentsKey = Item
             "wood-side-apt-key"
-            "Wood Side Apartments Key"
-            ["wood side key", "apartments key", "key"]
-            "A key to the Wood Side Apartments"
+            "small key with the letters WS engraved into the head"
+            ["key", "small key"]
+            "You dust off the small key and put it in your pocket."
+            "It is a small key with the letters WS engraved into the head."
             (ItemLoc woodSideExtEastUid)
             [Key woodSideExtWestUid westHallway1FSouthUid]
     items .= [map', flashlight, woodSideApartmentsKey]

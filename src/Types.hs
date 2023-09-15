@@ -182,12 +182,13 @@ data ItemLocation = ItemInv
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data Item = Item
-    { _itemUid  :: String
-    , _itemName :: String
-    , _itemSyn  :: [String]
-    , _itemDesc :: String
-    , _itemLoc  :: ItemLocation
-    , _itemUses :: [ItemUse]
+    { _itemUid      :: String
+    , _itemName     :: String
+    , _itemSyn      :: [String]
+    , _itemTakeDesc :: String
+    , _itemDesc     :: String
+    , _itemLoc      :: ItemLocation
+    , _itemUses     :: [ItemUse]
     }
     deriving (Show, Eq, Ord, Generic)
 

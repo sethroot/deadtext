@@ -2,6 +2,7 @@
 
 module Action.Walk (walkAction) where
 
+import Action.Look(look)
 import Common (dontKnowHowToDoThat, outF)
 import Control.Error ((??), fromMaybe, headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), (^.), use)
@@ -24,8 +25,7 @@ walkAction inputs = runExceptT $ do
     _ <- if isLocked move conns' then hoistL theDoorIsLocked else hoistR ()
     let next = resolveMove (Movement currentLoc dir') conns'
     loc .= next
-    nextLoc <- M.lookup next locMap ?? outF
-    let out = nextLoc ^. walkDesc
+    out <- Action.Look.look
     hoistEither $ Right out
 
 isLocked :: Movement -> [Connection] -> Bool

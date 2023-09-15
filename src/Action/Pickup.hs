@@ -37,8 +37,7 @@ pickupAction inputs = runExceptT $ do
     if item'' ^. loc == ItemLoc loc'
         then do
             pickupItemMutation item''
-            let out = (item'' ^. name) ++ " taken."
-            hoistL out
+            hoistL $ item'' ^. takeDesc
         else hoistR ()
 
     let closedTransContainersHere = filter (closedTransHere loc') containers'

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Look (lookAction) where
+module Action.Look (lookAction, Action.Look.look) where
 
 import Common (containerIsHere, indefArt, itemIsHere, npcIsHere, period)
 import Control.Applicative (Alternative((<|>)))
@@ -116,7 +116,9 @@ exitsInLoc _loc conns =
         paths = fst partitioned
         doors = snd partitioned
         desc' = fmap describePath
-        exits = desc' paths <> [""] <> desc' doors
+        exits = if null doors
+            then desc' paths 
+            else desc' paths <> [""] <> desc' doors
     in mconcat . intersperse "\n" $ exits
 
 describePath :: Connection -> String

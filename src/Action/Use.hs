@@ -45,23 +45,10 @@ useWoodSideApartmentsKey item' = do
                             find (\c -> c ^. dest == accessLoc)
                                 $ conns
                     let c' = fromJust c
-                    -- let index = elemIndex c' conns
-                    -- let index' = fromJust index
-                    -- game <- get
-                    -- _ <- put $ game & conns . ix index' . access .= ConnectionOpen
                     openConnection c'
                     pure "You unlock the Wood Side Apartments main door"
                 else pure ""
         _ -> undefined
-    -- out <- runExceptT $ do
-    --     loc' <- use loc
-    --     _    <- if loc' == woodSideExtWestUid
-    --         then hoistR ()
-    --         else hoistL "You can't use that here."
-    --     conns <- use connections
-    --     let conn = filter (\c -> c ^. start == woodSideExtWestUid) conns
-    --     pure ""
-    -- pure ""
 
 openConnection :: MonadState Game m => Connection -> m ()
 openConnection c = do

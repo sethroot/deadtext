@@ -62,6 +62,7 @@ mapAction input' = case input' ^. normal of
     "drop"      -> Drop.dropAction
     "leave"     -> Drop.dropAction
     "eat"       -> Eat.eatAction
+    "examine"   -> Look.lookAction
     "give"      -> Give.giveAction
     "help"      -> Help.helpAction
     "i"         -> Inv.invAction

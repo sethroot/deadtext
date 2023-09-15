@@ -3,7 +3,7 @@
 module Action.Attack where
 
 import Control.Error ((??), MaybeT(runMaybeT), hoistMaybe, runExceptT)
-import Control.Lens ((%~), Ixed(ix), (^.), use)
+import Control.Lens ((%~), Ixed(ix), (^.), use, (%=))
 import Control.Monad.State.Lazy (MonadState(get, put))
 import Data.Function ((&))
 import Data.List (elemIndex, intersperse)
@@ -29,11 +29,10 @@ attackMutation targetNpc = runMaybeT $ do
     index <- case elemIndex targetNpc npcs' of
         Nothing -> hoistMaybe Nothing
         Just i  -> pure i
-    game    <- get
     avatarM <- use avatar
     avatar' <- hoistMaybe avatarM
     let dmg = avatar' ^. combat . damage
-    _ <- put $ game & npcs . ix index . health %~ subtract dmg
+    npcs . ix index . health %= subtract dmg
     pure dmg
 
 attackWhat :: String
