@@ -4,15 +4,14 @@ module Action.Pickup (pickupAction) where
 
 import Common (indefArt, period)
 import Control.Error (headMay, hoistEither, runExceptT)
-import Control.Lens ((.=), Ixed(ix), (^.), use)
+import Control.Lens ((.=), Each(each), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
-import Data.List (elemIndex)
+import Data.List (elemIndex, intersperse)
 import Parser (parseItemM, parseRecM, recParseNpc)
 import Types
 import Util (hoistL, hoistR)
 
--- TODO: Add support for 'pickup all'
 pickupAction :: (MonadState Game m) => [Input] -> m (Either String String)
 pickupAction inputs = runExceptT $ do
     npc' <- recParseNpc inputs
@@ -25,6 +24,9 @@ pickupAction inputs = runExceptT $ do
         Nothing     -> hoistL pickupWhat
         Just target -> hoistR target
 
+    _ <- case target ^. normal of
+        "all" -> pickupAll >>= hoistL
+        _     -> hoistR ()
     loc'        <- use loc
     containers' <- use containers
     items'      <- use items
@@ -64,6 +66,16 @@ pickupAction inputs = runExceptT $ do
             pickupItemMutation item'
             let out = takeItemFromContainer item' container
             hoistR out
+
+pickupAll :: MonadState Game m => m String
+pickupAll = do
+    loc'   <- use loc
+    items' <- use items
+    let here = filter (\i -> i ^. loc == ItemLoc loc') items'
+    items . each . loc .= ItemInv
+    let texts = (^. takeDesc) <$> here
+    let out   = mconcat $ intersperse "\n\n" texts
+    pure out
 
 openHere :: UID -> Container -> Bool
 openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)

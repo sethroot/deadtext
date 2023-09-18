@@ -238,21 +238,21 @@ setState = do
     let
         map' = Item
             "map"
-            "Map"
+            "map"
             []
             "Picking up the map, you see the various streets of a small portion of Silent Hill. This area is situated on the south side of Toluca Lake."
             "It's a well-worn map of Silent Hill."
             -- (ItemContainer carUid)
-            (ItemLoc room205Uid)
+            (ItemLoc woodSideExtEastUid)
             [NoUse]
     let
         flashlight = Item
             "flashlight"
-            "Flashlight"
+            "flashlight"
             ["flashlight", "light", "flash light"]
             "You pickup the flashlight and are surprised at it's weight. Flipping the switch, you see a bright but narrow beam of light emitting from the lens end. You flip the switch again and turn the light off."
             "The flashlight is covered in scratches. It feels heavy."
-            (ItemLoc room205Uid)
+            (ItemLoc woodSideExtEastUid)
             [NoUse]
     let 
         woodSideApartmentsKey = Item
