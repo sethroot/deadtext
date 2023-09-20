@@ -144,7 +144,7 @@ setState = do
             10
             None
             (\npc -> "James swings his fists at " ++ npc ^. name ++ ".")
-    let james = Avatar "James" jamesCombat
+    let james = Avatar "James" jamesCombat 100
     avatar .= Just james
     angelaUid <- genUid
     let

@@ -14,6 +14,7 @@ import qualified Action.Kill as Kill
 import qualified Action.Look as Look
 import qualified Action.Open as Open
 import qualified Action.Pickup as Pickup
+import qualified Action.Status as Status
 import qualified Action.Talk as Talk
 import qualified Action.Use as Use
 import qualified Action.Walk as Walk
@@ -73,6 +74,7 @@ mapAction input' = case input' ^. normal of
     "look"      -> Look.lookAction
     "open"      -> Open.openAction
     "pickup"    -> Pickup.pickupAction
+    "status"    -> Status.statusAction
     "take"      -> Pickup.pickupAction
     "talk"      -> Talk.talkAction
     "use"       -> Use.useAction

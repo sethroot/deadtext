@@ -93,12 +93,13 @@ data ProgressType = PickedUpItem |
 data Avatar = Avatar
     { _avatarName   :: String
     , _avatarCombat :: Combat
+    , _avatarHealth :: Int
     }
     deriving (Generic, FromJSON, ToJSON)
 
 
 instance Show Avatar where
-    show (Avatar name _) = name
+    show (Avatar name _ health) = unwords [name, show health]
 
 data Npc = Npc
     { _npcUid          :: UID
