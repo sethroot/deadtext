@@ -19,6 +19,7 @@ import qualified Action.Talk as Talk
 import qualified Action.Unlock as Unlock
 import qualified Action.Use as Use
 import qualified Action.Walk as Walk
+import Common (dontKnowHowToDoThat)
 import Control.Lens ((^.))
 import Control.Monad.IO.Class (MonadIO())
 import Control.Monad.State (MonadState)
@@ -82,4 +83,4 @@ mapAction input' = case input' ^. normal of
     "use"       -> Use.useAction
     "go"        -> Walk.walkAction
     "walk"      -> Walk.walkAction
-    _           -> Walk.walkAction
+    _           -> \_ -> pure . Right $ dontKnowHowToDoThat

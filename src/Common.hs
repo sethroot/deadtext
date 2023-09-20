@@ -45,4 +45,4 @@ outF :: String
 outF = "Something has gone horribly wrong."
 
 dontKnowHowToDoThat :: String
-dontKnowHowToDoThat = "Don't know how to do that."
+dontKnowHowToDoThat = "You don't know how to do that."

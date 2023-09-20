@@ -14,18 +14,17 @@ import Util (hoistL, hoistR)
 
 walkAction :: MonadState Game m => [Input] -> m (Either String String)
 walkAction inputs = runExceptT $ do
-    target     <- headMay inputs ?? goWhere
-    mDir       <- parseDirM $ target ^. normal
-    dir'       <- mDir ?? dontKnowHowToDoThat
-    currentLoc <- use loc
-    conns'     <- use connections
-    let move = Movement currentLoc dir'
+    target <- headMay inputs ?? goWhere
+    mDir   <- parseDirM $ target ^. normal
+    dir'   <- mDir ?? dontKnowHowToDoThat
+    loc'   <- use loc
+    conns' <- use connections
+    let move = Movement loc' dir'
     _ <- if isLocked move conns' then hoistL theDoorIsLocked else hoistR ()
-    let next = resolveMove (Movement currentLoc dir') conns'
-    _ <- if currentLoc == next then hoistL youCantGoThatWay else hoistR ()
+    let next = resolveMove (Movement loc' dir') conns'
+    _ <- if loc' == next then hoistL youCantGoThatWay else hoistR ()
     loc .= next
-    out <- Action.Look.look
-    hoistR out
+    Action.Look.look >>= hoistR
 
 isLocked :: Movement -> [Connection] -> Bool
 isLocked move conns = maybe
