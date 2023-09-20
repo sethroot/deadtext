@@ -2,12 +2,12 @@
 
 module Action.Walk (walkAction) where
 
-import Action.Look(look)
+import Action.Look (look)
 import Common (dontKnowHowToDoThat, outF)
 import Control.Error ((??), fromMaybe, headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
-import Data.List (find)
+import Data.List (find, intersperse)
 import qualified Data.Map.Strict as M
 import Parser (parseDirM)
 import Types
@@ -19,14 +19,14 @@ walkAction inputs = runExceptT $ do
     mDir       <- parseDirM $ target ^. normal
     dir'       <- mDir ?? dontKnowHowToDoThat
     currentLoc <- use loc
-    locMap     <- use locs
     conns'     <- use connections
     let move = Movement currentLoc dir'
     _ <- if isLocked move conns' then hoistL theDoorIsLocked else hoistR ()
     let next = resolveMove (Movement currentLoc dir') conns'
+    _ <- if currentLoc == next then hoistL youCantGoThatWay else hoistR ()
     loc .= next
     out <- Action.Look.look
-    hoistEither $ Right out
+    hoistR out
 
 isLocked :: Movement -> [Connection] -> Bool
 isLocked move conns = maybe
@@ -58,3 +58,6 @@ goWhere = "Go where?"
 
 theDoorIsLocked :: String
 theDoorIsLocked = "The door is locked."
+
+youCantGoThatWay :: String
+youCantGoThatWay = "You can't go that way."
