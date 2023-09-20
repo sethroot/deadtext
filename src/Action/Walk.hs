@@ -3,12 +3,11 @@
 module Action.Walk (walkAction) where
 
 import Action.Look (look)
-import Common (dontKnowHowToDoThat, outF)
-import Control.Error ((??), fromMaybe, headMay, hoistEither, runExceptT)
+import Common (dontKnowHowToDoThat)
+import Control.Error ((??), fromMaybe, headMay, runExceptT)
 import Control.Lens ((.=), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
-import Data.List (find, intersperse)
-import qualified Data.Map.Strict as M
+import Data.List (find)
 import Parser (parseDirM)
 import Types
 import Util (hoistL, hoistR)
