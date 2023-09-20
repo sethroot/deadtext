@@ -16,6 +16,7 @@ import qualified Action.Open as Open
 import qualified Action.Pickup as Pickup
 import qualified Action.Status as Status
 import qualified Action.Talk as Talk
+import qualified Action.Unlock as Unlock
 import qualified Action.Use as Use
 import qualified Action.Walk as Walk
 import Control.Lens ((^.))
@@ -77,6 +78,7 @@ mapAction input' = case input' ^. normal of
     "status"    -> Status.statusAction
     "take"      -> Pickup.pickupAction
     "talk"      -> Talk.talkAction
+    "unlock"    -> Unlock.unlockAction
     "use"       -> Use.useAction
     "go"        -> Walk.walkAction
     "walk"      -> Walk.walkAction
