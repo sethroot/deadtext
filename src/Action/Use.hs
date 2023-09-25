@@ -1,16 +1,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Action.Use where
+module Action.Use (useAction) where
 
 import Control.Error ((!?), headMay, runExceptT)
-import Control.Lens ((^.), use, elemIndexOf, (.=), Ixed (ix), (&), (.~))
-import Control.Monad.State.Lazy (MonadState (put, get))
+import Control.Lens ((^.), use, (.=), Ixed (ix))
 import Data
 import Parser (recParseInvObj)
 import Types
-import Util (hoistL, hoistR)
+import Util (hoistR)
 import Data.List (find, elemIndex)
 import Data.Maybe (fromJust)
+import Control.Monad.State.Lazy (MonadState)
 
 class Usable a where
     doUse :: (MonadState Game m) => a -> m String
@@ -22,6 +22,7 @@ instance Usable Obj where
     doUse _ = undefined
 
 useAction :: MonadState Game m => [Input] -> m (Either String String)
+useAction [] = pure . Right $ "Use what?"
 useAction inputs = runExceptT $ do
     item'  <- recParseInvObj inputs !? doNotHaveItem
     result <- doUse item'
