@@ -3,14 +3,14 @@
 module Action.Use (useAction) where
 
 import Control.Error ((!?), headMay, runExceptT)
-import Control.Lens ((^.), use, (.=), Ixed (ix))
+import Control.Lens ((.=), Ixed(ix), (^.), use)
+import Control.Monad.State.Lazy (MonadState)
 import Data
+import Data.List (elemIndex, find)
+import Data.Maybe (fromJust)
 import Parser (recParseInvObj)
 import Types
 import Util (hoistR)
-import Data.List (find, elemIndex)
-import Data.Maybe (fromJust)
-import Control.Monad.State.Lazy (MonadState)
 
 class Usable a where
     doUse :: (MonadState Game m) => a -> m String
@@ -22,7 +22,7 @@ instance Usable Obj where
     doUse _ = undefined
 
 useAction :: MonadState Game m => [Input] -> m (Either String String)
-useAction [] = pure . Right $ "Use what?"
+useAction []     = pure . Right $ "Use what?"
 useAction inputs = runExceptT $ do
     item'  <- recParseInvObj inputs !? doNotHaveItem
     result <- doUse item'
@@ -41,10 +41,7 @@ useWoodSideApartmentsKey item' = do
             if loc' == useLoc
                 then do
                     conns <- use connections
-                    let
-                        c =
-                            find (\c -> c ^. dest == accessLoc)
-                                $ conns
+                    let c  = find (\c -> c ^. dest == accessLoc) $ conns
                     let c' = fromJust c
                     openConnection c'
                     pure "You unlock the Wood Side Apartments main door"
@@ -53,7 +50,7 @@ useWoodSideApartmentsKey item' = do
 
 openConnection :: MonadState Game m => Connection -> m ()
 openConnection c = do
-      conns <- use connections
-      let index = elemIndex c conns
-      let index' = fromJust index
-      connections . ix index' . access .= ConnectionOpen
+    conns <- use connections
+    let index  = elemIndex c conns
+    let index' = fromJust index
+    connections . ix index' . access .= ConnectionOpen

@@ -14,8 +14,24 @@ import Data.Monoid (Any(Any, getAny))
 import Types
 import Util (lowEq)
 
+-- [Verb] [op: the] [Target] [op: to, with] [Target]
+-- Unlock door with key
+-- Use key on door
+-- Use key on north door
+-- Use key on door to north
+-- Give torch to dwarf
+-- Attack pyramid head with knife
+-- Shoot gun at nurse
+-- Look in box
+-- Look at car
+-- Examine book
+
 parseRawInput :: String -> [String]
-parseRawInput = filter (/= "") . splitOn " "
+parseRawInput = words
+
+-- TODO: fixme
+-- removePunctuation :: String -> String
+-- removePunctuation = filter (notElem ",.<>/?;:\"\'!@#$%^&*()-_=+")
 
 normalizeInput :: [String] -> [String]
 normalizeInput = fmap $ fmap toLower
