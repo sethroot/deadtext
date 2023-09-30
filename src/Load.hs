@@ -14,14 +14,14 @@ import System.IO (IOMode(ReadMode), openFile)
 import Types (Game)
 
 loadInternal :: (MonadState Game m, MonadIO m) => m () 
-loadInternal = do
-    Data.setState
-    game <- get
+loadInternal = Data.setState
+
+    -- game <- get
     -- liftIO $ exportGame game
 
-    liftIO . putStrLn $ ""
-    liftIO . putStrLn $ "Running against internal config"
-    liftIO . putStrLn $ ""
+    -- liftIO . putStrLn $ ""
+    -- liftIO . putStrLn $ "Running against internal config"
+    -- liftIO . putStrLn $ ""
 
 -- loadExternal :: (MonadState Game m, MonadIO m) => String -> m () 
 -- loadExternal file = do

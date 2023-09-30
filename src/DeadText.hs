@@ -24,19 +24,25 @@ deadText = void $ runStateT (runReaderT game initEnv) initState
 
 game :: App ()
 game = do
-    args <- liftIO getArgs 
+    args <- liftIO getArgs
     let txtArgs = fmap T.pack args
-    processArgs txtArgs 
+    processArgs txtArgs
     lookAction [] >>= printE
-    forever $ do
-        printPrompt
-        parsed <- liftIO getLine >>= parseInput
-        input .= parsed
-        tokenize parsed >>= exec
+    forever gameLoop 
+
+gameLoop :: App ()
+gameLoop = do
+    printPrompt
+    liftIO getLine
+        >>= parseInput
+        >>= storeInput
+        >>= tokenizeInputAsAction
+        >>= executeAction
 
 processArgs :: (MonadState Game m, MonadIO m) => [T.Text] -> m ()
 processArgs ("noload" : _) = loadInternal
 processArgs ("-n"     : _) = loadInternal
+processArgs _              = loadInternal
 -- processArgs (file     : _) = loadExternal file
 -- processArgs _              = loadExternal "example"
 
@@ -54,14 +60,19 @@ parseInput input' = do
     -- liftIO . print $ inputs
     pure inputs
 
-tokenize :: Monad m => [Input] -> m Action
-tokenize input' = do
+storeInput :: MonadState Game m => [Input] -> m [Input]
+storeInput input' = do
+    input .= input'
+    pure input'
+
+tokenizeInputAsAction :: Monad m => [Input] -> m Action
+tokenizeInputAsAction input' = do
     let action = head input'
     let args   = tail input'
     pure $ Action action args
 
-exec :: (MonadState Game m, MonadIO m) => Action -> m ()
-exec action = do
+executeAction :: (MonadState Game m, MonadIO m) => Action -> m ()
+executeAction action = do
     liftIO $ putStrLn ""
     processAction action
     liftIO $ putStrLn ""
