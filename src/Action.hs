@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action (processAction, Look.lookAction, Action(Action)) where
 
@@ -23,6 +24,7 @@ import Common (dontKnowHowToDoThat)
 import Control.Lens ((^.))
 import Control.Monad.IO.Class (MonadIO())
 import Control.Monad.State (MonadState)
+import qualified Data.Text as T
 import Types
 import Util (debugGameState, printE)
 
@@ -56,7 +58,7 @@ processGameAction (Action input' args) = do
 
 mapAction :: (MonadState Game m)
           => Input
-          -> ([Input] -> m (Either String String))
+          -> ([Input] -> m (Either T.Text T.Text))
 mapAction input' = case input' ^. normal of
     "attack"    -> Attack.attackAction
     "close"     -> Close.closeAction
@@ -76,8 +78,8 @@ mapAction input' = case input' ^. normal of
     "look"      -> Look.lookAction
     "open"      -> Open.openAction
     "pickup"    -> Pickup.pickupAction
-    "status"    -> Status.statusAction
     "take"      -> Pickup.pickupAction
+    "status"    -> Status.statusAction
     "talk"      -> Talk.talkAction
     "unlock"    -> Unlock.unlockAction
     "use"       -> Use.useAction

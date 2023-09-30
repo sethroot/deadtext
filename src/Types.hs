@@ -5,6 +5,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Types where
 
@@ -14,6 +15,7 @@ import Control.Monad.Trans.Reader (ReaderT)
 import Data.Aeson (FromJSON, FromJSONKey, ToJSON(toJSON), ToJSONKey, object)
 import Data.Aeson.Types (FromJSON(parseJSON))
 import qualified Data.Map.Strict as M
+import qualified Data.Text as T
 import GHC.Generics (Generic)
 
 type UID = Int
@@ -34,9 +36,9 @@ instance Show Direction where
     show D  = "down"
 
 data Loc = Loc
-    { _locLoc      :: String
-    , _locWalkDesc :: String
-    , _locLookDesc :: String
+    { _locLoc      :: T.Text
+    , _locWalkDesc :: T.Text
+    , _locLookDesc :: T.Text
     }
 
 data MapLoc = OverlookBathroom | OverlookParkingLot | Cemetary | Room202
@@ -91,7 +93,7 @@ data ProgressType = PickedUpItem |
     PlacedItemInContainer
 
 data Avatar = Avatar
-    { _avatarName   :: String
+    { _avatarName   :: T.Text
     , _avatarCombat :: Combat
     , _avatarHealth :: Int
     }
@@ -99,21 +101,21 @@ data Avatar = Avatar
 
 
 instance Show Avatar where
-    show (Avatar name _ health) = unwords [name, show health]
+    show (Avatar name _ health) = unwords [T.unpack name, show health]
 
 data Npc = Npc
     { _npcUid          :: UID
-    , _npcName         :: String
+    , _npcName         :: T.Text
     , _npcGender       :: Gender
     , _npcAlignment    :: Alignment
     , _npcActive       :: Bool
     , _npcHealth       :: Int
     , _npcCombat       :: [UID]
-    , _npcDesc         :: String
+    , _npcDesc         :: T.Text
     , _npcRole         :: Role
     , _npcLoc          :: UID
     , _npcAlive        :: Bool
-    , _npcDialog       :: [String]
+    , _npcDialog       :: [T.Text]
     , _npcDialogCursor :: Int
     -- , _npcQuest        :: [Quest]
     }
@@ -123,18 +125,18 @@ data Scene = Scene
     { _sceneLoc          :: UID
     , _sceneDialog       :: [SceneDialog]
     , _sceneDialogCursor :: Int
-    , _sceneDescription  :: [String]
+    , _sceneDescription  :: [T.Text]
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 data SceneDialog =
     SceneDialog
       { _sceneDialogSpeaker   :: UID
-      , _sceneDialogStatement :: String
+      , _sceneDialogStatement :: T.Text
       }
     | SceneNarration
       {
-          _sceneNarrationText :: String
+          _sceneNarrationText :: T.Text
       }
       deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
@@ -155,7 +157,7 @@ data Combat = Combat
     , _combatKind        :: CombatKind
     , _combatDamage      :: Int
     , _combatEffect      :: CombatEffect
-    , _combatDescription :: Npc -> String
+    , _combatDescription :: Npc -> T.Text
     }
     deriving Generic
     -- deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
@@ -173,7 +175,7 @@ data NpcRel = NpcRel
     }
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
-newtype DialogGroup = DialogGroup [String]
+newtype DialogGroup = DialogGroup [T.Text]
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data ItemLocation = ItemInv
@@ -183,11 +185,11 @@ data ItemLocation = ItemInv
     deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 
 data Item = Item
-    { _itemUid      :: String
-    , _itemName     :: String
-    , _itemSyn      :: [String]
-    , _itemTakeDesc :: String
-    , _itemDesc     :: String
+    { _itemUid      :: T.Text
+    , _itemName     :: T.Text
+    , _itemSyn      :: [T.Text]
+    , _itemTakeDesc :: T.Text
+    , _itemDesc     :: T.Text
     , _itemLoc      :: ItemLocation
     , _itemUses     :: [ItemUse]
     }
@@ -218,9 +220,9 @@ data ContainerTransparency = Opaque | Transparent
 
 data Container = Container
     { _containerUid    :: UID
-    , _containerName   :: String
-    , _containerLook   :: String
-    , _containerDesc   :: String
+    , _containerName   :: T.Text
+    , _containerLook   :: T.Text
+    , _containerDesc   :: T.Text
     , _containerLoc    :: UID
     , _containerCState :: ContainerState
     , _containerTrans  :: ContainerTransparency
@@ -266,8 +268,8 @@ data Movement = Movement
     deriving (Show, Generic, FromJSON, ToJSON)
 
 data Input = Input
-    { _inputRaw    :: String
-    , _inputNormal :: String
+    { _inputRaw    :: T.Text 
+    , _inputNormal :: T.Text
     }
     deriving (Show, Eq, Generic, FromJSON, ToJSON)
 

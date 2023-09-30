@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module DeadText where
 
@@ -10,6 +11,7 @@ import Control.Monad.State.Lazy (MonadIO, MonadState)
 import Control.Monad.Trans.Reader (ReaderT(runReaderT))
 import Control.Monad.Trans.State.Lazy (StateT(runStateT))
 import Data (initEnv, initState)
+import qualified Data.Text as T
 import Load (loadInternal)
 import Parser (normalizeInput, parseRawInput)
 import System.Environment (getArgs)
@@ -22,8 +24,9 @@ deadText = void $ runStateT (runReaderT game initEnv) initState
 
 game :: App ()
 game = do
-    args <- liftIO getArgs
-    processArgs args
+    args <- liftIO getArgs 
+    let txtArgs = fmap T.pack args
+    processArgs txtArgs 
     lookAction [] >>= printE
     forever $ do
         printPrompt
@@ -31,7 +34,7 @@ game = do
         input .= parsed
         tokenize parsed >>= exec
 
-processArgs :: (MonadState Game m, MonadIO m) => [String] -> m ()
+processArgs :: (MonadState Game m, MonadIO m) => [T.Text] -> m ()
 processArgs ("noload" : _) = loadInternal
 processArgs ("-n"     : _) = loadInternal
 -- processArgs (file     : _) = loadExternal file
@@ -44,7 +47,7 @@ printPrompt = do
 
 parseInput :: MonadIO m => String -> m [Input]
 parseInput input' = do
-    let rawInputs        = parseRawInput input'
+    let rawInputs        = parseRawInput . T.pack $ input'
     let normalizedInputs = normalizeInput rawInputs
     let inputs           = zipWith Input rawInputs normalizedInputs
     -- liftIO . print . enumerate $ normalizedInputs

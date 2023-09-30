@@ -1,18 +1,20 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Walk (walkAction) where
 
 import Action.Look (look)
 import Common (dontKnowHowToDoThat)
-import Control.Error ((??), fromMaybe, headMay, runExceptT)
+import Control.Error ((??), fromMaybe, headMay, runExceptT, hoistEither)
 import Control.Lens ((.=), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (find)
+import qualified Data.Text as T
 import Parser (parseDirM)
 import Types
 import Util (hoistL, hoistR)
 
-walkAction :: MonadState Game m => [Input] -> m (Either String String)
+walkAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 walkAction inputs = runExceptT $ do
     target <- headMay inputs ?? goWhere
     mDir   <- parseDirM $ target ^. normal
@@ -24,7 +26,7 @@ walkAction inputs = runExceptT $ do
     let next = resolveMove (Movement loc' dir') conns'
     _ <- if loc' == next then hoistL youCantGoThatWay else hoistR ()
     loc .= next
-    Action.Look.look >>= hoistR
+    Action.Look.look >>= hoistEither
 
 isLocked :: Movement -> [Connection] -> Bool
 isLocked move conns = maybe
@@ -51,11 +53,11 @@ maybeConnFromMove (Movement s d) = find predicate
                 dir'   = c ^. dir
             in s == start' && d == dir'
 
-goWhere :: String
+goWhere :: T.Text
 goWhere = "Go where?"
 
-theDoorIsLocked :: String
+theDoorIsLocked :: T.Text
 theDoorIsLocked = "The door is locked."
 
-youCantGoThatWay :: String
+youCantGoThatWay :: T.Text
 youCantGoThatWay = "You can't go that way."

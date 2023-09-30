@@ -34,6 +34,7 @@ dependencies:
 - errors
 - pretty-simple
 - type-iso
+- text
 
 library:
   source-dirs: src

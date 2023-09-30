@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Give (giveAction) where
 
@@ -10,6 +11,7 @@ import Control.Error ((??), hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), makeFields, use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
+import qualified Data.Text as T
 import Parser (parseItemM, parseNpcM, parseRecM)
 import Types
 import Util (hoistL, hoistR, partitionBy)
@@ -28,7 +30,7 @@ data GiveArgs = GiveArgs
 makeFields ''GiveArgsInput
 makeFields ''GiveArgs
 
-giveAction :: MonadState Game m => [Input] -> m (Either String String)
+giveAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 giveAction args = runExceptT $ do
     giveArgsInput <- parseGiveArgsRaw args ?? giveWhatToWho
     giveArgs      <- parseGiveArgsInput giveArgsInput
@@ -41,7 +43,7 @@ giveAction args = runExceptT $ do
             out <- attemptExecGive targetItem npc
             hoistEither out
 
-attemptExecGive :: MonadState Game m => Item -> Npc -> m (Either String String)
+attemptExecGive :: MonadState Game m => Item -> Npc -> m (Either T.Text T.Text)
 attemptExecGive targetItem npc = runExceptT $ do
     inv <- inventory
     if targetItem `notElem` inv
@@ -54,7 +56,7 @@ attemptExecGive targetItem npc = runExceptT $ do
     items . ix index . loc .= ItemNpc (npc ^. uid)
     pure $ giveTo targetItem npc
 
-giveTo :: Item -> Npc -> String
+giveTo :: Item -> Npc -> T.Text
 giveTo targetItem npc = youGive item' npc'
     where
         item' = targetItem ^. name
@@ -80,18 +82,18 @@ parseGiveArgsInput giveArgsInput = do
     npc   <- parseRecM parseNpcM $ giveArgsInput ^. target
     pure $ GiveArgs item' npc
 
-giveWhatToWho :: String
+giveWhatToWho :: T.Text
 giveWhatToWho = "Give what to who?"
 
-doNotHave :: String -> String
-doNotHave targetItem = period . unwords $ ["You do not have a", targetItem]
+doNotHave :: T.Text -> T.Text
+doNotHave targetItem = period . T.unwords $ ["You do not have a", targetItem]
 
-isNotHere :: String -> String
-isNotHere npc = period . unwords $ [npc, "is not here"]
+isNotHere :: T.Text -> T.Text
+isNotHere npc = period . T.unwords $ [npc, "is not here"]
 
-somethingWrong :: String
+somethingWrong :: T.Text
 somethingWrong = "Something has gone terribly wrong."
 
-youGive :: String -> String -> String
+youGive :: T.Text -> T.Text -> T.Text
 youGive targetItem npc =
-    period . unwords $ ["You give the", targetItem, "to", npc]
+    period . T.unwords $ ["You give the", targetItem, "to", npc]

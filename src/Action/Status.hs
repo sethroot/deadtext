@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Status (statusAction) where
 
@@ -7,10 +8,11 @@ import Control.Error (runExceptT)
 import Control.Lens ((%=), (^?))
 import Control.Lens.Prism (_Just)
 import Control.Monad.State.Lazy (MonadState(get))
+import qualified Data.Text as T
 import Types
 import Util (hoistR)
 
-statusAction :: MonadState Game m => [Input] -> m (Either String String)
+statusAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 statusAction _ = runExceptT $ do
     game <- get
     let health' = game ^? avatar . _Just . health
@@ -19,7 +21,7 @@ statusAction _ = runExceptT $ do
     avatar . _Just . health %= (\n -> n - 20)
     hoistR out
 
-healthStatus :: Int -> String
+healthStatus :: Int -> T.Text
 healthStatus n | n > 90 = "You feel fine."
 healthStatus n | n > 70 = "You are hurt."
 healthStatus n | n > 50 = "You are injured."

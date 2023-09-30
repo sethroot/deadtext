@@ -1,17 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Kill (killAction) where
 
-import Common (npcIsHere)
+import Common (npcIsHere, period)
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
+import qualified Data.Text as T
 import Parser (parseNpc)
 import Types
 import Util (hoistL, hoistR)
 
-killAction :: MonadState Game m => [Input] -> m (Either String String)
+killAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 killAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
@@ -38,13 +40,12 @@ killAction inputs = runExceptT $ do
             npcs . ix index . alive .= False
             hoistR $ kill npc
 
-dontSee :: Input -> String
-dontSee _input = "You don't see " ++ input' ++ " here."
-    where input' = _input ^. raw
+dontSee :: Input -> T.Text
+dontSee input' = period . T.unwords $ ["You don't see", input' ^. raw, "here"]
 
-alreadyDead :: Npc -> String
-alreadyDead npc = npc' ++ " is already dead." where npc' = npc ^. name
+alreadyDead :: Npc -> T.Text
+alreadyDead npc = period . T.unwords $ [npc ^. name, "is already dead"]
 
-kill :: Npc -> String
-kill npc = "You kill " ++ npc' ++ " with your bare hands."
-    where npc' = npc ^. name
+kill :: Npc -> T.Text
+kill npc =
+    period . T.unwords $ ["You kill", npc ^. name, "with your bare hands"]

@@ -3,10 +3,10 @@
 module Util where
 
 import Control.Error (hoistEither)
-import Control.Monad.State (MonadIO(liftIO), MonadState(get))
+import Control.Monad.State (MonadIO(liftIO), MonadState())
 import Control.Monad.Trans.Except (ExceptT)
-import Data.Char (toLower)
 import qualified Data.Map.Strict as M
+import qualified Data.Text as T 
 import Types (Game)
 
 hoistL :: Monad m => e -> ExceptT e m a
@@ -15,8 +15,8 @@ hoistL = hoistEither . Left
 hoistR :: Monad m => a -> ExceptT e m a
 hoistR = hoistEither . Right
 
-printE :: MonadIO m => Either String String -> m ()
-printE = either go go where go = liftIO . putStrLn
+printE :: MonadIO m => Either T.Text T.Text -> m ()
+printE = either go go where go = liftIO . putStrLn . T.unpack
 
 invert :: (Ord v) => M.Map k [v] -> M.Map v [k]
 invert m = M.fromListWith (++) pairs
@@ -30,26 +30,27 @@ fromBool True  = Just
 (?) True  x _ = x
 (?) False _ y = y
 
-maybeToEither :: Maybe a -> Either () a
-maybeToEither Nothing  = Left ()
-maybeToEither (Just a) = Right a
+maybeToEither :: e -> Maybe a -> Either e a
+maybeToEither e Nothing  = Left e
+maybeToEither _ (Just a) = Right a
 
-lowEq :: (Functor f, Eq (f Char)) => f Char -> f Char -> Bool
-lowEq a b = (toLower <$> a) == (toLower <$> b)
+lowEq :: T.Text -> T.Text -> Bool
+lowEq a b = T.toLower a == T.toLower b
 
 enumerate :: [a] -> [(Integer, a)]
 enumerate = zip [0 ..]
 
 debugGameState :: (MonadState Game m, MonadIO m) => m ()
 debugGameState = do
-    game <- get
-    liftIO $ printGame game
+    pure ()
+    -- game <- get
+    -- liftIO $ printGame game
 
-printGame :: Game -> IO ()
-printGame g = do
-    putStrLn ""
-    -- pPrint g
-    putStrLn ""
+-- printGame :: Game -> IO ()
+-- printGame g = do
+--     putStrLn ""
+--     -- pPrint g
+--     putStrLn ""
 
 partitionBy :: Eq a => a -> [a] -> [[a]]
 partitionBy sep l = partitionByAux l []

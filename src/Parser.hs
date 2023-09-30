@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Parser where
 
@@ -7,10 +8,9 @@ import Control.Error (MaybeT(runMaybeT), hoistMaybe)
 import Control.Lens.Getter (Getting, (^.), use)
 import Control.Lens.Iso (iso, under)
 import Control.Monad.State.Lazy (MonadState)
-import Data.Char (toLower)
 import Data.List (find)
-import Data.List.Split (splitOn)
-import Data.Monoid (Any(Any, getAny))
+import Data.Monoid (All(All, getAll), Any(Any, getAny))
+import qualified Data.Text as T
 import Types
 import Util (lowEq)
 
@@ -26,47 +26,57 @@ import Util (lowEq)
 -- Look at car
 -- Examine book
 
-parseRawInput :: String -> [String]
-parseRawInput = words
+parseRawInput :: T.Text -> [T.Text]
+parseRawInput = T.words
+
+-- Test if Inputs match String pattern
+matchesText :: [Input] -> T.Text -> Bool
+matchesText inputs txt =
+    let
+        words'           = T.words txt
+        sameLength       = length words' == length inputs
+        alls             = zipWith (\t i -> All $ i ^. normal == t) words' inputs
+        inputMatchesText = getAll . mconcat $ alls
+    in sameLength && inputMatchesText
 
 -- TODO: fixme
 -- removePunctuation :: String -> String
 -- removePunctuation = filter (notElem ",.<>/?;:\"\'!@#$%^&*()-_=+")
 
-normalizeInput :: [String] -> [String]
-normalizeInput = fmap $ fmap toLower
+normalizeInput :: [T.Text] -> [T.Text]
+normalizeInput = fmap T.toLower
 
 -- Generic
 
-parseTarget :: (HasName a String) => [a] -> String -> Maybe a
+parseTarget :: (HasName a T.Text) => [a] -> T.Text -> Maybe a
 parseTarget xs _input = find _pred xs where _pred x = lowEq (x ^. name) _input
 
-parseTargetWithSyn :: (HasName a String, HasSyn a [String])
+parseTargetWithSyn :: (HasName a T.Text, HasSyn a [T.Text])
                    => [a]
-                   -> String
+                   -> T.Text
                    -> Maybe a
 parseTargetWithSyn xs _input = find (nameOrSynMatchesInput _input) xs
 
-parseTargetM :: (MonadState Game m, HasName a String)
+parseTargetM :: (MonadState Game m, HasName a T.Text)
              => Getting [a] Game [a]
-             -> String
+             -> T.Text
              -> m (Maybe a)
 parseTargetM get _input = do
     xs <- use get
     pure $ parseTarget xs _input
 
-parseTargetWithSynM :: (MonadState Game m, HasName a String, HasSyn a [String])
+parseTargetWithSynM :: (MonadState Game m, HasName a T.Text, HasSyn a [T.Text])
                     => Getting [a] Game [a]
-                    -> String
+                    -> T.Text
                     -> m (Maybe a)
 parseTargetWithSynM get _input = do
     xs <- use get
     pure $ parseTargetWithSyn xs _input
 
-parseTargetObj :: (MonadState Game m, HasName a String)
+parseTargetObj :: (MonadState Game m, HasName a T.Text)
                => Getting [a] Game [a]
                -> (a -> Obj)
-               -> String
+               -> T.Text
                -> m (Maybe Obj)
 parseTargetObj get f _input = runMaybeT $ do
     xs    <- use get
@@ -75,7 +85,7 @@ parseTargetObj get f _input = runMaybeT $ do
     where _pred x = lowEq (x ^. name) _input
 
 parseRecM :: MonadState Game m
-          => (String -> m (Maybe a))
+          => (T.Text -> m (Maybe a))
           -> [Input]
           -> m (Maybe a)
 parseRecM _ []             = pure Nothing
@@ -91,16 +101,16 @@ consumeNext (x : xs) =
     let
         next       = head xs
         rest       = tail xs
-        nextRaw    = unwords [x ^. raw, next ^. raw]
-        nextNormal = unwords [x ^. normal, next ^. normal]
+        nextRaw    = T.unwords [x ^. raw, next ^. raw]
+        nextNormal = T.unwords [x ^. normal, next ^. normal]
         nextInput  = Input nextRaw nextNormal
     in case compare (length xs) 1 of
         GT -> [nextInput] <> rest
         EQ -> [nextInput]
         LT -> []
 
-nameOrSynMatchesInput :: (HasName a String, HasSyn a [String])
-                      => String
+nameOrSynMatchesInput :: (HasName a T.Text, HasSyn a [T.Text])
+                      => T.Text
                       -> a
                       -> Bool
 nameOrSynMatchesInput _input k =
@@ -116,13 +126,13 @@ nameOrSynMatchesInput _input k =
 
 -- Item
 
-parseItem :: [Item] -> String -> Maybe Item
+parseItem :: [Item] -> T.Text -> Maybe Item
 parseItem = parseTargetWithSyn
 
-parseItemM :: MonadState Game m => String -> m (Maybe Item)
+parseItemM :: MonadState Game m => T.Text -> m (Maybe Item)
 parseItemM = parseTargetWithSynM items
 
-parseItemObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseItemObjM :: MonadState Game m => T.Text -> m (Maybe Obj)
 parseItemObjM _input = runMaybeT $ do
     items' <- use items
     found  <- hoistMaybe $ find pred' items'
@@ -131,7 +141,7 @@ parseItemObjM _input = runMaybeT $ do
 
 -- Inventory Items
 
-parseInvItemM :: MonadState Game m => String -> m (Maybe Item)
+parseInvItemM :: MonadState Game m => T.Text -> m (Maybe Item)
 parseInvItemM _input = runMaybeT $ do
     items' <- use items
     hoistMaybe $ find pred' items'
@@ -140,7 +150,7 @@ parseInvItemM _input = runMaybeT $ do
 recParseInvItem :: MonadState Game m => [Input] -> m (Maybe Item)
 recParseInvItem = parseRecM parseInvItemM
 
-parseInvObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseInvObjM :: MonadState Game m => T.Text -> m (Maybe Obj)
 parseInvObjM _input = runMaybeT $ do
     items' <- use items
     hoistMaybe . fmap ObjInv $ find pred' items'
@@ -151,33 +161,33 @@ recParseInvObj = parseRecM parseInvObjM
 
 -- NPC
 
-parseNpc :: [Npc] -> String -> Maybe Npc
+parseNpc :: [Npc] -> T.Text -> Maybe Npc
 parseNpc = parseTarget
 
-parseNpcM :: MonadState Game m => String -> m (Maybe Npc)
+parseNpcM :: MonadState Game m => T.Text -> m (Maybe Npc)
 parseNpcM = parseTargetM npcs
 
 recParseNpc :: MonadState Game m => [Input] -> m (Maybe Npc)
 recParseNpc = parseRecM parseNpcM
 
-parseNpcObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseNpcObjM :: MonadState Game m => T.Text -> m (Maybe Obj)
 parseNpcObjM = parseTargetObj npcs ObjNpc
 
 -- Container
 
-parseContainer :: [Container] -> String -> Maybe Container
+parseContainer :: [Container] -> T.Text -> Maybe Container
 parseContainer = parseTarget
 
-parseContainerM :: MonadState Game m => String -> m (Maybe Container)
+parseContainerM :: MonadState Game m => T.Text -> m (Maybe Container)
 parseContainerM = parseTargetM containers
 
-parseContObjM :: MonadState Game m => String -> m (Maybe Obj)
+parseContObjM :: MonadState Game m => T.Text -> m (Maybe Obj)
 parseContObjM = parseTargetObj containers ObjCont
 
 -- Direction
 
-parseDirM :: Monad m => String -> m (Maybe Direction)
-parseDirM = pure . go . map toLower
+parseDirM :: Monad m => T.Text -> m (Maybe Direction)
+parseDirM = pure . go . T.toLower
     where
         go "n"         = Just N
         go "north"     = Just N

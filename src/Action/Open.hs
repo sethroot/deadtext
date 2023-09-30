@@ -1,16 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Open (openAction) where
 
-import Control.Error (headMay, hoistEither, runExceptT)
+import Common (period)
+import Control.Error (headMay, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
+import qualified Data.Text as T
 import Parser (parseContainerM, parseInvObjM, parseItemObjM)
 import Types
 import Util (hoistL, hoistR)
 
-openAction :: MonadState Game m => [Input] -> m (Either String String)
+openAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 openAction inputs = runExceptT $ do
     let input' = headMay inputs
     target <- case input' of
@@ -54,20 +57,21 @@ openAction inputs = runExceptT $ do
     let out = openContainer $ container' ^. name
     hoistR out
 
-openWhat :: String
+openWhat :: T.Text
 openWhat = "Open what?"
 
-cantBeOpened :: String -> String
-cantBeOpened target = "The " ++ target ++ " is not able to be openend."
+cantBeOpened :: T.Text -> T.Text
+cantBeOpened target =
+    period . T.unwords $ ["The", target, "is not able to be openend"]
 
-dontSee :: String -> String
-dontSee target = "You don't see a " ++ target ++ "."
+dontSee :: T.Text -> T.Text
+dontSee target = period . T.unwords $ ["You don't see a", target]
 
-alreadyOpen :: String -> String
-alreadyOpen target = "The " ++ target ++ " is already open."
+alreadyOpen :: T.Text -> T.Text
+alreadyOpen target = period . T.unwords $ ["The", target, "is already open"]
 
-somethingWrong :: String
+somethingWrong :: T.Text
 somethingWrong = "Something has gone terribly wrong."
 
-openContainer :: String -> String
-openContainer target = "You open the " ++ target ++ "."
+openContainer :: T.Text -> T.Text
+openContainer target = period . T.unwords $ ["You open the", target]

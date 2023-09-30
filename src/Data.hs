@@ -1,12 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Data where
 
 import Control.Lens ((.=), (^.))
 import Control.Monad.State.Lazy (MonadState)
 import qualified Data.Map.Strict as M
+import qualified Data.Text as T
 import Types
 import UID (genUid)
+import Common
 
 initState :: Game
 initState = Game 0 M.empty [] Nothing [] [] [] [] [] [] 0
@@ -143,7 +146,7 @@ setState = do
             Melee
             10
             None
-            (\npc -> "James swings his fists at " ++ npc ^. name ++ ".")
+            (\npc -> period . T.unwords $ ["James swings his fists at", npc ^. name])
     let james = Avatar "James" jamesCombat 100
     avatar .= Just james
     angelaUid <- genUid
@@ -173,7 +176,7 @@ setState = do
             Ranged
             10
             None
-            (\npc -> "It sprays a vile mist at " ++ show npc ++ ".")
+            (\npc -> period . T.unwords $ ["It sprays a vile mist at ", T.pack $ show npc])
     lyingFigureUid <- genUid
     let
         lyingFigure0 = Npc
@@ -231,7 +234,7 @@ setState = do
             "Car"
             "You parked your car here."
             "It's a baby blue 1976 Chevy Nova."
-            overlookLotUid
+            woodSideExtEastUid
             Closed
             Transparent
     containers .= [car]
@@ -243,7 +246,7 @@ setState = do
             "Picking up the map, you see the various streets of a small portion of Silent Hill. This area is situated on the south side of Toluca Lake."
             "It's a well-worn map of Silent Hill."
             -- (ItemContainer carUid)
-            (ItemLoc woodSideExtEastUid)
+            (ItemContainer carUid)
             [NoUse]
     let
         flashlight = Item

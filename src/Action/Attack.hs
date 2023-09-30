@@ -1,18 +1,20 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Attack where
 
+import Common (period)
 import Control.Error ((??), MaybeT(runMaybeT), hoistMaybe, runExceptT)
-import Control.Lens ((%~), Ixed(ix), (^.), use, (%=))
-import Control.Monad.State.Lazy (MonadState(get, put))
-import Data.Function ((&))
+import Control.Lens ((%=), Ixed(ix), (^.), use)
+import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex, intersperse)
 import Data.Maybe (fromJust)
+import qualified Data.Text as T
 import Parser (parseNpcM, parseRecM)
 import Safe (headMay)
 import Types
 
-attackAction :: MonadState Game m => [Input] -> m (Either String String)
+attackAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 attackAction inputs = runExceptT $ do
     target  <- headMay inputs ?? attackWhat
     npc     <- parseRecM parseNpcM inputs >>= (?? dontSee target)
@@ -35,11 +37,12 @@ attackMutation targetNpc = runMaybeT $ do
     npcs . ix index . health %= subtract dmg
     pure dmg
 
-attackWhat :: String
+attackWhat :: T.Text
 attackWhat = "Attack what?"
 
-dontSee :: Input -> String
-dontSee target = "You don't see " ++ target ^. normal ++ " here."
+dontSee :: Input -> T.Text
+dontSee target =
+    period . T.unwords $ ["You don't see ", target ^. normal, "here"]
 
-looksHurt :: Npc -> String
-looksHurt npc = npc ^. name ++ " looks hurt."
+looksHurt :: Npc -> T.Text
+looksHurt npc = period . T.unwords $ [npc ^. name, "looks hurt"]

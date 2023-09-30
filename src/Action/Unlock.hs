@@ -1,23 +1,17 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Unlock (unlockAction) where
 import Action.Use
-import Control.Lens ((^.))
 import Control.Monad.State.Lazy (MonadState)
-import Data.Monoid (All(All, getAll))
+import qualified Data.Text as T
+import Parser (matchesText)
 import Types
 
-unlockAction :: MonadState Game m => [Input] -> m (Either String String)
+unlockAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 unlockAction [] = pure . Right $ "Unlock what?"
 unlockAction inputs
-    | matchesText "door with key" inputs = Action.Use.useAction [Input "" "key"]
+    | matchesText inputs "door with key" = Action.Use.useAction [Input "" "key"]
     | otherwise                          = pure . Right $ "what"
 
-matchesText :: String -> [Input] -> Bool
-matchesText text inputs =
-    let
-        words' = words text
-        sameLength = length words' == length inputs
-        alls   = zipWith (\t i -> All $ i ^. normal == t) words' inputs
-        inputMatchesText = getAll . mconcat $ alls
-    in sameLength && inputMatchesText 
+

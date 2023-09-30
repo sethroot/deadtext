@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Pickup (pickupAction) where
 
@@ -6,13 +7,13 @@ import Common (indefArt, period)
 import Control.Error (headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Each(each), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
-import Data.Char (toLower)
 import Data.List (elemIndex, intersperse)
+import qualified Data.Text as T
 import Parser (parseItemM, parseRecM, recParseNpc)
 import Types
 import Util (hoistL, hoistR)
 
-pickupAction :: (MonadState Game m) => [Input] -> m (Either String String)
+pickupAction :: (MonadState Game m) => [Input] -> m (Either T.Text T.Text)
 pickupAction inputs = runExceptT $ do
     npc' <- recParseNpc inputs
     _    <- case npc' of
@@ -67,7 +68,7 @@ pickupAction inputs = runExceptT $ do
             let out = takeItemFromContainer item' container
             hoistR out
 
-pickupAll :: MonadState Game m => m String
+pickupAll :: MonadState Game m => m T.Text
 pickupAll = do
     loc'   <- use loc
     items' <- use items
@@ -91,7 +92,7 @@ itemsInContainers is cs =
     [ (i, c) | i <- is, c <- cs, i ^. loc == ItemContainer (c ^. uid) ]
 
 inputMatchesItem :: Input -> (Item, Container) -> Bool
-inputMatchesItem input' (i, _) = fmap toLower (i ^. name) == input' ^. normal
+inputMatchesItem input' (i, _) = T.toLower (i ^. name) == input' ^. normal
 
 pickupItemMutation :: MonadState Game m => Item -> m ()
 pickupItemMutation item' = do
@@ -100,32 +101,32 @@ pickupItemMutation item' = do
         Nothing -> pure ()
         Just i  -> items . ix i . loc .= ItemInv
 
-takeItemFromContainer :: Item -> Container -> String
+takeItemFromContainer :: Item -> Container -> T.Text
 takeItemFromContainer item' container =
     let
         i = item' ^. name
         c = container ^. name
-    in period . unwords $ ["You take the", i, "from the", c]
+    in period . T.unwords $ ["You take the", i, "from the", c]
 
-pickupWhat :: String
+pickupWhat :: T.Text
 pickupWhat = "Pickup what?"
 
-cantPickupNpc :: Npc -> String
-cantPickupNpc npc = period . unwords $ ["You can't pickup", npc ^. name]
+cantPickupNpc :: Npc -> T.Text
+cantPickupNpc npc = period . T.unwords $ ["You can't pickup", npc ^. name]
 
-dontSeeObject :: String -> String
+dontSeeObject :: T.Text -> T.Text
 dontSeeObject object =
-    period . unwords $ ["You don't see", indefArt object, object, "here"]
+    period . T.unwords $ ["You don't see", indefArt object, object, "here"]
 
-seeClosedCont :: Item -> Container -> String
+seeClosedCont :: Item -> Container -> T.Text
 seeClosedCont item' container =
     period
-        . unwords
+        . T.unwords
         $ [ "You can see"
           , indefArt i
           , i
           , "in the"
-          , c ++ ","
+          , c <> ","
           , "but the"
           , c
           , "is closed"

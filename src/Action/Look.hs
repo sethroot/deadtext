@@ -1,4 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Look (lookAction, Action.Look.look) where
 
@@ -12,34 +18,62 @@ import Control.Error
     , hoistMaybe
     , runExceptT
     )
-import Control.Lens ((^.), use, view)
+import Control.Lens ((^.), makeFields, use, view)
 import Control.Monad.State.Lazy (MonadState)
-import Data.Char (toLower)
-import Data.List (intercalate, intersperse, partition)
+import Data.List (intersperse, partition)
 import qualified Data.Map.Strict as M
+import qualified Data.Text as T
 import Parser
-    (parseContObjM, parseInvObjM, parseItemObjM, parseNpcObjM, parseRecM)
+    (parseContObjM, parseInvObjM, parseItemObjM, parseNpcObjM, parseRecM, matchesText)
 import Types
-import Util ((?))
+import Util ((?), maybeToEither)
 
-lookAction :: MonadState Game m => [Input] -> m (Either String String)
-lookAction [] = do
-    out <- Action.Look.look
-    pure . Right $ out
-lookAction ((Input _ "at") : inputs) = do
-    out <- lookAt inputs
-    pure . Right $ fromMaybe dontSeeThat out
-lookAction ((Input _ "in") : target : _) = do
-    lookIn target
-lookAction _ = pure . Right $ lookWhere
+-- lookAction :: MonadState Game m => [Input] -> m (Either String String)
+-- lookAction [] = do
+--     out <- Action.Look.look
+--     pure . Right $ out
+-- lookAction ((Input _ "at") : inputs) = do
+--     out <- lookAt inputs
+--     pure . Right $ fromMaybe dontSeeThat out
+-- lookAction ((Input _ "in") : target : _) = do
+--     lookIn target
+-- lookAction _ = pure . Right $ lookWhere
 
-dontSeeThat :: String
+data LookParseResult a = LookParseResult 
+    { _lookParseResultInput  :: [Input] 
+    , _lookParseResultResult :: Maybe a
+    }
+
+data LookAction = CLookAt T.Text | CLookIn T.Text 
+
+makeFields ''LookParseResult
+
+parseInputs :: [Input] -> LookParseResult LookAction 
+parseInputs inputs =
+    case head inputs of
+        _ | go "at" -> LookParseResult inputs (Just $ CLookAt ((head . tail $ inputs) ^. normal))
+        _ | go "in" -> LookParseResult inputs (Just $ CLookIn ((head . tail $ inputs) ^. normal))
+        _ -> LookParseResult inputs Nothing
+        where go = matchesText [head inputs]
+
+lookAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
+lookAction [] = Action.Look.look
+lookAction inputs = do
+    let parsed = parseInputs inputs
+    let result' = parsed ^. result
+    case result' of
+        Just x -> case x of
+            (CLookAt _) -> lookAt . tail $ inputs
+            (CLookIn _) -> lookIn . head . tail $ inputs
+        Nothing -> pure . Right $ lookWhere
+
+dontSeeThat :: T.Text
 dontSeeThat = "You don't see that here."
 
-lookWhere :: String
+lookWhere :: T.Text
 lookWhere = "Look where?"
 
-look :: MonadState Game m => m String
+look :: MonadState Game m => m (Either T.Text T.Text)
 look = do
     npcs'       <- use npcs
     locUid      <- use loc
@@ -48,34 +82,36 @@ look = do
     containers' <- use containers
     itemsInLoc' <- itemsInLoc
     let loc'          = M.lookup locUid locMap
-    let locDesc       = maybe "" (^. lookDesc) loc' :: String
+    let locDesc       = maybe "" (^. lookDesc) loc' :: T.Text
     let exitsDesc     = exitsInLoc locUid conns'
     let npcDesc       = go $ npcsInLoc locUid npcs'
     let containerDesc = go $ containersInLoc locUid containers'
     let itemDesc      = go itemsInLoc'
     let descs         = [locDesc, exitsDesc, npcDesc, containerDesc, itemDesc]
-    pure $ formatMulti descs
+    pure . Right $ formatMulti descs
     where go = fromMaybe ""
 
-npcsInLoc :: UID -> [Npc] -> Maybe String
+npcsInLoc :: UID -> [Npc] -> Maybe T.Text
 npcsInLoc locUid npcs' = do
     let npcsHere = filter (\npc -> locUid == npc ^. loc) npcs'
     if null npcsHere
         then Nothing
         else Just . mconcat . intersperse "\n" . map descNpc $ npcsHere
 
-descNpc :: Npc -> String
+descNpc :: Npc -> T.Text
 descNpc npc = _lookDesc npc
     where _lookDesc = (npc ^. alive) ? seeNpc $ seeCorpse
 
-seeNpc :: Npc -> String
-seeNpc npc = period . unwords $ ["You see", npc ^. name, "here"]
+seeNpc :: Npc -> T.Text
+seeNpc npc = period . T.unwords $ ["You see", npc ^. name, "here"]
 
-seeCorpse :: Npc -> String
+seeCorpse :: Npc -> T.Text
 seeCorpse npc =
-    period . unwords $ ["You see", npc ^. name ++ "'s corpse lying motionless"]
+    period
+        . T.unwords
+        $ ["You see", (npc ^. name) <> "'s", "corpse lying motionless"]
 
-containersInLoc :: UID -> [Container] -> Maybe String
+containersInLoc :: UID -> [Container] -> Maybe T.Text
 containersInLoc loc' _containers = do
     let containersHere = filter (\c -> c ^. loc == loc') _containers
     if null containersHere
@@ -87,14 +123,14 @@ containersInLoc loc' _containers = do
         _desc c =
             (c ^. cState == Closed) ? containerHere c $ openContainerHere c
 
-containerHere :: Container -> String
+containerHere :: Container -> T.Text
 containerHere container = container ^. Types.look
 
-openContainerHere :: Container -> String
+openContainerHere :: Container -> T.Text
 openContainerHere container =
-    period . unwords $ ["There is an open", container ^. name, "here"]
+    period . T.unwords $ ["There is an open", container ^. name, "here"]
 
-itemsInLoc :: MonadState Game m => m (Maybe String)
+itemsInLoc :: MonadState Game m => m (Maybe T.Text)
 itemsInLoc = do
     items' <- use items
     loc'   <- use loc
@@ -103,10 +139,10 @@ itemsInLoc = do
         then pure Nothing
         else pure $ Just . mconcat . intersperse "\n" . map itemHere $ itemsHere
 
-itemHere :: Item -> String
-itemHere _item = period . unwords $ ["There is a", _item ^. name, "here"]
+itemHere :: Item -> T.Text
+itemHere _item = period . T.unwords $ ["There is a", _item ^. name, "here"]
 
-exitsInLoc :: UID -> [Connection] -> String
+exitsInLoc :: UID -> [Connection] -> T.Text
 exitsInLoc _loc conns =
     let
         pathsStartingHere = filter (\c -> (c ^. start) == _loc) conns
@@ -117,50 +153,54 @@ exitsInLoc _loc conns =
         doors = snd partitioned
         desc' = fmap describePath
         exits = if null doors
-            then desc' paths 
+            then desc' paths
             else desc' paths <> [""] <> desc' doors
     in mconcat . intersperse "\n" $ exits
 
-describePath :: Connection -> String
+describePath :: Connection -> T.Text
 describePath (Connection _ dir' _ method' _) = case method' of
     ConnectionMethodPath -> pathDesc dir'
     ConnectionMethodDoor -> doorDesc dir'
 
-pathDesc :: Direction -> String
-pathDesc _dir = period . unwords $ ["There is a path going", show _dir]
+pathDesc :: Direction -> T.Text
+pathDesc _dir =
+    period . T.unwords $ ["There is a path going", T.pack $ show _dir]
 
-doorDesc :: Direction -> String
-doorDesc _dir = period . unwords $ ["You see a door to the", show _dir]
+doorDesc :: Direction -> T.Text
+doorDesc _dir =
+    period . T.unwords $ ["You see a door to the", T.pack $ show _dir]
 
-formatMulti :: [String] -> String
-formatMulti = intercalate "\n\n" . filter (not . null)
+formatMulti :: [T.Text] -> T.Text
+formatMulti = T.intercalate "\n\n" . filter (not . T.null)
 
-lookAt :: MonadState Game m => [Input] -> m (Maybe String)
-lookAt inputs = runMaybeT $ do
-    fst' <- hoistMaybe . headMay $ inputs
-    let target = fst' ^. normal
-    invItem <- parseInvObjM target
-    item'   <- parseRecM parseItemObjM inputs
-    npc     <- parseNpcObjM target
-    cont    <- parseContObjM target
-    obj     <- hoistMaybe $ invItem <|> item' <|> npc <|> cont
-    case obj of
-        ObjInv  _item     -> pure $ _item ^. desc
-        ObjNpc  _npc      -> MaybeT $ lookAtNpc _npc
-        ObjItem _item     -> MaybeT $ lookAtItem _item
-        ObjCont container -> MaybeT $ lookAtContainer container
+lookAt :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
+lookAt inputs = do
+    out <- runMaybeT $ do
+        fst' <- hoistMaybe . headMay $ inputs
+        let target = fst' ^. normal
+        invItem <- parseInvObjM target
+        item'   <- parseRecM parseItemObjM inputs
+        npc     <- parseNpcObjM target
+        cont    <- parseContObjM target
+        obj     <- hoistMaybe $ invItem <|> item' <|> npc <|> cont
+        case obj of
+            ObjInv  _item     -> pure $ _item ^. desc
+            ObjNpc  _npc      -> MaybeT $ lookAtNpc _npc
+            ObjItem _item     -> MaybeT $ lookAtItem _item
+            ObjCont container -> MaybeT $ lookAtContainer container
+    pure . maybeToEither dontSeeThat $ out
 
-lookAtNpc :: MonadState Game m => Npc -> m (Maybe String)
+lookAtNpc :: MonadState Game m => Npc -> m (Maybe T.Text)
 lookAtNpc npc = do
     npcIsHere' <- npcIsHere npc
     pure $ npcIsHere' ? Just (npc ^. desc) $ Nothing
 
-lookAtItem :: MonadState Game m => Item -> m (Maybe String)
+lookAtItem :: MonadState Game m => Item -> m (Maybe T.Text)
 lookAtItem _item = do
     itemIsHere' <- itemIsHere _item
     pure $ itemIsHere' ? Just (_item ^. desc) $ Nothing
 
-lookAtContainer :: MonadState Game m => Container -> m (Maybe String)
+lookAtContainer :: MonadState Game m => Container -> m (Maybe T.Text)
 lookAtContainer cont = do
     containerIsHere' <- containerIsHere cont
     _items           <- use items
@@ -168,15 +208,15 @@ lookAtContainer cont = do
     let containerDesc = Just (cont ^. desc)
     if not (null items') && cont ^. trans == Transparent
         then do
-            let contName = fmap toLower $ cont ^. name
+            let contName = T.toLower $ cont ^. name
             let
                 itemDesc = concatMap
-                    (\i -> seeInTransparentContainer (i ^. name) contName)
+                    (\i -> [seeInTransparentContainer (i ^. name) contName])
                     items'
-            pure . Just $ intercalate "\n\n" [cont ^. desc, itemDesc]
+            pure . Just $ T.intercalate "\n\n" $ (cont ^. desc) : itemDesc
         else pure $ containerIsHere' ? containerDesc $ Nothing
 
-lookIn :: MonadState Game m => Input -> m (Either String String)
+lookIn :: MonadState Game m => Input -> m (Either T.Text T.Text)
 lookIn _input = runExceptT $ do
     loc'        <- use loc
     containers' <- use containers
@@ -192,7 +232,7 @@ lookInContainer :: MonadState Game m
                 => Container
                 -> ContainerState
                 -> ContainerTransparency
-                -> m String
+                -> m T.Text
 lookInContainer cont Closed Opaque = do
     pure . containerIsClosed $ cont ^. name
 lookInContainer cont Closed Transparent = do
@@ -215,29 +255,30 @@ lookInContainer cont Open _ = do
 containerPredicate :: Input -> UID -> Container -> Bool
 containerPredicate _input loc' container = nameMatch && locMatch
     where
-        nameMatch = fmap toLower (container ^. name) == _input ^. normal
+        nameMatch = T.toLower (container ^. name) == _input ^. normal
         locMatch  = container ^. loc == loc'
 
 itemPredicate :: Container -> Item -> Bool
 itemPredicate container _item =
     _item ^. loc == ItemContainer (container ^. uid)
 
-dontSeeObject :: String -> String
+dontSeeObject :: T.Text -> T.Text
 dontSeeObject object =
-    period . unwords $ ["You don't see", indefArt object, object, "here"]
+    period . T.unwords $ ["You don't see", indefArt object, object, "here"]
 
-containerIsClosed :: String -> String
+containerIsClosed :: T.Text -> T.Text
 containerIsClosed container =
-    period . unwords $ ["The", container, "is closed"]
+    period . T.unwords $ ["The", container, "is closed"]
 
-containerIsEmpty :: String -> String
-containerIsEmpty container = period . unwords $ ["The", container, "is empty"]
+containerIsEmpty :: T.Text -> T.Text
+containerIsEmpty container =
+    period . T.unwords $ ["The", container, "is empty"]
 
-seeInContainer :: String -> String -> String
+seeInContainer :: T.Text -> T.Text -> T.Text
 seeInContainer _item container =
-    period . unwords $ ["You see", indefArt _item, _item, "in the", container]
+    period . T.unwords $ ["You see", indefArt _item, _item, "in the", container]
 
-seeInTransparentContainer :: String -> String -> String
+seeInTransparentContainer :: T.Text -> T.Text -> T.Text
 seeInTransparentContainer _item container =
     let out = ["Inside the", container, "you can see", indefArt _item, _item]
-    in period . unwords $ out
+    in period . T.unwords $ out

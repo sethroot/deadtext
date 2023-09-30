@@ -1,11 +1,20 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Common where
 
 import Control.Lens ((^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.Char (toLower)
+import Data.Text as T(Text, uncons)
 import Types
+    ( Game,
+      Container,
+      Item,
+      ItemLocation(ItemInv, ItemLoc),
+      Npc,
+      HasLoc(..),
+      HasItems(items) )
 import Util ((?))
 
 npcIsHere :: MonadState Game m => Npc -> m Bool
@@ -32,17 +41,20 @@ notHolding = not . inInventory
 inventory :: MonadState Game m => m [Item]
 inventory = do
     items' <- use items
-    pure $ filter inInventory items'
+    pure $ Prelude.filter inInventory items'
 
-indefArt :: String -> String
-indefArt s = isVowel ? "an" $ "a"
-    where isVowel = toLower (head s) `elem` ['a', 'e', 'i', 'o', 'u']
+indefArt :: Text -> Text
+indefArt t = isVowel ? "an" $ "a"
+    where
+        isVowel =
+            let head' = maybe ' ' (toLower . fst) $ T.uncons t
+            in head' `elem` ['a', 'e', 'i', 'o', 'u']
 
-period :: String -> String
-period s = s ++ "."
+period :: Text -> Text
+period  = (<> ".")
 
-outF :: String
+outF :: Text
 outF = "Something has gone horribly wrong."
 
-dontKnowHowToDoThat :: String
+dontKnowHowToDoThat :: Text
 dontKnowHowToDoThat = "You don't know how to do that."

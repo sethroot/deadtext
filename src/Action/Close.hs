@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Close (closeAction) where
 
@@ -7,12 +8,13 @@ import Control.Error ((??), hoistEither, runExceptT)
 import Control.Lens ((.=), Ixed(ix), (^.), use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
+import qualified Data.Text as T
 import Parser (parseContainerM)
 import Safe (headMay)
 import Types
 import Util (hoistL, hoistR)
 
-closeAction :: MonadState Game m => [Input] -> m (Either String String)
+closeAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 closeAction inputs = runExceptT $ do
     target     <- headMay inputs ?? closeWhat
     container  <- parseContainerM $ target ^. normal
@@ -31,21 +33,21 @@ closeAction inputs = runExceptT $ do
     containers . ix index . cState .= Closed
     hoistR $ youCloseThe container'
 
-closeWhat :: String
+closeWhat :: T.Text
 closeWhat = "Close what?"
 
-youDontSeeA :: Input -> String
+youDontSeeA :: Input -> T.Text
 youDontSeeA i =
     let
         target    = i ^. normal
         indefArt' = indefArt target
-    in period . unwords $ ["You don't see", indefArt', i ^. normal]
+    in period . T.unwords $ ["You don't see", indefArt', i ^. normal]
 
-alreadyClosed :: Container -> String
-alreadyClosed c = unwords ["The", c ^. name, "is already closed."]
+alreadyClosed :: Container -> T.Text
+alreadyClosed c = T.unwords ["The", c ^. name, "is already closed."]
 
-cantCloseThat :: String
+cantCloseThat :: T.Text
 cantCloseThat = "Can't close that."
 
-youCloseThe :: Container -> String
-youCloseThe c = period . unwords $ ["You close the", c ^. name]
+youCloseThe :: Container -> T.Text
+youCloseThe c = period . T.unwords $ ["You close the", c ^. name]

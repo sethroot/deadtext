@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Action.Drop (dropAction) where
 
@@ -16,11 +17,12 @@ import Control.Lens.Each (each)
 
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex)
+import qualified Data.Text as T
 import Parser (recParseInvItem)
 import Types
 import Util (hoistL, hoistR)
 
-dropAction :: MonadState Game m => [Input] -> m (Either String String)
+dropAction :: MonadState Game m => [Input] -> m (Either T.Text T.Text)
 dropAction inputs = runExceptT $ do
     target <- headMay inputs ?? dropWhat
     _      <- case target ^. normal of
@@ -34,7 +36,7 @@ dropAction inputs = runExceptT $ do
     _      <- result ?? cantDrop itemName
     pure . dropObject $ itemName
 
-dropAll :: MonadState Game m => ExceptT String m a
+dropAll :: MonadState Game m => ExceptT T.Text m a
 dropAll = do
     inv <- inventory
     _   <- if null inv
@@ -57,22 +59,22 @@ dropMutation targetItem = runMaybeT $ do
     loc' <- use loc
     items . ix index . loc .= ItemLoc loc'
 
-dropWhat :: String
+dropWhat :: T.Text
 dropWhat = "Drop what?"
 
-nothingToDrop :: String
+nothingToDrop :: T.Text
 nothingToDrop = "You are not carrying anything."
 
-youDropAllBelongings :: String
+youDropAllBelongings :: T.Text
 youDropAllBelongings = "You drop all your belongings."
 
-cantDrop :: String -> String
+cantDrop :: T.Text -> T.Text
 cantDrop object =
-    period . unwords $ ["Inexplicably, you are unable to drop your", object]
+    period . T.unwords $ ["Inexplicably, you are unable to drop your", object]
 
-dontHaveObject :: String -> String
+dontHaveObject :: T.Text -> T.Text
 dontHaveObject object =
-    period . unwords $ ["You do not have", indefArt object, object]
+    period . T.unwords $ ["You do not have", indefArt object, object]
 
-dropObject :: String -> String
-dropObject object = period . unwords $ ["You drop the", object]
+dropObject :: T.Text -> T.Text
+dropObject object = period . T.unwords $ ["You drop the", object]
