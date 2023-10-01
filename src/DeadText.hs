@@ -4,7 +4,7 @@
 module DeadText where
 
 import Action (Action(..), lookAction, processAction)
-import Control.Lens ((.=))
+import Control.Lens ((<.=))
 import Control.Monad (forever, void)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State.Lazy (MonadIO, MonadState)
@@ -35,11 +35,7 @@ game = do
 gameLoop :: (MonadState Game m, MonadIO m) => m ()
 gameLoop = do
     printPrompt
-    liftIO getLine
-        >>= parse
-        >>= store
-        >>= tokenize
-        >>= execute
+    liftIO getLine >>= parse >>= store >>= tokenize >>= execute
 
 processArgs :: (MonadState Game m, MonadIO m) => [T.Text] -> m ()
 processArgs ("noload" : _) = loadInternal
@@ -53,21 +49,17 @@ printPrompt = do
     liftIO $ putStr ":> "
     liftIO $ hFlush stdout
 
-parse :: MonadIO m => String -> m [Input]
+parse :: (Applicative m) => String -> m [Input]
 parse input' = do
     let rawInputs        = parseRawInput . T.pack $ input'
     let normalizedInputs = normalizeInput rawInputs
     let inputs           = zipWith Input rawInputs normalizedInputs
-    -- liftIO . print . enumerate $ normalizedInputs
-    -- liftIO . print $ inputs
     pure inputs
 
 store :: MonadState Game m => [Input] -> m [Input]
-store input' = do
-    input .= input'
-    pure input'
+store = (input <.=)
 
-tokenize :: Monad m => [Input] -> m Action
+tokenize :: Applicative m => [Input] -> m Action
 tokenize input' = do
     let action = head input'
     let args   = tail input'

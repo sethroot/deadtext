@@ -5,7 +5,7 @@ module Action.Pickup (pickupAction) where
 
 import Common (indefArt, period)
 import Control.Error (headMay, hoistEither, runExceptT)
-import Control.Lens ((.=), Each(each), Ixed(ix), (^.), use)
+import Control.Lens ((.=), Each(each), Ixed(ix), (^.), use, filtered)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex, intersperse)
 import qualified Data.Text as T
@@ -72,8 +72,8 @@ pickupAll :: MonadState Game m => m T.Text
 pickupAll = do
     loc'   <- use loc
     items' <- use items
+    _ <- items . each . filtered (\i -> i ^. loc == ItemLoc loc') . loc .= ItemInv
     let here = filter (\i -> i ^. loc == ItemLoc loc') items'
-    items . each . loc .= ItemInv
     let texts = (^. takeDesc) <$> here
     let out   = mconcat $ intersperse "\n\n" texts
     pure out
