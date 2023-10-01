@@ -30,16 +30,16 @@ game = do
     let txtArgs = fmap T.pack args
     processArgs txtArgs
     lookAction [] >>= printE
-    forever gameLoop 
+    forever gameLoop
 
 gameLoop :: (MonadState Game m, MonadIO m) => m ()
 gameLoop = do
     printPrompt
     liftIO getLine
-        >>= parseInput
-        >>= storeInput
-        >>= tokenizeInputAsAction
-        >>= executeAction
+        >>= parse
+        >>= store
+        >>= tokenize
+        >>= execute
 
 processArgs :: (MonadState Game m, MonadIO m) => [T.Text] -> m ()
 processArgs ("noload" : _) = loadInternal
@@ -53,8 +53,8 @@ printPrompt = do
     liftIO $ putStr ":> "
     liftIO $ hFlush stdout
 
-parseInput :: MonadIO m => String -> m [Input]
-parseInput input' = do
+parse :: MonadIO m => String -> m [Input]
+parse input' = do
     let rawInputs        = parseRawInput . T.pack $ input'
     let normalizedInputs = normalizeInput rawInputs
     let inputs           = zipWith Input rawInputs normalizedInputs
@@ -62,19 +62,19 @@ parseInput input' = do
     -- liftIO . print $ inputs
     pure inputs
 
-storeInput :: MonadState Game m => [Input] -> m [Input]
-storeInput input' = do
+store :: MonadState Game m => [Input] -> m [Input]
+store input' = do
     input .= input'
     pure input'
 
-tokenizeInputAsAction :: Monad m => [Input] -> m Action
-tokenizeInputAsAction input' = do
+tokenize :: Monad m => [Input] -> m Action
+tokenize input' = do
     let action = head input'
     let args   = tail input'
     pure $ Action action args
 
-executeAction :: (MonadState Game m, MonadIO m) => Action -> m ()
-executeAction action = do
+execute :: (MonadState Game m, MonadIO m) => Action -> m ()
+execute action = do
     liftIO $ putStrLn ""
     processAction action
     liftIO $ putStrLn ""
