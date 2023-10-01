@@ -289,10 +289,6 @@ data Game = Game
 
 data Env = Env {}
 
-type App = ReaderT Env (StateT Game IO)
-
-
-
 makeFields ''Direction
 makeFields ''Loc
 makeFields ''ItemLocation

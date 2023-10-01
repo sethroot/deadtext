@@ -19,6 +19,8 @@ import System.IO (hFlush, stdout)
 import Types
 import Util (printE)
 
+type App = ReaderT Env (StateT Game IO)
+
 deadText :: IO ()
 deadText = void $ runStateT (runReaderT game initEnv) initState
 
@@ -30,7 +32,7 @@ game = do
     lookAction [] >>= printE
     forever gameLoop 
 
-gameLoop :: App ()
+gameLoop :: (MonadState Game m, MonadIO m) => m ()
 gameLoop = do
     printPrompt
     liftIO getLine
