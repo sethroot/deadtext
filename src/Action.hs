@@ -34,21 +34,19 @@ processAction :: (MonadState Game m, MonadIO m) => Action -> m ()
 processAction action@(Action input' _) = do
     case input' ^. normal of
         "debug" -> debugGameState
-        "n"     -> processGameAction $ Action (Input "walk" "walk") [Input "n" "n"]
-        "e"     -> processGameAction $ Action (Input "walk" "walk") [Input "e" "e"]
-        "w"     -> processGameAction $ Action (Input "walk" "walk") [Input "w" "w"]
-        "s"     -> processGameAction $ Action (Input "walk" "walk") [Input "s" "s"]
-        "ne" ->
-            processGameAction $ Action (Input "walk" "walk") [Input "ne" "ne"]
-        "nw" ->
-            processGameAction $ Action (Input "walk" "walk") [Input "nw" "nw"]
-        "se" ->
-            processGameAction $ Action (Input "walk" "walk") [Input "se" "se"]
-        "sw" ->
-            processGameAction $ Action (Input "walk" "walk") [Input "sw" "sw"]
-        "u" -> processGameAction $ Action (Input "walk" "walk") [Input "u" "u"]
-        "d" -> processGameAction $ Action (Input "walk" "walk") [Input "d" "d"]
-        _   -> processGameAction action
+        "n"     -> go "n"
+        "e"     -> go "e"
+        "w"     -> go "w"
+        "s"     -> go "s"
+        "ne"    -> go "ne"
+        "nw"    -> go "nw"
+        "se"    -> go "se"
+        "sw"    -> go "sw"
+        "u"     -> go "u"
+        "d"     -> go "d"
+        _       -> processGameAction action
+    where
+        go dir' = processGameAction $ Action (Input "" "walk") [Input "" dir']
 
 processGameAction :: (MonadState Game m, MonadIO m) => Action -> m ()
 processGameAction (Action input' args) = do
