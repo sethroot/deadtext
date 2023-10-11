@@ -26,8 +26,11 @@ deadText = void $ runStateT (runReaderT game initEnv) initState
 
 game :: App ()
 game = do
-    _ <- liftIO getArgs >>= processArgs . fmap T.pack 
+    -- Apply args
+    _ <- liftIO getArgs >>= processArgs . fmap T.pack
+    -- Provide initial look at game world
     lookAction [] >>= printE
+    -- Game loop recursion
     forever gameLoop
 
 gameLoop :: (MonadState Game m, MonadIO m) => m ()
