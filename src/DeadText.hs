@@ -26,8 +26,7 @@ deadText = void $ runStateT (runReaderT game initEnv) initState
 
 game :: App ()
 game = do
-    args <- fmap T.pack <$> liftIO getArgs
-    processArgs args
+    _ <- liftIO getArgs >>= processArgs . fmap T.pack 
     lookAction [] >>= printE
     forever gameLoop
 
