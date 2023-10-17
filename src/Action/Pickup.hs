@@ -4,8 +4,8 @@
 module Action.Pickup (pickupAction) where
 
 import Common (indefArt, period)
-import Control.Error (headMay, hoistEither, runExceptT)
-import Control.Lens ((.=), Each(each), Ixed(ix), (^.), use, filtered)
+import Control.Error ((??), headMay, hoistEither, runExceptT)
+import Control.Lens ((.=), Each(each), Ixed(ix), (^.), filtered, use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex, intersperse)
 import qualified Data.Text as T
@@ -15,35 +15,41 @@ import Util (hoistL, hoistR)
 
 pickupAction :: (MonadState Game m) => [Input] -> m (Either T.Text T.Text)
 pickupAction inputs = runExceptT $ do
+    -- 'pickup'
+    target <- headMay inputs ?? pickupWhat
+
+    -- 'pickup all'
+    -- Attempt to pickup all objects in this location
+    _      <- case target ^. normal of
+        "all" -> pickupAll >>= hoistL
+        _     -> hoistR ()
+
+    -- 'pickup [npc]'
+    -- EXCEPT: no support for holding npcs in inventory
+    -- TODO: diff text for npcs that aren't here
     npc' <- recParseNpc inputs
     _    <- case npc' of
         Just npc'' -> hoistL $ cantPickupNpc npc''
         Nothing    -> hoistR ()
 
-    let input' = headMay inputs
-    target <- case input' of
-        Nothing     -> hoistL pickupWhat
-        Just target -> hoistR target
+    -- 'pickup [targetItem]'
+    mbItem <- parseRecM parseItemM inputs
+    item'' <- mbItem ?? dontSeeObject (target ^. raw)
 
-    _ <- case target ^. normal of
-        "all" -> pickupAll >>= hoistL
-        _     -> hoistR ()
-    loc'        <- use loc
-    containers' <- use containers
-    items'      <- use items
-    mItem       <- parseRecM parseItemM inputs
-    item''      <- case mItem of
-        Nothing -> do
-            let out = dontSeeObject $ target ^. raw
-            hoistL out
-        Just item' -> hoistR item'
+    -- If item is here, do pickup and exit
+    loc'   <- use loc
     if item'' ^. loc == ItemLoc loc'
         then do
             pickupItemMutation item''
             hoistL $ item'' ^. takeDesc
         else hoistR ()
 
+    containers' <- use containers
+
+    -- Handle attempt to pickup item you can see in a closed transparent
+    -- container
     let closedTransContainersHere = filter (closedTransHere loc') containers'
+    items' <- use items
     let
         itemsInClosedTransContainersHere =
             itemsInContainers items' closedTransContainersHere
@@ -72,8 +78,13 @@ pickupAll :: MonadState Game m => m T.Text
 pickupAll = do
     loc'   <- use loc
     items' <- use items
-    _ <- items . each . filtered (\i -> i ^. loc == ItemLoc loc') . loc .= ItemInv
-    let here = filter (\i -> i ^. loc == ItemLoc loc') items'
+    _      <-
+        items
+        .  each
+        .  filtered (\i -> i ^. loc == ItemLoc loc')
+        .  loc
+        .= ItemInv
+    let here  = filter (\i -> i ^. loc == ItemLoc loc') items'
     let texts = (^. takeDesc) <$> here
     let out   = mconcat $ intersperse "\n\n" texts
     pure out
