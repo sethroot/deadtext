@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use &&" #-}
 
 module Action.Pickup (pickupAction) where
 
@@ -8,6 +10,7 @@ import Control.Error ((??), headMay, hoistEither, runExceptT)
 import Control.Lens ((.=), Each(each), Ixed(ix), (^.), filtered, use)
 import Control.Monad.State.Lazy (MonadState)
 import Data.List (elemIndex, intersperse)
+import Data.Monoid (All(All, getAll))
 import qualified Data.Text as T
 import Parser (parseItemM, parseRecM, recParseNpc)
 import Types
@@ -90,13 +93,14 @@ pickupAll = do
     pure out
 
 openHere :: UID -> Container -> Bool
-openHere loc' cont = (cont ^. loc == loc') && (cont ^. cState == Open)
+openHere loc' cont = and [cont ^. loc == loc', cont ^. cState == Open]
 
 closedTransHere :: UID -> Container -> Bool
-closedTransHere loc' cont =
-    (cont ^. loc == loc')
-        && (cont ^. trans == Transparent)
-        && (cont ^. cState == Closed)
+closedTransHere loc' cont = and
+    [ cont ^. loc == loc'
+    , cont ^. trans == Transparent
+    , cont ^. cState == Closed
+    ]
 
 itemsInContainers :: [Item] -> [Container] -> [(Item, Container)]
 itemsInContainers is cs =
